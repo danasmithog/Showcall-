@@ -214,7 +214,7 @@ const DEF={lay:'floor',tab:'shift',me:'Dana',clock:T(19,10),play:false,speed:1,b
   {id:2,text:'Second charcuterie restock pan staged before doors',cat:'Stations',by:'Dana',votes:['Kit'],st:'New'}],
  pts:{Dana:140,Mo:120,Kit:190,Ari:110,Theo:95,Priya:150,Lena:80,Jules:130,Rae:160,Sol:70,Nico:85,Avery:100},
  steps:{Dana:11840,Mo:9200,Kit:10350,Ari:8800,Theo:12400,Priya:10900,Lena:7600,Jules:9900,Rae:8400,Sol:13100,Nico:9700,Avery:6200},
- qi:0,ans:null,streak:0,os:'wear',late:[],onClock:{Dana:false,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:true,Jules:true,Rae:true,Sol:true,Avery:true,Nico:false},sharing:{Dana:null,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:false,Jules:true,Rae:true,Sol:true,Avery:true},pauseUntil:{},consentOpen:false,started:false,aprons:null,mgrDec:{},voice:[],speak:true,call:null,toast:null,lateDraft:{mins:10,reason:'Program running long',note:'',preview:false},locked:{crewout:true},stats:{},specials:SPECIALS0,station:{A:'Full',B:'Half'},updates:[],sms:{}};
+ qi:0,ans:null,streak:0,os:'wear',late:[],onClock:{Dana:false,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:true,Jules:true,Rae:true,Sol:true,Avery:true,Nico:false},sharing:{Dana:null,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:false,Jules:true,Rae:true,Sol:true,Avery:true},pauseUntil:{},consentOpen:false,shifts:null,swaps:null,clockLog:[],newShift:{ev:'Corporate holiday party',role:'Runner',start:'17:00',end:'22:30',n:1},started:false,aprons:null,mgrDec:{},voice:[],speak:true,call:null,toast:null,lateDraft:{mins:10,reason:'Program running long',note:'',preview:false},locked:{crewout:true},stats:{},specials:SPECIALS0,station:{A:'Full',B:'Half'},updates:[],sms:{}};
 let S=JSON.parse(JSON.stringify(DEF));
 try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -251,7 +251,43 @@ function nextBeat(){return [...S.beats].sort((a,b)=>a.t-b.t).find(b=>b.t>S.clock
 function paused(){const d=beat('doc');return d&&S.clock>=d.t&&S.clock<d.t+d.dur}
 function fire(c,silent){if(S.fired.includes(c.id))return;S.fired.push(c.id);S.cue=c.id;
  S.msgs.push({id:++S.nid,ch:'all',who:'Run of show',role:'Cue',cue:c.sev,text:`${c.title}. ${c.body}`,t:c.at,re:{}});
- if(!silent){const w=$('.watch');if(w){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}}}
+ if(!silent){const w=$('.watch');if(w){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}phoneAlert(c)}}
+/* Built-in connector: phone notifications + vibration. On Android, Wear OS watches mirror these automatically;
+   AsteroidOS watches get them through AsteroidOS Sync or Gadgetbridge. Works while the app is open; background
+   alerts need a push service (planned). */
+function phoneAlert(c){
+ if(!S.alerts)return;
+ const pat=c.sev==='stop'?[400,150,400,150,400]:c.sev==='go'?[150,80,150]:[250,120,250];
+ try{navigator.vibrate&&navigator.vibrate(pat)}catch(e){}
+ try{if('Notification' in window&&Notification.permission==='granted'){
+  const title=(c.sev==='stop'?'⛔ ':c.sev==='go'?'✅ ':'⚠️ ')+c.title,opt={body:c.body,tag:c.id,renotify:true,vibrate:pat,icon:'icon-192.png',badge:'icon-192.png',requireInteraction:c.sev==='stop'};
+  if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(r=>r.showNotification(title,opt)).catch(()=>new Notification(title,opt));
+  else new Notification(title,opt)}}catch(e){}
+}
+async function enableAlerts(){
+ if(!('Notification' in window)){S.alerts=true;S.alertMsg='This browser has no notifications; the phone will vibrate only.';return}
+ try{const r=await Notification.requestPermission();S.alerts=r==='granted';S.alertMsg=r==='granted'?'Alerts on. Cues now buzz this phone and show on a paired Wear OS or AsteroidOS watch.':'Notifications were blocked. Turn them on in your phone settings for Showcall.'}catch(e){S.alertMsg='Notifications aren\'t available here. Install the app to your home screen first.'}
+}
+/* Built-in connector: calendar (.ics) for any calendar app, incl. Google Calendar */
+function icsFor(list,name){
+ const d='20261121',pad=n=>String(n).padStart(2,'0'),t=m=>`${d}T${pad(Math.floor(m/60)%24)}${pad(Math.round(m)%60)}00`;
+ const esc2=x=>String(x).replace(/[,;\\]/g,m=>'\\'+m).replace(/\n/g,' ');
+ const ev=list.map((b,i)=>`BEGIN:VEVENT\r\nUID:showcall-${i}-${b.id||i}@showcall\r\nDTSTAMP:${d}T000000\r\nDTSTART;TZID=America/Detroit:${t(b.t)}\r\nDTEND;TZID=America/Detroit:${t(b.t+(b.dur||5))}\r\nSUMMARY:${esc2(b.label)}\r\n${b.kind==='pause'?'BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Service pause in 5 minutes\r\nTRIGGER:-PT5M\r\nEND:VALARM\r\n':''}END:VEVENT`).join('\r\n');
+ return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Showcall//EN\r\nX-WR-CALNAME:${name}\r\n${ev}\r\nEND:VCALENDAR\r\n`;
+}
+function download(name,text,type){try{const u=URL.createObjectURL(new Blob([text],{type}));const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},500);return true}catch(e){return false}}
+async function shareText(title,text){try{if(navigator.share){await navigator.share({title,text});return true}}catch(e){}try{await navigator.clipboard.writeText(text);S.toast='Copied to clipboard.';return true}catch(e){S.toast='Sharing isn\'t available here.';return false}}
+/* Built-in connector: staffing CSV import (Nowsta or any scheduler's export) */
+function parseCSV(txt){const rows=[];let row=[],cur='',q=false;for(let i=0;i<txt.length;i++){const ch=txt[i];if(q){if(ch==='"'){if(txt[i+1]==='"'){cur+='"';i++}else q=false}else cur+=ch}else if(ch==='"')q=true;else if(ch===','){row.push(cur);cur=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&txt[i+1]==='\n')i++;row.push(cur);rows.push(row);row=[];cur=''}else cur+=ch}if(cur||row.length){row.push(cur);rows.push(row)}return rows.filter(r=>r.some(x=>x.trim()))}
+function importStaff(txt){
+ const rows=parseCSV(txt);if(rows.length<2)return 'No rows found.';
+ const h=rows[0].map(x=>x.trim().toLowerCase()),col=k=>h.findIndex(x=>k.some(y=>x.includes(y)));
+ const ni=col(['name','employee','worker']),ri=col(['role','position','job']),ti=col(['team','section','group']),si=col(['start','in']),ei=col(['end','out']);
+ if(ni<0)return 'Needs a column called Name (or Employee).';
+ const list=rows.slice(1).map(r=>({n:(r[ni]||'').trim(),r:(ri>=0?r[ri]:'Crew').trim()||'Crew',team:((ti>=0?r[ti]:'B').trim().replace(/team\s*/i,'')||'B').toUpperCase().slice(0,4),start:si>=0?r[si].trim():'',end:ei>=0?r[ei].trim():''})).filter(p=>p.n);
+ S.imported=list;S.updates.push({at:S.clock,text:`Imported ${list.length} crew from a staffing CSV.`});
+ return `Imported ${list.length} crew. ${list.slice(0,3).map(p=>p.n).join(', ')}${list.length>3?'…':''}`;
+}
 function tick(){for(const c of cues())if(c.at<=S.clock&&!S.fired.includes(c.id))fire(c)}
 function retime(){/* a moved beat re-arms any of its cues that are now in the future */
  const now=S.clock;S.fired=S.fired.filter(id=>{const c=cues().find(x=>x.id===id);return c&&c.at<=now});}
@@ -297,7 +333,9 @@ function secShift(){
  <div><small class="muted">Shift</small><div>5:15 PM – 11:00 PM</div></div></div>
  <div class="row"><span>Meal markers</span><span class="verb">cow = beef, chix = chix, carrot = veg</span></div>
  <div class="row"><span>Parking</span><span>the venue garage · code <span class="st">vault · live app</span></span></div>
- <div class="row"><span>Uniform</span><span>Formal · branded apron</span></div></div>`+secTimeline(false)+secSpecials(false);
+ <div class="row"><span>Uniform</span><span>Formal · branded apron</span></div>
+ ${(()=>{seedShifts();const mine=S.shifts.filter(x=>x.who===S.me&&x.status!=='called_off');return mine.length?`<div class="row" style="align-items:flex-start"><span>My upcoming shifts</span><span style="text-align:right">${mine.map(x=>`${esc(x.ev)} · ${x.date.slice(5)} · ${x.start}–${x.end} <span class="st ${x.status==='confirmed'?'work':'proto'}">${x.status}</span>`).join('<br>')}</span></div>`:''})()}
+ <div class="chips"><button class="sm" data-act="ics-me">Add run of show to my calendar</button><button class="sm" data-act="share-ros">Share run of show</button></div></div>`+secTimeline(false)+secSpecials(false);
 }
 function secTimeline(edit){
  const list=[...S.beats].sort((a,b)=>a.t-b.t),cb=curBeat();
@@ -356,8 +394,16 @@ function watchFace(){
  if(c&&recent)return `<div class="watch ${c.sev}${os}"><span class="wt">${fmt(S.clock)}</span><span class="wh">${c.watch}</span><span class="wb">${esc(c.body.split('. ')[0])}.</span>${acked?'<span class="wb" style="color:#68e0a0">✓ acknowledged</span>':`<button data-ack="${c.id}">Got it</button>`}${osl}</div>`;
  return `<div class="watch${os}"><span class="wt">${fmt(S.clock)}</span><span class="wh" style="font-size:22px">${nb?'in '+Math.ceil(nb.t-S.clock)+'m':'Done'}</span><span class="wb">${nb?esc(nb.label.split(' —')[0].split(' ·')[0]):'Shift over'}</span><span class="wb" style="color:#d9b45f">cow beef · chix · carrot veg</span><button data-act="mic" aria-label="Ask by voice">🎤 Ask</button>${osl}</div>`;
 }
+function secAlerts(){
+ const perm=('Notification' in window)?Notification.permission:'unsupported';
+ return `<div class="card"><div class="ph"><h2>Phone &amp; watch alerts</h2><span class="st ${S.alerts?'work':'plan'}">${S.alerts?'On':'Off'}</span></div>
+ <p class="muted" style="margin:0">Cues buzz this phone with their own vibration pattern and show as notifications. A paired Wear OS watch mirrors them automatically; AsteroidOS watches get them through AsteroidOS Sync or Gadgetbridge.</p>
+ ${S.alerts?`<div class="chips"><button class="sm" data-act="testalert">Send a test cue</button><button class="sm" data-act="alertsoff">Turn off</button></div>`:`<button class="pri" data-act="alerts">Turn on phone &amp; watch alerts</button>`}
+ ${S.alertMsg?`<p class="note">${esc(S.alertMsg)}</p>`:''}
+ <p class="note">Works while Showcall is open or recently open on your phone. Alerts with the app fully closed need a push service, which is on the roadmap.${perm==='denied'?' Notifications are blocked for this site in your phone settings.':''}</p></div>`;
+}
 function secWatch(){
- return `<div class="card"><div class="ph"><h2>Smartwatch</h2><span class="st plan">Wear OS &amp; AsteroidOS · coming soon</span></div>
+ return secAlerts()+`<div class="card"><div class="ph"><h2>Smartwatch</h2><span class="st plan">Wear OS &amp; AsteroidOS · coming soon</span></div>
  <div class="seg" role="group" aria-label="Watch platform" style="align-self:center"><button data-os="wear" aria-pressed="${S.os!=='asteroid'}">Wear OS (Android)</button><button data-os="asteroid" aria-pressed="${S.os==='asteroid'}">AsteroidOS (Linux)</button></div>
  <div class="watchbox">${watchFace()}</div>
  <p class="note">Tap a jump button above (7:20 pause, 7:44 go) to feel the cues land on the wrist. "Got it" acknowledges — the planner board sees who has.</p></div>
@@ -551,6 +597,48 @@ function planner(){
  return `<div class="board"><div class="col">${nowCard()}${secLate()}${secTimeline(true)}${secCues()}</div>
  <div class="col">${secUpdates()}${plannerMap()}${secStaff()}${secStations()}${secSpecials(true)}<div class="card"><div class="ph"><h2>Wrist preview · ${esc(S.me)}</h2></div><div class="watchbox">${watchFace()}</div></div></div></div>`;
 }
+function secImport(){
+ const L=S.imported||[];
+ return `<div class="card"><div class="ph"><h2>Import staffing</h2><span class="st work">Built in · CSV</span></div>
+ <p class="muted" style="margin:0">Export the shift roster from Nowsta (or any scheduler) as CSV and drop it here. Columns it looks for: Name, Role, Team, Start, End.</p>
+ <input type="file" id="csv" accept=".csv,text/csv" aria-label="Staffing CSV">
+ ${S.importMsg?`<p class="note">${esc(S.importMsg)}</p>`:''}
+ ${L.length?`<div class="scroll"><table><thead><tr><th>Name</th><th>Role</th><th>Team</th><th>Shift</th></tr></thead><tbody>${L.slice(0,12).map(p=>`<tr><td>${esc(p.n)}</td><td>${esc(p.r)}</td><td>${esc(p.team)}</td><td>${esc(p.start)}${p.end?'–'+esc(p.end):''}</td></tr>`).join('')}</tbody></table></div>${L.length>12?`<small class="muted">+${L.length-12} more</small>`:''}`:''}
+ <div class="chips"><button class="sm" data-act="ics-all">Run of show → calendar (.ics)</button><button class="sm" data-act="export-json">Export event (codes withheld)</button></div></div>`;
+}
+/* ---------- shift management ---------- */
+const RATES={Runner:18,Watering:18,Crew:18,'Lead 4':21,'Point / Lead 3':22,Point:22,Expeditor:23,'Event manager':28,'Coat check':17,Porter:17};
+const EVENTS=[['Sample Anniversary Gala','2026-11-21'],['Corporate holiday party','2026-11-28'],['Wedding reception','2026-12-05']];
+function seedShifts(){
+ if(S.shifts)return;let id=0;const sh=[];
+ for(const p of PEOPLE)sh.push({id:++id,ev:EVENTS[0][0],date:EVENTS[0][1],role:p.r,start:p.r==='Event manager'?'14:45':p.r==='Expeditor'||/Point|Lead/.test(p.r)?'15:00':'17:15',end:/Point|Lead/.test(p.r)?'21:30':'23:00',who:p.n,status:'confirmed'});
+ [['Expeditor','15:00','22:30','Mo'],['Runner','17:00','22:30','Dana'],['Runner','17:00','22:30','Theo'],['Runner','17:00','22:30','Priya'],['Runner','17:00','22:30',null],['Watering','17:00','22:00','Lena'],['Point','15:00','22:00','Kit']].forEach(x=>sh.push({id:++id,ev:EVENTS[1][0],date:EVENTS[1][1],role:x[0],start:x[1],end:x[2],who:x[3],status:x[3]?'assigned':'open'}));
+ [['Event manager','13:00','23:30','Avery'],['Runner','16:30','23:00','Sol'],['Runner','16:30','23:00',null],['Runner','16:30','23:00',null],['Expeditor','14:00','23:00','Jules']].forEach(x=>sh.push({id:++id,ev:EVENTS[2][0],date:EVENTS[2][1],role:x[0],start:x[1],end:x[2],who:x[3],status:x[3]?'assigned':'open'}));
+ S.shifts=sh;S.swaps=[{id:1,from:'Theo',to:'Nico',shift:sh.find(x=>x.ev===EVENTS[1][0]&&x.who==='Theo').id,status:'pending'}];
+}
+const toMin=t=>{const [h,m]=String(t).split(':').map(Number);return h*60+(m||0)};
+const hrs=x=>{let d=toMin(x.end)-toMin(x.start);if(d<0)d+=1440;return d/60};
+function crewNames(){return [...new Set([...PEOPLE.map(p=>p.n),...((S.imported||[]).map(p=>p.n))])]}
+function secShifts(){
+ seedShifts();const names=crewNames();
+ const byEv=EVENTS.map(e=>[e,S.shifts.filter(x=>x.ev===e[0])]);
+ const open=S.shifts.filter(x=>x.status==='open').length;
+ const week={};for(const x of S.shifts)if(x.who&&x.status!=='called_off'){const k=x.who+'|'+(x.date<'2026-11-23'?'wk47':x.date<'2026-11-30'?'wk48':'wk49');week[k]=(week[k]||0)+hrs(x)}
+ const over=Object.entries(week).filter(([,h])=>h>40);
+ return `<div class="card"><div class="ph"><h2>Shift management</h2><span class="st proto">${open} open · ${S.shifts.filter(x=>x.status!=='open').length} filled</span></div>
+ ${over.length?over.map(([k,h])=>`<div class="alert">${esc(k.split('|')[0])} is scheduled ${h.toFixed(1)} h in one week — check overtime before publishing.</div>`).join(''):''}
+ ${byEv.map(([e,list])=>`<details ${e[0]!==EVENTS[0][0]?'open':''}><summary><b>${esc(e[0])}</b> <span class="muted">· ${e[1]} · ${list.filter(x=>x.status==='open').length} open of ${list.length}</span></summary>
+  ${list.map(x=>`<div class="row" style="flex-wrap:wrap"><div style="min-width:9em"><h3>${esc(x.role)}</h3><small>${x.start}–${x.end} · ${hrs(x).toFixed(1)} h</small></div>
+  <span class="chips" style="flex:none;align-items:center"><select data-assign="${x.id}" aria-label="Assign ${esc(x.role)}" style="width:auto;min-height:36px;padding:4px 8px"><option value="">— Open —</option>${names.map(n=>`<option${x.who===n?' selected':''}>${esc(n)}</option>`).join('')}</select>
+  <span class="st ${x.status==='open'?'plan':x.status==='called_off'?'stop':x.status==='confirmed'?'work':'proto'}">${x.status.replace('_',' ')}</span>
+  ${x.who&&x.status!=='called_off'?`<button class="sm" data-calloff="${x.id}">Call-off</button>`:''}</span></div>`).join('')}</details>`).join('')}
+ <form id="sform2" class="two" style="margin-top:6px"><select id="nsEv">${EVENTS.map(e=>`<option${S.newShift.ev===e[0]?' selected':''}>${esc(e[0])}</option>`).join('')}</select><select id="nsRole">${Object.keys(RATES).map(r=>`<option${S.newShift.role===r?' selected':''}>${r}</option>`).join('')}</select>
+  <input id="nsStart" type="time" value="${S.newShift.start}" aria-label="Start"><input id="nsEnd" type="time" value="${S.newShift.end}" aria-label="End"><input id="nsN" type="number" min="1" max="20" value="${S.newShift.n}" aria-label="How many"><button class="pri" type="submit">Add open shifts</button></form>
+ <div class="chips"><button class="pri sm" data-act="post-open" ${open?'':'disabled'}>Post ${open} open shift${open===1?'':'s'} to crew chat</button><button class="sm" data-act="publish">Publish schedule</button></div>
+ <h3 style="margin-top:6px">Swap requests</h3>
+ ${(S.swaps||[]).map(w=>{const x=S.shifts.find(y=>y.id===w.shift);return `<div class="row"><div><h3>${esc(w.from)} → ${esc(w.to)}</h3><small>${esc(x.ev)} · ${esc(x.role)} ${x.start}–${x.end}</small></div>${w.status==='pending'?`<span class="chips" style="flex:none"><button class="sm pri" data-swap="${w.id}|yes">Approve</button><button class="sm" data-swap="${w.id}|no">Deny</button></span>`:`<span class="st ${w.status==='approved'?'work':''}">${w.status}</span>`}</div>`}).join('')||'<p class="muted">No swap requests.</p>'}
+ <p class="note">If you schedule in Nowsta, Nowsta stays the official schedule and clock-in for pay; once connected, these shifts sync both ways. Without Nowsta, this is your schedule. Nothing is sent to anyone until you tap Post or Publish.</p></div>`;
+}
 function manager(){
  const sent=cues().filter(c=>S.fired.includes(c.id)),crew=PEOPLE.length-1;
  const ackRate=sent.length?Math.round(sent.reduce((n,c)=>n+Math.min(crew,(S.acks[c.id]||[]).length),0)/(sent.length*crew)*100):0;
@@ -562,7 +650,7 @@ function manager(){
   ['thanks','Outbound draft','Thank-you + review request to the client','Approve to send'],
   ['calloff','Staffing','Call-off: 1 runner for Nov 28 — fill in Nowsta','Open in Nowsta'],
   ...S.ideas.filter(i=>i.st!=='Approved').map(i=>['idea'+i.id,'Crew idea',i.text,'Approve idea'])];
- return `<div class="board"><div class="col">
+ return `${secShifts()}<div class="board"><div class="col">
  <div class="card"><div class="ph"><h2>Tonight at a glance</h2><span class="st proto">Live from this event</span></div>
   <div class="mgrk"><div><b>${onc}/${PEOPLE.length}</b><small>clocked in</small></div><div><b>${shr}</b><small>sharing a zone</small></div><div><b>${sent.length}</b><small>cues sent</small></div><div><b>${ackRate}%</b><small>cue acknowledgement</small></div><div><b>${lateMin?'+'+lateMin+'m':'On time'}</b><small>schedule</small></div><div><b>${conf}/6</b><small>specials confirmed</small></div></div>
   <p class="note">Team-level numbers only. No individual scores; zone locations aren't stored.</p></div>
@@ -571,7 +659,7 @@ function manager(){
  <div class="card"><div class="ph"><h2>Upcoming events</h2><span class="st proto">Intake status</span></div>
   ${[['Sample Anniversary Gala','Tonight · 510 guests','3/3 docs · 13 flags','real'],['Corporate holiday party','Nov 28 · 220 guests','2/3 docs · pack list missing','sample'],['Wedding reception','Dec 5 · 180 guests','1/3 docs · BEO only','sample']].map(e=>`<div class="row"><div><h3>${e[0]}</h3><small>${e[1]} · ${e[2]}</small></div><span class="st ${e[3]==='real'?'work':'proto'}">${e[3]==='real'?'Real':'Sample'}</span></div>`).join('')}</div>
  </div><div class="col">
- <div class="card"><div class="ph"><h2>Close-out</h2><span class="st proto">Before the truck leaves</span></div>
+ ${secImport()}<div class="card"><div class="ph"><h2>Close-out</h2><span class="st proto">Before the truck leaves</span></div>
   <div class="row"><span>Branded aprons issued (pack list)</span><b>44</b></div>
   <div class="row"><label for="aprons">Aprons returned</label><input id="aprons" type="number" min="0" max="44" value="${ap??''}" style="width:6em"></div>
   ${varc==null?'':varc>0?`<div class="alert">${varc} apron${varc>1?'s':''} short. Find them before the laundry bag is sealed.</div>`:'<div class="row"><span class="ok-line">✓ All 44 aprons back</span></div>'}
@@ -593,7 +681,8 @@ const TABS=[['shift','Shift',secShift],['team','Crew',secTeam],['chat','Chat',se
 function render(){
  const fl=S.lay==='floor';document.body.classList.toggle('tabs-on',fl);
  const app=$('#app');app.className='lay-'+S.lay;
- const banner=`<details class="about"><summary>About this demo</summary><p>A live walk-through of Showcall on a real 510-guest gala timeline (Sample Anniversary Gala, Downtown Venue). Crew names are samples, and no codes or phone numbers are in this page. Everything runs in your browser — press ▶ Play or jump to a cue to see the run of show call itself on phones and wrists. Switch to Planner to move a beat and watch every cue re-time.</p></details>`;
+ const toastHtml=S.toast?`<div class="toast">${esc(S.toast)}</div>`:'';if(S.toast)setTimeout(()=>{S.toast=null},4500);
+ const banner=toastHtml+`<details class="about"><summary>About this demo</summary><p>A live walk-through of Showcall on a real 510-guest gala timeline (Sample Anniversary Gala, Downtown Venue). Crew names are samples, and no codes or phone numbers are in this page. Everything runs in your browser — press ▶ Play or jump to a cue to see the run of show call itself on phones and wrists. Switch to Planner to move a beat and watch every cue re-time.</p></details>`;
  const unread=S.msgs.filter(m=>m.cue&&m.t>S.clock-3).length;
  if(!S.started){app.className='lay-start';app.innerHTML=`<div class="start"><div class="sin">${LOGO}<h1 style="font-size:clamp(30px,5vw,46px)">Try Showcall as…</h1>
   <p class="muted" style="font-size:17px;max-width:34em">A live demo on a real 510-guest gala timeline. Pick a seat — you can switch any time from the top bar.</p>
@@ -617,11 +706,21 @@ document.addEventListener('click',e=>{
  if(d.act==='voice-dismiss'){const lv=[...S.voice].reverse().find(v=>v.who===S.me);if(lv)lv.at=-999;save();render();return}
  if(d.act==='mic'){if(S.tab!=='watch'||S.lay!=='floor'){S.lay='floor';S.tab='watch'}save();render();const v=document.getElementById('vq');if(v)v.focus();return}
  if(d.start){if(d.start==='owner'){S.started=true;save();location.href='owner.html';return}S.started=true;S.lay=d.start==='crew'?'floor':d.start;S.me=d.start==='crew'?'Dana':'Avery';S.tab='shift';save();render();scrollTo(0,0);return}
+ if(d.act==='alerts'){enableAlerts().then(()=>{save();render()});return}
+ if(d.act==='alertsoff'){S.alerts=false;S.alertMsg='';save();render();return}
+ if(d.act==='testalert'){phoneAlert({id:'test-'+Date.now(),sev:'stop',title:'PAUSE — service stops (test)',body:'This is how a pause cue arrives on your phone and watch.'});S.alertMsg='Test sent. Check your phone and watch.';save();render();return}
+ if(d.act==='ics-me'||d.act==='ics-all'){const ok=download('showcall-run-of-show.ics',icsFor([...S.beats].sort((a,b)=>a.t-b.t),'Showcall · Sample Gala'),'text/calendar');S.toast=ok?'Calendar file downloaded. Open it to add the beats to your calendar.':'Downloads are blocked in this preview. Use the installed app.';save();render();return}
+ if(d.act==='share-ros'){const txt='Run of show — Sample Gala\n'+[...S.beats].sort((a,b)=>a.t-b.t).map(b=>`${fmt(b.t)}  ${b.label}`).join('\n');shareText('Run of show',txt).then(()=>{save();render()});return}
+ if(d.act==='export-json'){const data={event:'Sample Anniversary Gala',beats:S.beats,specials:S.specials.map(x=>({course:x.course,text:x.text,status:SSTAT[x.status]})),late:S.late,updates:S.updates,note:'Codes and phone numbers are never included.'};const ok=download('showcall-event.json',JSON.stringify(data,null,1),'application/json');S.toast=ok?'Event exported.':'Downloads are blocked in this preview. Use the installed app.';save();render();return}
+ if(d.calloff){const x=S.shifts.find(y=>y.id==d.calloff);S.shifts.push({...x,id:Math.max(...S.shifts.map(y=>y.id))+1,who:null,status:'open'});x.status='called_off';S.updates.push({at:S.clock,text:`Call-off: ${x.who}, ${x.role} at ${x.ev}. Slot reopened.`});save();render();return}
+ if(d.act==='post-open'){const o=S.shifts.filter(x=>x.status==='open');S.msgs.push({id:++S.nid,ch:'all',who:S.me,role:'Open shifts',cue:'warn',text:'Open shifts: '+o.map(x=>`${x.ev} ${x.date} · ${x.role} ${x.start}–${x.end}`).join('; ')+'. Reply in chat or tell your point to claim one.',t:S.clock,re:{}});S.toast=`Posted ${o.length} open shifts to crew chat.`;save();render();return}
+ if(d.act==='publish'){for(const x of S.shifts)if(x.status==='assigned')x.status='confirmed';S.msgs.push({id:++S.nid,ch:'all',who:S.me,role:'Schedule',cue:'go',text:'Schedule published. Check the Shift tab for your upcoming shifts.',t:S.clock,re:{}});S.toast='Schedule published to the crew app.';save();render();return}
+ if(d.swap){const [id,v]=d.swap.split('|'),w=S.swaps.find(x=>x.id==id),x=S.shifts.find(y=>y.id===w.shift);w.status=v==='yes'?'approved':'denied';if(v==='yes')x.who=w.to;save();render();return}
  if(d.mdec){const [id,v]=d.mdec.split('|');S.mgrDec[id]=v;if(id.startsWith('idea')&&v==='yes'){const i=S.ideas.find(x=>'idea'+x.id===id);if(i){i.st='Approved';add(i.by,20)}}save();render();return}
  if(d.act==='close-event'){S.closed=true;for(const n in S.onClock)S.onClock[n]=false;S.updates.push({at:S.clock,text:'Event closed: all crew clocked out, zone locations wiped.'});save();render();return}
  if(d.act==='clockin'){S.consentOpen=true;save();render();return}
- if(d.act==='clockin-share'||d.act==='clockin-noshare'){S.onClock[S.me]=true;S.sharing[S.me]=d.act==='clockin-share';S.consentOpen=false;S.updates.push({at:S.clock,text:`${S.me} clocked in${S.sharing[S.me]?' · sharing area':''}.`});save();render();return}
- if(d.act==='clockout'){S.onClock[S.me]=false;S.sharing[S.me]=null;delete S.pauseUntil[S.me];S.call=null;S.updates.push({at:S.clock,text:`${S.me} clocked out · location sharing stopped.`});save();render();return}
+ if(d.act==='clockin-share'||d.act==='clockin-noshare'){S.onClock[S.me]=true;S.clockLog.push({n:S.me,in:S.clock,out:null});S.sharing[S.me]=d.act==='clockin-share';S.consentOpen=false;S.updates.push({at:S.clock,text:`${S.me} clocked in${S.sharing[S.me]?' · sharing area':''}.`});save();render();return}
+ if(d.act==='clockout'){const cl=[...S.clockLog].reverse().find(x=>x.n===S.me&&x.out==null);if(cl)cl.out=S.clock;S.onClock[S.me]=false;S.sharing[S.me]=null;delete S.pauseUntil[S.me];S.call=null;S.updates.push({at:S.clock,text:`${S.me} clocked out · location sharing stopped.`});save();render();return}
  if(d.act==='pause15'){S.pauseUntil[S.me]=S.clock+15;save();render();return}
  if(d.act==='resume'){delete S.pauseUntil[S.me];save();render();return}
  if(d.act==='stopshare'){S.sharing[S.me]=false;save();render();return}
@@ -670,8 +769,12 @@ document.addEventListener('change',e=>{const t=e.target;
  if(t.id==='speak'){S.speak=t.checked;save();return}
  if(t.id==='lateReason'){S.lateDraft.reason=t.value;save();return}
  if(t.id==='lateMins'){S.lateDraft.mins=+t.value;save();render();return}if(t.id==='me'){S.me=t.value;if(S.ch==='mgr'&&!manage())S.ch='all';save();render()}});
+document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.assign){seedShifts();const x=S.shifts.find(y=>y.id==t.dataset.assign);x.who=t.value||null;x.status=t.value?'assigned':'open';save();render();return}
+ if(['nsEv','nsRole','nsStart','nsEnd','nsN'].includes(t.id)){S.newShift={ev:$('#nsEv').value,role:$('#nsRole').value,start:$('#nsStart').value,end:$('#nsEnd').value,n:+$('#nsN').value||1};save();return}
+ if(t.id!=='csv'||!t.files||!t.files[0])return;const f=t.files[0];f.text().then(txt=>{S.importMsg=importStaff(txt);save();render()}).catch(()=>{S.importMsg='Could not read that file.';render()})});
 document.addEventListener('input',e=>{if(e.target.id==='draft')S.draft=e.target.value;if(e.target.id==='lateNote')S.lateDraft.note=e.target.value});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.id;
+ if(f==='sform2'){seedShifts();const n=S.newShift,ev=EVENTS.find(e=>e[0]===n.ev);let id=Math.max(...S.shifts.map(y=>y.id));for(let i=0;i<Math.min(20,n.n||1);i++)S.shifts.push({id:++id,ev:n.ev,date:ev[1],role:n.role,start:n.start,end:n.end,who:null,status:'open'});S.toast=`Added ${n.n} open ${n.role} shift${n.n>1?'s':''}.`}
  if(f==='vform'){const v=$('#vq');ask(v.value);v.value=''}
  if(f==='cform'){const tx=S.draft.trim();if(!tx)return;S.msgs.push({id:++S.nid,ch:S.ch,who:S.me,role:me().r,text:tx,t:S.clock,re:{}});S.draft='';add(S.me,1);stat(S.me).msgs++}
  if(f==='tform'){S.tasks.push({id:++S.nid,title:$('#tT').value.trim(),to:$('#tW').value,due:$('#tD').value.trim()||'Soon',by:S.me,done:false})}
