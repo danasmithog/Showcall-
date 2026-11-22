@@ -92,6 +92,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
   <div class="paper" id="paper" aria-label="BEO preview"></div>
  </div>
 </div>
+<script src="store.js"></script>
 <script>
 {
 const $=s=>document.querySelector(s),esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -108,12 +109,13 @@ const TEMPLATES={
  corporate:{name:'Corporate holiday party',client:'',date:'',venue:'',guests:220,style:'Stations',overage:5,uniform:'Black & white',servers:9,chefs:4,managers:1,arrive:'15:30',entrance:'',parking:'',markers:'',notes:'',
   beats:[['18:00','Doors · bar & stations open',0],['19:00','CEO remarks',1],['19:15','Stations refreshed',0],['21:30','Last call',0],['22:00','Guest departure',0]],
   menu:[['Carving station','Station',220,['GF','DF'],''],['Pasta station','Station',220,['V'],''],['Dessert bites','Dessert',660,['V','CE','CN'],'']],specs:[]}};
-let B;try{B=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+const ST=window.ShowcallStore||{get:(k,f)=>{try{const r=localStorage.getItem(k);return r==null?f:JSON.parse(r)}catch(e){return f}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},events:null,status:()=>({adapter:'local',cloud:'not set up',pending:0})};
+let B=ST.get(KEY,null);
 if(!B)B=JSON.parse(JSON.stringify(TEMPLATES.gala));
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(B))}catch(e){}};
+const save=()=>ST.set(KEY,B);
 const fmt=t=>{if(!t)return '';const [h,m]=t.split(':').map(Number);return `${(h+11)%12+1}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
-function acceptedQuotes(){try{const o=JSON.parse(localStorage.getItem('showcall-owner')||'{}');const seen={};return (o.quotes||[]).filter(q=>q.status==='Accepted').reverse().filter(q=>seen[q.no]?0:(seen[q.no]=1))}catch(e){return []}}
-function leads(){try{const o=JSON.parse(localStorage.getItem('showcall-owner')||'{}');return o.leads||[]}catch(e){return []}}
+function acceptedQuotes(){try{const o=ST.get('showcall-owner',{});const seen={};return (o.quotes||[]).filter(q=>q.status==='Accepted').reverse().filter(q=>seen[q.no]?0:(seen[q.no]=1))}catch(e){return []}}
+function leads(){try{const o=ST.get('showcall-owner',{});return o.leads||[]}catch(e){return []}}
 function startButtons(){const L=leads();$('#starts').innerHTML=`<button data-tpl="blank">Blank</button><button data-tpl="gala">Gala template</button><button data-tpl="wedding">Wedding</button><button data-tpl="corporate">Corporate</button>`+(L.length?`<select id="fromlead" style="width:auto"><option value="">From a sales inquiry…</option>${L.map(l=>`<option value="${l.id}">#${l.id} · ${esc(l.text.slice(0,48))}…</option>`).join('')}</select>`:'<span class="note" style="padding:4px 10px">Open the AI sales desk once to pull inquiries in here.</span>')+(acceptedQuotes().length?`<select id="fromquote" style="width:auto"><option value="">From an accepted quote…</option>${acceptedQuotes().map(q=>`<option value="${q.no}">Q-${q.no} · ${esc(q.name||'Event')} · ${q.guests} guests</option>`).join('')}</select>`:'')}
 function fillForm(){document.querySelectorAll('[data-k]').forEach(el=>{el.value=B[el.dataset.k]??''});drawBeats();drawMenu();drawSpecs();update()}
 function drawBeats(){$('#beats').innerHTML=B.beats.map((b,i)=>`<div class="line"><input type="time" value="${b[0]}" data-beat="${i}|0" aria-label="Time"><input value="${esc(b[1])}" data-beat="${i}|1" aria-label="What happens"><span class="chips"><label style="display:inline-flex;gap:4px;align-items:center;color:var(--ink)"><input type="checkbox" ${b[2]?'checked':''} data-beat="${i}|2" style="width:auto">pause</label><button class="sm" data-delbeat="${i}" aria-label="Remove">✕</button></span></div>`).join('')}

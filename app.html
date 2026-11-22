@@ -115,7 +115,7 @@ button.ghost{background:transparent}
 .about{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel);color:var(--dim);font-size:14px}
 .about summary{cursor:pointer;color:var(--ink);font-weight:500}
 .about p{margin:8px 0 2px}
-@media (max-width:520px){.jumps{width:100%;overflow-x:auto;flex-wrap:nowrap}.jumps button{flex:none}.brand{font-size:21px}.vlab{display:none}.top .in{gap:8px}.top .in>.clock{width:100%;flex-wrap:nowrap}.persona{flex:1}.persona select{width:100%}.demo .time{font-size:19px}}
+@media (max-width:520px){.jumps{width:100%;overflow-x:auto;flex-wrap:nowrap}.jumps button{flex:none}.brand{font-size:21px}.vlab{display:none}.top .in{gap:8px}.top .in>.clock{width:100%;flex-wrap:wrap}.persona{flex:1 1 100%}.persona select{width:100%}.clock .seg{flex:none}.demo .time{font-size:19px}}
 .card.late{border-color:#5b4516;background:linear-gradient(180deg,#221c0d,var(--panel) 70%)}
 .preview{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#101114}
 .ok-line{color:var(--go);font-weight:500}
@@ -140,6 +140,30 @@ s.muted{text-decoration:line-through}
 .pc:hover{border-color:var(--gold)}.pc b{font:600 22px var(--fd);color:var(--gold)}.pc small{color:var(--dim)}.pc span{font-size:14.5px}
 .tip{margin:0;padding:10px 14px;border-radius:10px;background:#221c0d;border:1px solid #5b4516;color:#f0d595;font-size:14.5px}
 @media (max-width:560px){.pick{grid-template-columns:minmax(0,1fr)}}
+/* Live Mode: one big-target screen for the floor */
+.live{min-height:100vh;display:flex;flex-direction:column;gap:14px;padding:14px max(16px,3vw) calc(20px + env(safe-area-inset-bottom,0px));max-width:900px;margin:0 auto}
+.live .lbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.live .lbar .time{font-size:30px}
+.live button{min-height:56px;font-size:17px;border-radius:14px}
+.live .lnow{border-radius:18px;padding:20px;border:2px solid var(--line);background:var(--panel);display:grid;gap:8px}
+.live .lnow.stop{background:var(--stopbg);border-color:var(--stop)}.live .lnow.go{background:var(--gobg);border-color:var(--go)}
+.live .lnow .big{font:600 clamp(32px,8vw,60px)/1.02 var(--fd)}
+.live .lnow.stop .big{color:var(--stop)}.live .lnow.go .big{color:var(--go)}
+.live .lcd{font:600 clamp(48px,14vw,104px)/1 var(--fd);font-variant-numeric:tabular-nums;color:var(--gold)}
+.live .lnext{font-size:19px}
+.live .lcue{border-radius:14px;padding:14px 16px;background:var(--warnbg);border:1px solid #5b4516;display:grid;gap:4px;font-size:17px}
+.live .lcue.stop{background:var(--stopbg);border-color:#7a2c23}.live .lcue.go{background:var(--gobg);border-color:#22603f}
+.live .lcue b{font:600 22px var(--fd)}
+.live .lsp{display:grid;gap:10px}
+.live .lsp .it{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px;border-radius:14px;background:var(--panel);border:1px solid var(--line)}
+.live .lsp .it.done{border-color:#22603f;background:var(--gobg)}
+.live .lsp .verb{font-size:15.5px}
+.live .lsp button{min-width:8.5em}
+@media (max-width:520px){.live .lsp .it{grid-template-columns:minmax(0,1fr)}.live .lsp button{width:100%}}
+.codebig{font:600 clamp(30px,7vw,40px) var(--fd);letter-spacing:.16em;color:var(--gold);font-variant-numeric:tabular-nums}
+.jform{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.jform input{text-transform:uppercase;letter-spacing:.14em;font-size:18px}
+@media (max-width:520px){.row .st{white-space:normal;text-align:center}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0c0f">
@@ -152,6 +176,7 @@ s.muted{text-decoration:line-through}
 </head>
 <body>
 <div id="app"></div>
+<script src="store.js"></script>
 <script>
 {
 const KEY='em-v2-crew-watch';
@@ -216,8 +241,9 @@ const DEF={lay:'floor',tab:'shift',me:'Dana',clock:T(19,10),play:false,speed:1,b
  steps:{Dana:11840,Mo:9200,Kit:10350,Ari:8800,Theo:12400,Priya:10900,Lena:7600,Jules:9900,Rae:8400,Sol:13100,Nico:9700,Avery:6200},
  qi:0,ans:null,streak:0,os:'wear',late:[],onClock:{Dana:false,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:true,Jules:true,Rae:true,Sol:true,Avery:true,Nico:false},sharing:{Dana:null,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:false,Jules:true,Rae:true,Sol:true,Avery:true},pauseUntil:{},consentOpen:false,shifts:null,swaps:null,clockLog:[],newShift:{ev:'Corporate holiday party',role:'Runner',start:'17:00',end:'22:30',n:1},started:false,aprons:null,mgrDec:{},voice:[],speak:true,call:null,toast:null,lateDraft:{mins:10,reason:'Program running long',note:'',preview:false},locked:{crewout:true},stats:{},specials:SPECIALS0,station:{A:'Full',B:'Half'},updates:[],sms:{}};
 let S=JSON.parse(JSON.stringify(DEF));
-try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const ST=window.ShowcallStore||{get:(k,f)=>{try{const r=localStorage.getItem(k);return r==null?f:JSON.parse(r)}catch(e){return f}},set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}},events:null,status:()=>({adapter:'local',cloud:'not set up',pending:0})};
+{const r=ST.get(KEY,null);if(r&&typeof r==='object')S=Object.assign(S,r)}
+const save=()=>ST.set(KEY,S);
 const me=()=>PEOPLE.find(p=>p.n===S.me)||PEOPLE[0];
 const manage=()=>MANAGE.includes(me().r);
 const isMgr=()=>me().r==='Event manager';
@@ -343,7 +369,51 @@ function nowCard(){
  return `<div class="now ${cls}"><span class="muted">${p?'Right now':'Now'}</span>
  <div class="big">${p?'SERVICE STOPS':esc(cb?cb.label:'Before call time')}</div>
  ${p?`<div>No food service, no clearing. Resumes ${fmt(beat('doc').t+beat('doc').dur)}.</div>`:''}
- ${nb?`<div>Next: <b>${esc(nb.label)}</b> at ${fmt(nb.t)} · <span class="cd">in ${Math.ceil(nb.t-S.clock)} min</span></div>`:''}</div>`;
+ ${nb?`<div>Next: <b>${esc(nb.label)}</b> at ${fmt(nb.t)} · <span class="cd">in ${Math.ceil(nb.t-S.clock)} min</span></div>`:''}
+ <div><button class="sm" data-act="live-on">Open Live Mode</button></div></div>`;
+}
+/* ---------- Live Mode: big targets, current beat, countdown, specials checklist ---------- */
+function mmss(m){m=Math.max(0,m);const t=Math.floor(m*60+1e-6),h=Math.floor(t/3600),mm=Math.floor(t%3600/60),ss=t%60;return (h?h+':'+String(mm).padStart(2,'0'):mm)+':'+String(ss).padStart(2,'0')}
+function liveTarget(){const p=paused(),d=beat('doc');if(p)return {t:d.t+d.dur,label:'Service resumes'};const nb=nextBeat();return nb?{t:nb.t,label:nb.label}:null}
+function liveView(){
+ const cb=curBeat(),p=paused(),c=cues().find(x=>x.id===S.cue),tg=liveTarget();
+ const recent=c&&S.clock-c.at<15?c:null,cls=p?'stop':(recent&&recent.sev==='go'?'go':'');
+ const L=[...S.late].reverse().find(x=>S.fired.includes(x.id)),needAck=L&&!(S.acks[L.id]||[]).includes(S.me);
+ const can=manage(),sp=S.specials,done=sp.filter(x=>x.status>=3).length;
+ return `<main class="live" aria-label="Live Mode">
+ <div class="lbar"><span class="time" aria-live="off">${fmt(S.clock)}</span>
+  <span class="chips"><button data-act="play" aria-pressed="${S.play}" aria-label="${S.play?'Pause demo clock':'Play demo clock'}">${S.play?'❚❚':'▶'}</button><button class="pri" data-act="live-off">Exit Live Mode</button></span></div>
+ <section class="lnow ${cls}" aria-live="polite"><span class="muted">${p?'Right now':'Now'} · ${esc(S.me)}</span>
+  <div class="big">${p?'SERVICE STOPS':esc(cb?cb.label:'Before call time')}</div>
+  ${p?'<div class="lnext">No food service, no clearing. Stay still and out of sightlines.</div>':''}
+  ${tg?`<div class="lcd" id="lcd" role="timer" aria-label="Time until ${esc(tg.label)}">${mmss(tg.t-S.clock)}</div><div class="lnext">until <b>${esc(tg.label)}</b> at ${fmt(tg.t)}</div>`:'<div class="lnext">No more beats tonight.</div>'}</section>
+ ${recent?`<section class="lcue ${recent.sev==='stop'?'stop':recent.sev==='go'?'go':''}"><b>${esc(recent.title)}</b><span>${esc(recent.body)}</span></section>`:''}
+ ${needAck?`<section class="lcue"><b>${L.undo?'Schedule restored':`Running ${L.mins} min late`}</b><span>${L.changes.slice(0,3).map(x=>`${esc(x.short)} → ${fmt(x.to)}`).join(' · ')}</span><button class="pri" data-ack="${L.id}">Got it</button></section>`:''}
+ <section class="card"><div class="ph"><h2>Specials checklist</h2><span class="st ${done===sp.length?'work':'stop'}">${done} of ${sp.length} served</span></div>
+  <div class="lsp">${sp.map(s=>`<div class="it ${s.status>=3?'done':''}"><div><small class="muted">${esc(s.course)} · ${SSTAT[s.status]}</small><div class="verb">${esc(s.text)}</div>${s.flag?`<small style="color:var(--warn)">${esc(s.flag)}</small>`:''}</div>
+   ${can&&s.status<4?`<button data-spec="${s.id}" aria-label="Mark ${esc(s.course)} special ${SSTAT[s.status+1]}">→ ${SSTAT[s.status+1]}</button>`:`<span class="st ${s.status===4?'work':''}">${s.status===4?'✓ confirmed':SSTAT[s.status]}</span>`}</div>`).join('')}</div>
+  <p class="note">Restriction text is word for word from the BEO. ${can?'Tap to move each plate along: fired, carried, served, confirmed.':'Your point or expeditor updates these.'}</p></section>
+ </main>`;
+}
+let wakeLock=null;
+async function keepAwake(on){try{if(on&&'wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}else if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){wakeLock=null}}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.live)keepAwake(true)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.live){S.live=false;keepAwake(false);save();render()}});
+/* ---------- Event codes: managers create one, crew join with it (this device today; every phone once cloud sync is on) ---------- */
+function eventCodeCard(){
+ const code=S.eventCode,st=ST.status();
+ return `<div class="card"><div class="ph"><h2>Event code</h2><span class="st ${code?'work':'proto'}">${code?'Ready to share':'Not created'}</span></div>
+ ${code?`<div class="codebig" aria-label="Event code ${code.split('').join(' ')}">${code}</div><p class="muted" style="margin:0">Crew enter this on their Shift tab to join Sample Anniversary Gala.</p>
+  <div class="chips"><button class="pri sm" data-act="code-share">Share code with crew</button><button class="sm" data-act="code-new">Make a new code</button></div>`
+ :`<p class="muted" style="margin:0">Make a 6-letter code for tonight. Crew type it once to join the event.</p><div class="chips"><button class="pri sm" data-act="code-new">Create event code</button></div>`}
+ <p class="note">Storage: ${esc(st.adapter)} · cloud ${esc(st.cloud)}. Codes join on this device today; they work across phones once a cloud backend is chosen. Sharing opens your share sheet, nothing sends by itself.</p></div>`;
+}
+function joinCard(){
+ const j=S.joined;
+ if(j)return `<div class="card callsheet"><div class="ph"><h2>Joined event</h2><span class="st work">${esc(j.code)}</span></div><p style="margin:0"><b>${esc(j.name)}</b></p><div class="chips"><button class="sm" data-act="code-leave">Leave event</button></div></div>`;
+ return `<div class="card"><div class="ph"><h2>Join an event</h2><span class="st proto">6-letter code</span></div>
+ <form id="jform" class="jform"><input id="jcode" inputmode="text" autocomplete="off" autocapitalize="characters" maxlength="8" placeholder="ABCDEF" aria-label="Event code" value="${esc(S.joinDraft||'')}"><button class="pri" type="submit">Join</button></form>
+ ${S.joinMsg?`<p class="note" role="status">${esc(S.joinMsg)}</p>`:''}</div>`;
 }
 function lateBanner(){
  const L=[...S.late].reverse().find(x=>S.fired.includes(x.id));if(!L)return '';
@@ -355,7 +425,7 @@ function lateBanner(){
 }
 function secShift(){
  const m=me(),team=m.team==='Mgmt'?'Management':`Team ${m.team}`;
- return lateBanner()+clockCard()+nowCard()+`<div class="card"><div class="ph"><h2>My shift</h2><span class="st work">From the event record</span></div>
+ return lateBanner()+joinCard()+clockCard()+nowCard()+`<div class="card"><div class="ph"><h2>My shift</h2><span class="st work">From the event record</span></div>
  <div class="two"><div><small class="muted">Team</small><div>${team}${m.team==='B'?' · sections 3 &amp; 4':m.team==='A'?' · sections 1 &amp; 2':''}</div></div>
  <div><small class="muted">Role</small><div>${esc(m.r)}</div></div>
  <div><small class="muted">Point / expeditor</small><div>${m.team==='A'?'Rae / Jules':'Kit / Mo'}</div></div>
@@ -599,7 +669,7 @@ function secLate(){
 }
 function secCues(){
  return `<div class="card"><div class="ph"><h2>Cue schedule</h2><span class="st proto">Auto from run of show</span></div>
- ${cues().map(c=>{const a=(S.acks[c.id]||[]).length,f=S.fired.includes(c.id);return `<div class="row"><div><h3><span class="cd">${fmt(c.at)}</span> · ${esc(c.title)}</h3><small>${esc(c.body)}</small></div><div style="text-align:right;white-space:nowrap"><span class="st ${c.sev==='stop'?'stop':f?'work':''}">${f?'sent':'armed'}</span><br><small>${a}/${PEOPLE.length-1} ack</small></div></div>`}).join('')}
+ ${cues().map(c=>{const a=(S.acks[c.id]||[]).length,f=S.fired.includes(c.id);return `<div class="row"><div><h3><span class="cd">${fmt(c.at)}</span> · ${esc(c.title)}</h3><small>${esc(c.body)}</small></div><div style="text-align:right;flex:none"><span class="st ${c.sev==='stop'?'stop':f?'work':''}">${f?'sent':'armed'}</span><br><small>${a}/${PEOPLE.length-1} ack</small></div></div>`}).join('')}
  <p class="note">Move a beat and every cue tied to it re-times. Cues are timeline-driven, never typed by hand.</p></div>`;
 }
 function secStaff(){
@@ -681,7 +751,7 @@ function manager(){
   ['calloff','Staffing','Call-off: 1 runner for Nov 28 — fill in Nowsta','Open in Nowsta'],
   ...S.ideas.filter(i=>i.st!=='Approved').map(i=>['idea'+i.id,'Crew idea',i.text,'Approve idea'])];
  return `${secShifts()}<div class="board"><div class="col">
-${pushCard()}
+${eventCodeCard()}${pushCard()}
  <div class="card"><div class="ph"><h2>Tonight at a glance</h2><span class="st proto">Live from this event</span></div>
   <div class="mgrk"><div><b>${onc}/${PEOPLE.length}</b><small>clocked in</small></div><div><b>${shr}</b><small>sharing a zone</small></div><div><b>${sent.length}</b><small>cues sent</small></div><div><b>${ackRate}%</b><small>cue acknowledgement</small></div><div><b>${lateMin?'+'+lateMin+'m':'On time'}</b><small>schedule</small></div><div><b>${conf}/6</b><small>specials confirmed</small></div></div>
   <p class="note">Team-level numbers only. No individual scores; zone locations aren't stored.</p></div>
@@ -721,6 +791,7 @@ function render(){
   <a href="index.html" class="muted">← Back to the website</a></div></div>`;return}
  const tip={floor:{shift:'Tip: tap "7:20 pause" in the bar above, then open the Watch tab.',team:'Tip: clock in to unlock the crew map, then tap a teammate to call.',watch:'Tip: tap a question under Voice — the answer lands on the watch face.'},planner:'Tip: try "Running late?" +10 min, then switch to Crew to see what everyone got.',manager:'Tip: enter 44 aprons returned to unlock "Close event".'};
  const tp=S.lay==='floor'?(tip.floor[S.tab]||''):tip[S.lay]||'';
+ if(S.live){document.body.classList.remove('tabs-on');app.className='lay-live';app.innerHTML=toastHtml?`<div style="max-width:900px;margin:12px auto 0;padding:0 max(16px,3vw)">${toastHtml}</div>`+liveView():liveView();return}
  if(fl){const t=TABS.find(x=>x[0]===S.tab)||TABS[0];
   app.innerHTML=topbar()+`<div class="wrap">${tp?`<p class="tip">${tp}</p>`:''}${banner}${t[2]()}</div><nav class="tabs"><div class="in">${TABS.map(x=>`<button data-tab="${x[0]}"${S.tab===x[0]?' aria-current="page"':''}>${x[1]}${x[0]==='watch'&&paused()&&S.tab!=='watch'?'<span class="pip"></span>':''}${x[0]==='chat'&&unread&&S.tab!=='chat'?'<span class="pip"></span>':''}</button>`).join('')}</div></nav>`;}
  else app.innerHTML=topbar()+`<div class="wrap">${tp?`<p class="tip">${tp}</p>`:''}${banner}${S.lay==='manager'?manager():planner()}</div>`;
@@ -738,6 +809,13 @@ document.addEventListener('click',e=>{
  if(d.act==='push-kind'){S.push[d.k]=!S.push[d.k];save();render();return}
  if(d.act==='push-test'){if(!S.push.on){S.toast='Turn push on first.';render();return}pushOut('cues','Showcall test','If you see this on your phone and watch, push works.','go').then(ok=>{S.toast=ok?'Test sent. Check a subscribed phone.':'Could not reach the push server.';render()});return}
  if(d.act==='push-share'){const t=pushTopic(),srv=S.push.server.replace(/\/$/,'');shareText('Join Showcall alerts',`Get tonight's Showcall cues on your phone and watch:\n1. Install the free ntfy app.\n2. Subscribe to: ${t}${srv!=='https://ntfy.sh'?' (server '+srv+')':''}\nWeb: ${srv}/${t}`).then(()=>render());return}
+ if(d.act==='live-on'){S.live=true;keepAwake(true);save();render();scrollTo(0,0);const x=document.querySelector('.live [data-act=live-off]');if(x)x.focus();return}
+ if(d.act==='live-off'){S.live=false;keepAwake(false);save();render();scrollTo(0,0);return}
+ if(d.act==='code-new'){if(!isMgr()){S.toast='Only the event manager can create an event code.';render();return}
+  if(!ST.events){S.toast='Event codes need store.js. Reload the app.';render();return}
+  if(S.eventCode)ST.events.close(S.eventCode);const ev=ST.events.create({name:'Sample Anniversary Gala',by:S.me});S.eventCode=ev.code;S.toast=`Event code ${ev.code} created.`;save();render();return}
+ if(d.act==='code-share'){if(!S.eventCode)return;shareText('Join tonight on Showcall',`Join Sample Anniversary Gala on Showcall.\nOpen the app, Shift tab, Join an event, and enter: ${S.eventCode}`).then(()=>render());return}
+ if(d.act==='code-leave'){S.joined=null;S.joinMsg='';save();render();return}
  if(d.speed){S.speed=+d.speed;save();render();return}
  if(d.say){ask(d.say);save();render();return}
  if(d.act==='voice-dismiss'){const lv=[...S.voice].reverse().find(v=>v.who===S.me);if(lv)lv.at=-999;save();render();return}
@@ -813,6 +891,13 @@ document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.
 document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.pushsrv!==undefined){const v=e.target.value.trim();if(/^https:\/\//.test(v)){S.push.server=v;save()}return}if(e.target.id==='draft')S.draft=e.target.value;if(e.target.id==='lateNote')S.lateDraft.note=e.target.value});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.id;
  if(f==='sform2'){seedShifts();const n=S.newShift,ev=EVENTS.find(e=>e[0]===n.ev);let id=Math.max(...S.shifts.map(y=>y.id));for(let i=0;i<Math.min(20,n.n||1);i++)S.shifts.push({id:++id,ev:n.ev,date:ev[1],role:n.role,start:n.start,end:n.end,who:null,status:'open'});S.toast=`Added ${n.n} open ${n.role} shift${n.n>1?'s':''}.`}
+ if(f==='jform'){const raw=$('#jcode').value;S.joinDraft=raw;
+  if(!ST.events){S.joinMsg='Event codes need store.js. Reload the app.';save();render();return}
+  const c=ST.events.norm(raw);
+  if(!ST.events.valid(c))S.joinMsg='Codes are 6 letters, like KTRMWB (no I, L, O or U).';
+  else{const ev=ST.events.find(c);if(ev&&!ev.closed){S.joined={code:c,name:ev.name||'Event'};S.joinMsg='';S.joinDraft='';S.updates.push({at:S.clock,text:`${S.me} joined with event code.`})}
+   else S.joinMsg=ev&&ev.closed?'That code was replaced. Ask your manager for the new one.':'No event with that code on this phone yet. Codes work across phones once cloud sync is on; for now, check the letters with your manager.'}
+  save();render();return}
  if(f==='vform'){const v=$('#vq');ask(v.value);v.value=''}
  if(f==='cform'){const tx=S.draft.trim();if(!tx)return;S.msgs.push({id:++S.nid,ch:S.ch,who:S.me,role:me().r,text:tx,t:S.clock,re:{}});S.draft='';add(S.me,1);stat(S.me).msgs++}
  if(f==='tform'){if(!isMgr()){S.toast='Only managers can create tasks';render();return}S.tasks.push({id:++S.nid,title:$('#tT').value.trim(),to:$('#tW').value,due:$('#tD').value.trim()||'Soon',by:S.me,done:false})}
@@ -823,6 +908,7 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.id;
 let last=performance.now();
 setInterval(()=>{const now=performance.now(),dt=(now-last)/1000;last=now;if(!S.play)return;
  const before=S.clock;S.clock=Math.min(T(23,30),S.clock+dt*S.speed);if(S.clock>=T(23,30))S.play=false;
+ if(S.live){const l=$('#lcd'),tg=liveTarget();if(l&&tg)l.textContent=mmss(tg.t-S.clock)}
  const firedBefore=S.fired.length;tick();
  if(Math.floor(before)!==Math.floor(S.clock)||S.fired.length!==firedBefore){const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){const tm=$('.time');if(tm)tm.textContent=fmt(S.clock);return}render();save()}},250);
 for(const c of cues())if(c.at<=S.clock&&!S.fired.includes(c.id))fire(c,true);

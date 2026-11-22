@@ -7,3 +7,8 @@ Every cue, every crew member, on time. Showcall turns a BEO into a live run of s
 - **Owner portal:** https://danasmithog.github.io/Showcall-/owner.html
 
 The demo runs on a sample gala with generic names. Demo data stays on each device; it works offline after the first open.
+
+
+## Tests
+
+Serve the folder (`python3 -m http.server 8765`) and run `node tests/smoke.js` (needs Playwright). It checks every page for errors and walks the main flows at phone and desktop widths.
