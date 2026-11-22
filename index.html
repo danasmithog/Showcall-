@@ -442,7 +442,7 @@ $$('[data-role]').forEach(b=>b.addEventListener('click',()=>drawRole(b.dataset.r
 /* ---------- calculator & pricing ---------- */
 const PLANS=[{n:'Crew',m:0,d:'For every staff member on a Showcall event.',f:['Phone app: shift, cues, chat','Watch cues (Wear OS & AsteroidOS)','Find & call crew on the clock','Voice questions']},
  {n:'Team',m:400,d:'One company, up to 75 crew.',f:['BEO, pack list & staffing intake','Conflict flags with sources','Run of show, cues, running late','Specials tracker & private vault','Manager view & close-out']},
- {n:'Company',m:1000,d:'Unlimited events and crew.',hot:1,f:['Everything in Team','AI sales desk: read, score, quote, draft replies','Owner portal: every department','Projected profit & suggestions','Integrations hub & pilots','Priority onboarding']},
+ {n:'Company',m:1000,d:'Unlimited events and crew.',hot:1,f:['Everything in Team','AI sales desk: read, score, quote, draft replies','Quote builder: price book, margin check, good-better-best, quote to BEO','Owner portal: every department','Projected profit & suggestions','Integrations hub & pilots','Priority onboarding']},
  {n:'Enterprise',m:null,d:'Multi-site operators.',f:['Everything in Company','Nowsta & accounting integrations','SSO and custom roles','Custom document formats','Dedicated success manager']}];
 let annual=true;
 function drawPlans(){$('#plans').innerHTML=PLANS.map(p=>{const price=p.m===null?'Talk to us':p.m===0?'Free':'$'+(annual?Math.round(p.m*10/12):p.m);

@@ -8,7 +8,7 @@
 <style>
 /* VOICE: plain and exact — this is money, people and contracts, so no jokes and every number says where it came from.
    IDEA: the owner's ledger behind the show — every event, every person-hour, every tool, one book.
-   PICTURE: the KPI row and the source meter ("1 of 47 sources connected") that tells the owner how much of this is real yet.
+   PICTURE: the KPI row and the source meter ("1 of 50 sources connected") that tells the owner how much of this is real yet.
    COLOUR and TYPE: same black & gold as Showcall; green = measured, blue = sample, amber = needs integration.
    LAYOUT: left rail of sections on desktop, top scroller on phones; each section is one ruled page. */
 :root{color-scheme:dark;--bg:#0b0c0f;--panel:#15171c;--soft:#1d2027;--line:#2a2f38;--ink:#f3f1ea;--dim:#a6abb4;
@@ -81,6 +81,26 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
 .lead.on{background:#221c0d;border-radius:10px;padding-inline:8px}
 .pipe{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.col2{background:var(--soft);border-radius:12px;padding:10px;display:grid;gap:6px;align-content:start}.pcard{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:13.5px;cursor:pointer}
 @media (max-width:720px){.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.qstart{display:flex;gap:8px;flex-wrap:wrap}.qstart select{flex:1;min-width:0}
+.qform{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.qform label,.qcrew label,.qbook label{display:grid;gap:4px;font-size:13px;color:var(--dim)}
+.qform input,.qform select,.qcrew input,.qbook input{width:100%;min-width:0}
+.qadd{display:flex;flex-wrap:wrap;gap:8px 16px}.qadd .chk{display:inline-flex;gap:6px;align-items:center;font-size:14.5px}.qadd input{width:auto}
+.qcrew{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;align-items:end}
+.qbook{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:6px}
+.qtot td{border-top:2px solid var(--gold);font-size:17px}
+.qint{background:var(--soft);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
+.qint .bad{color:var(--stop)}.qint .good{color:var(--go)}
+.qflag{margin:2px 0;font-size:14.5px}.qflag.bad{color:var(--stop)}.qflag.warn{color:var(--warn)}.qflag.ok{color:var(--go)}
+.qgbb{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.qopt{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:4px}
+.qopt.on{box-shadow:inset 0 0 0 2px var(--gold)}.qopt h3{margin:0}.qopt .n{font:600 26px var(--fd);font-variant-numeric:tabular-nums}
+.qpre{white-space:pre-wrap;background:var(--soft);border-radius:9px;padding:10px;font-size:13.5px}
+a.btn{display:inline-block;padding:8px 14px;border-radius:10px;border:1px solid var(--line);color:var(--ink);text-decoration:none}
+#qprintbox{display:none}
+@media print{body.qprinting>*:not(#qprintbox){display:none!important}body.qprinting #qprintbox{display:block;color:#000;background:#fff;font:14px/1.5 Georgia,serif}body.qprinting #qprintbox pre{white-space:pre-wrap;font:14px/1.6 Georgia,serif}}
+@media (max-width:640px){.qform,.qcrew,.qbook{grid-template-columns:repeat(2,minmax(0,1fr))}.qgbb{grid-template-columns:minmax(0,1fr)}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0c0f">
@@ -100,9 +120,9 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
 
 <div class="shell">
  <nav class="rail" aria-label="Portal sections">
-  <a href="#overview">Overview</a><a href="#profit">Profit &amp; suggestions</a><a href="#events">Events</a><a href="#aisales">AI sales desk</a><a href="#sales">Sales</a><a href="#marketing">Marketing</a><a href="#service">Customer service</a><a href="#people">HR &amp; people</a><a href="#payroll">Payroll</a><a href="#finance">Accounting</a><a href="#inventory">Inventory</a><a href="#ops">Ops &amp; logistics</a><a href="#legal">Legal</a><a href="#security">Security</a>
+  <a href="#overview">Overview</a><a href="#profit">Profit &amp; suggestions</a><a href="#events">Events</a><a href="#aisales">AI sales desk</a><a href="#quotes">Quotes</a><a href="#sales">Sales</a><a href="#marketing">Marketing</a><a href="#service">Customer service</a><a href="#people">HR &amp; people</a><a href="#payroll">Payroll</a><a href="#finance">Accounting</a><a href="#inventory">Inventory</a><a href="#ops">Ops &amp; logistics</a><a href="#legal">Legal</a><a href="#security">Security</a>
   <a href="#integrations">Integrations</a><a href="#pilots">Pilots</a><a href="#ai">AI tool scout</a><a href="#approvals">Approvals</a><a href="#governance">Governance</a>
-  <div class="meter"><b id="mtr">1 of 47</b>data sources connected<div class="bar"><i id="mtrbar" style="width:2%"></i></div><span style="display:block;margin-top:8px">Everything else is labeled <span class="src sample" style="margin:0">Sample</span> or <span class="src need" style="margin:0">Needs integration</span>.</span></div>
+  <div class="meter"><b id="mtr">1 of 50</b>data sources connected<div class="bar"><i id="mtrbar" style="width:2%"></i></div><span style="display:block;margin-top:8px">Everything else is labeled <span class="src sample" style="margin:0">Sample</span> or <span class="src need" style="margin:0">Needs integration</span>.</span></div>
  </nav>
  <main>
 
@@ -222,6 +242,45 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
    <p class="note">In this demo, reading and drafting use built-in rules so every field shows its source text. A language model can be plugged in later for messier inquiries. Nothing is ever sent, called or posted without an approval.</p></div>
  </section>
 
+ <section id="s-quotes">
+  <h1>Quotes</h1>
+  <p class="lede">Build a client quote in minutes from your own price book: menu, crew, bar, rentals, service charge and tax. See your margin before you send, offer three options side by side, and turn an accepted quote into a BEO. A person approves every quote; nothing is sent from here.</p>
+  <div class="kpis" id="qkpi"></div>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Quote builder</h2><span id="qno" class="src sample" style="margin:0">New quote</span></div>
+    <div class="qstart"><select id="qfromlead" aria-label="Start from an inquiry"><option value="">Start from an inquiry…</option></select><button id="qnew" class="sm">New blank quote</button></div>
+    <div class="qform">
+     <label>Event name<input data-q="name" placeholder="e.g. Spring Gala"></label>
+     <label>Client<input data-q="client" placeholder="Client or company"></label>
+     <label>Date<input data-q="date" type="date"></label>
+     <label>Guests<input data-q="guests" type="number" min="1" step="1"></label>
+     <label>Service style<select data-q="style"><option value="plated">Plated</option><option value="buffet">Buffet</option><option value="stations">Stations</option><option value="cocktail">Cocktail reception</option></select></label>
+     <label>Menu tier<select data-q="tier"><option value="classic">Classic</option><option value="premium">Premium</option><option value="signature">Signature</option></select></label>
+     <label>Bar<select data-q="bar"><option value="none">No bar</option><option value="beerwine">Beer &amp; wine</option><option value="standard">Standard bar</option><option value="premium">Premium bar</option></select></label>
+     <label>Event hours<input data-q="hours" type="number" min="1" max="16" step="0.5"></label>
+     <label>Discount %<input data-q="disc" type="number" min="0" max="50" step="1"></label>
+    </div>
+    <div class="qadd" id="qaddons"></div>
+    <h3 style="margin:6px 0 0">Crew <small class="muted">(suggested from guest count; edit any number)</small></h3>
+    <div id="qcrew"></div>
+    <label style="display:grid;gap:4px">Notes for the client<textarea data-q="notes" rows="2" style="font:400 15px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 11px"></textarea></label>
+   </div>
+   <div class="card" id="qout"></div>
+  </div>
+  <div class="card"><div class="ph"><h2>Good · better · best</h2><span class="src sample" style="margin:0">From your price book</span></div><p class="muted" style="margin:0">The same event at each menu tier. Clients often pick the middle one; showing all three lets them choose.</p><div id="qgbb" class="qgbb"></div></div>
+  <div class="card"><div class="ph"><h2>Saved quotes</h2><button id="qcsv" class="sm">Export CSV</button></div><div class="scroll"><table><thead><tr><th>No.</th><th>Event</th><th>Date</th><th class="r">Guests</th><th class="r">Total</th><th class="r">Margin</th><th>Status</th><th>Valid until</th><th></th></tr></thead><tbody id="qlist"></tbody></table></div><div id="qmsg"></div></div>
+  <div class="card"><div class="ph"><h2>Price book</h2><span class="src sample" style="margin:0">Sample prices — set your own</span></div><p class="muted" style="margin:0">Every quote is priced from this table. Change a number and every open quote re-prices. Costs stay internal; clients never see them.</p><div id="qbook"></div><div class="chips"><button id="qbookreset" class="sm">Reset to sample prices</button></div></div>
+  <div class="card scroll"><div class="ph"><h2>Quoting tools to connect</h2><span class="src real" style="margin:0">Researched Nov 22, 2026</span></div>
+   <table><thead><tr><th>Tool</th><th>What it adds</th><th>Price (as listed)</th><th>Status</th></tr></thead><tbody>
+   <tr><td>Total Party Planner</td><td>Catering proposals, costing, invoices and BEOs in one system</td><td>From $65/month (Software Advice)</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Better Cater</td><td>Proposals, invoices, menus and profit analysis for caterers</td><td>From $69/month (Software Advice)</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Caterease</td><td>Kitchen-first catering ops with proposals and pack lists</td><td>Already on the integrations list</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Tripleseat · Perfect Venue</td><td>Multi-option proposals that become contracts and BEOs</td><td>Already on the integrations list</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>PandaDoc</td><td>Branded proposal documents with e-signature and view tracking</td><td>Starter $19, Business $49 per user/month, billed annually</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>QuickBooks / Restaurant365</td><td>Turn an accepted quote into an invoice and deposit request</td><td>Through the accounting connection</td><td><span class="st nc">Not connected</span></td></tr>
+   </tbody></table>
+   <p class="note">Until one of these is connected, Showcall's own builder does the math, and approved quotes are copied or printed for you to send yourself. Deposits are never charged from here.</p></div>
+ </section>
  <section id="s-legal">
   <h1>Legal</h1>
   <p class="lede">Contracts, clauses, licenses, insurance and employment rules in one place, with every item that needs a lawyer routed to one review queue. Showcall organizes and flags; it doesn't give legal advice.</p>
@@ -346,6 +405,18 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
 {
 const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const KEY='showcall-owner';let S={req:[],dec:{}};try{S=Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const QBOOK0={
+ menu:{plated:{classic:62,premium:78,signature:98},buffet:{classic:44,premium:52,signature:66},stations:{classic:54,premium:64,signature:82},cocktail:{classic:30,premium:38,signature:50}},
+ bar:{none:0,beerwine:18,standard:26,premium:36},
+ addons:[['passed','Passed appetizers',12],['dessert','Dessert station',9],['latenight','Late-night snack',8],['coffee','Coffee & tea service',4]],
+ rent:{plated:7,buffet:4,stations:4.5,cocktail:3},
+ roles:[['captain','Captain / event manager',65,30],['server','Server',45,22],['runner','Runner / busser',40,18],['bartender','Bartender',48,23],['chef','Chef / cook',55,26]],
+ foodCost:30,barCost:25,rentCost:70,burden:25,service:20,tax:6,deposit:30,minimum:2500,target:25,valid:30,overhead:20};
+S.qbook=S.qbook||JSON.parse(JSON.stringify(QBOOK0));
+if(S.qbook.overhead==null)S.qbook.overhead=20;
+const QM=n=>'$'+(Math.round(n*100)/100).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const QM0=n=>'$'+Math.round(n).toLocaleString('en-US');
+
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const FN=['','Scheduling & labor','Planning & BEO','Sales & CRM','Food cost & waste','Inventory & purchasing','Recruiting & training','Guest experience','Marketing & reviews','Finance','Guest inquiries & data','Event-day content','Safety & facilities','Contracts'];
 // [name, functions, sized, pricing, pub?, what it does (report), feeds Showcall]
@@ -359,6 +430,9 @@ const TOOLS=[
 ['Tripleseat',[2,3],'Continental-scale','Not published (~$375/venue/month third-party — UNVERIFIED)',0,'Lead → proposal → contract → BEO with AI layer.','BEOs straight into Showcall intake'],
 ['Perfect Venue',[2,3],'Both','Published: $199 / $299 per location/month; Floor Plans add-on $199',1,'AI inquiry replies; BEO auto-generates from the proposal.','Self-updating BEOs into intake'],
 ['Caterease',[2,4],'Both','Published: $99 / $149 / $199 per month',1,'Kitchen-first catering ops, auto packing lists, AI assistant "Cai".','Pack lists and menus into intake'],
+['Total Party Planner',[2,3],'Small company','Published: from $65/month (Software Advice)',1,'Catering proposals, costing, invoices and BEOs in one web app.','Accepted quotes and menus into intake'],
+['Better Cater',[2,3],'Small company','Published: from $69/month (Software Advice)',1,'Proposals, invoices, menus and profit analysis for caterers.','Proposals into the quote list'],
+['PandaDoc',[3,13],'Both','Published: Starter $19, Business $49 per user/month (annual)',1,'Branded proposal documents with e-signature and view tracking.','Approved quotes as signable proposals'],
 ['Curate',[2],'Small company','Not published (G2 $275/$500 — third-party, UNVERIFIED)',0,'Proposal-to-production for caterers, florists, rentals.','Proposals/BEOs into intake'],
 ['Prismm',[2],'Both','Published: Free; $49 / $150 / $320 per month',1,'To-scale floor plans, seating charts, 3D venue twins.','Real floor plans for the crew locator map'],
 ['Event Temple',[2,3],'Continental-scale','Not published (vendor detail UNVERIFIED)',0,'Hotel/venue sales platform with AI Sales Coordinator.','—'],
@@ -441,8 +515,8 @@ function renderApprovals(){
   <div class="chips" style="flex:none">${dec?`<span class="st ${dec==='yes'?'on':'nc'}">${dec==='yes'?'Approved':'Rejected'}</span>`:`<button class="pri" data-dec="${x.id}|yes">${esc(x.a)}</button><button data-dec="${x.id}|no">Reject</button>`}</div></div>`}).join('');
  const open=base.filter(x=>!S.dec[x.id]);
  $('#needs').innerHTML=open.slice(0,4).map(x=>`<div class="row"><div><span class="muted">${esc(x.k)}</span><h3>${esc(x.t)}</h3></div><a href="#approvals">Review</a></div>`).join('')||'<p class="muted">Nothing waiting.</p>';
- $('#mtr').textContent=`${1+S.req.filter(r=>S.dec['req-'+r]==='yes').length} of 47`;
- $('#mtrbar').style.width=Math.max(2,(1+S.req.filter(r=>S.dec['req-'+r]==='yes').length)/47*100)+'%';
+ $('#mtr').textContent=`${1+S.req.filter(r=>S.dec['req-'+r]==='yes').length} of 50`;
+ $('#mtrbar').style.width=Math.max(2,(1+S.req.filter(r=>S.dec['req-'+r]==='yes').length)/50*100)+'%';
 }
 document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
  if(d.fn!==undefined){fn=+d.fn;renderTools();return}
@@ -450,7 +524,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.req){if(!S.req.includes(d.req))S.req.push(d.req);save();renderTools();renderApprovals();document.querySelectorAll(`[data-req="${d.req}"]`).forEach(x=>{x.disabled=true;x.textContent='Requested'});return}
  if(d.dec){const [id,v]=d.dec.split('|');S.dec[id]=v;save();renderApprovals();return}});
 $('#q').addEventListener('input',e=>{q=e.target.value.toLowerCase().trim();renderTools()});
-const SECTIONS=['overview','profit','events','aisales','sales','marketing','service','people','payroll','finance','inventory','ops','legal','security','integrations','pilots','ai','approvals','governance'];
+const SECTIONS=['overview','profit','events','aisales','quotes','sales','marketing','service','people','payroll','finance','inventory','ops','legal','security','integrations','pilots','ai','approvals','governance'];
 function route(){const h=(location.hash||'#overview').slice(1),id=SECTIONS.includes(h)?h:'overview';
  SECTIONS.forEach(s=>{document.getElementById('s-'+s).classList.toggle('on',s===id)});
  document.querySelectorAll('nav.rail a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));}
@@ -568,7 +642,7 @@ function qualify(t){
  const guests=n?+n:null;
  return {guests,budget:b,style,date:date||null,diet,type:type||null};
 }
-function quote(q){if(!q.guests||!q.style)return null;const food=q.guests*PRICE[q.style],crew=Math.ceil(q.guests/STAFF[q.style]),labor=crew*HOURS*WAGE*1.6,rent=q.guests*(q.style==='plated'?6:3.5),sub=food+labor+rent,fee=sub*CARD/100;return {food,crew,labor,rent,fee,total:sub+fee}}
+function quote(q){if(!q.guests||!q.style)return null;const c=qCalc({guests:q.guests,style:q.style,tier:'premium',bar:'none',hours:5,disc:0,addons:{},crew:null});const st=c.lines.filter(l=>l.t.startsWith('Staff')).reduce((a,l)=>a+l.a,0);return {food:c.lines[0].a,crew:c.heads,hrs:c.hrs,labor:st,rent:c.lines.find(l=>l.k==='rent').a,fee:c.svc+c.tax,total:c.total}}
 function score(q,lead){const qt=quote(q);let fit=0,bud=0,urg=0,comp=0;
  comp=['guests','style','date','budget'].filter(k=>q[k]).length*25;
  if(qt&&q.budget){const r=q.budget/qt.total;bud=r>=0.95?100:r>=0.75?60:r>=0.5?30:10}else bud=40;
@@ -589,9 +663,9 @@ function renderAI(){
   <blockquote style="margin:0;padding:10px 12px;border-left:3px solid var(--gold);background:var(--soft);border-radius:8px;font-size:14.5px">${esc(l.text)}</blockquote>
   <div>${f('Event type',q.type)}${f('Date',q.date)}${f('Guests',q.guests)}${f('Service style',q.style)}${f('Budget',q.budget&&money2(q.budget))}${f('Dietary needs',q.diet)}</div>
   <div class="hrow"><span>Fit</span><div class="t"><i style="width:${sc.fit}%;background:var(--go)"></i></div><b>${sc.fit}</b></div><div class="hrow"><span>Budget vs quote</span><div class="t"><i style="width:${sc.bud}%;background:var(--go)"></i></div><b>${sc.bud}</b></div><div class="hrow"><span>Details complete</span><div class="t"><i style="width:${sc.comp}%;background:var(--go)"></i></div><b>${sc.comp}</b></div><div class="hrow"><span>Freshness</span><div class="t"><i style="width:${sc.urg}%;background:var(--go)"></i></div><b>${sc.urg}</b></div>
-  ${qt?`<div class="card" style="background:var(--soft)"><h3>Quote from your price list</h3><div class="row"><span>Food · ${q.guests} × ${money2(PRICE[q.style])} (${q.style})</span><b>${money2(qt.food)}</b></div><div class="row"><span>Crew · ${qt.crew} people × ${HOURS} h (loaded)</span><b>${money2(qt.labor)}</b></div><div class="row"><span>Rentals</span><b>${money2(qt.rent)}</b></div><div class="row"><span>Card processing ${CARD}%</span><b>${money2(qt.fee)}</b></div><div class="row"><span><b>Estimate</b></span><b style="font:600 22px var(--fd)">${money2(qt.total)}</b></div>${q.budget?`<small class="${q.budget>=qt.total?'':'muted'}" style="color:${q.budget>=qt.total*0.95?'var(--go)':'var(--warn)'}">Their budget ${money2(q.budget)} is ${Math.round(q.budget/qt.total*100)}% of the estimate${q.budget<qt.total*0.95?' — suggest a buffet or stations option':''}.</small>`:''}</div>`:'<p class="note">Not enough details for a quote yet — the draft asks for them.</p>'}
+  ${qt?`<div class="card" style="background:var(--soft)"><h3>Quick quote from your price book</h3><div class="row"><span>Menu · ${q.guests} × ${money2(S.qbook.menu[q.style].premium)} (${q.style}, premium tier)</span><b>${money2(qt.food)}</b></div><div class="row"><span>Crew · ${qt.crew} people × ${qt.hrs} h</span><b>${money2(qt.labor)}</b></div><div class="row"><span>Rentals</span><b>${money2(qt.rent)}</b></div><div class="row"><span>Service charge &amp; tax</span><b>${money2(qt.fee)}</b></div><div class="row"><span><b>Estimate</b></span><b style="font:600 22px var(--fd)">${money2(qt.total)}</b></div>${q.budget?`<small class="${q.budget>=qt.total?'':'muted'}" style="color:${q.budget>=qt.total*0.95?'var(--go)':'var(--warn)'}">Their budget ${money2(q.budget)} is ${Math.round(q.budget/qt.total*100)}% of the estimate${q.budget<qt.total*0.95?' — suggest a buffet or stations option':''}.</small>`:''}</div>`:'<p class="note">Not enough details for a quote yet — the draft asks for them.</p>'}
   <h3>Drafted reply</h3><textarea id="aidraft" rows="10" style="font:400 14.5px/1.5 var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:10px 12px">${esc(S.aiedit&&S.aiedit[l.id]||draft(q,qt))}</textarea>
-  <div class="chips">${sent?'<span class="st on">Approved · copied</span>':`<button class="pri" data-aiok="${l.id}">Approve &amp; copy reply</button>`}<button data-aistage="${l.id}">Move to next stage</button><button data-ailost="${l.id}">Mark lost</button></div>
+  <div class="chips">${sent?'<span class="st on">Approved · copied</span>':`<button class="pri" data-aiok="${l.id}">Approve &amp; copy reply</button>`}<button data-aistage="${l.id}">Move to next stage</button><button data-ailost="${l.id}">Mark lost</button><button data-toquote="${l.id}">Build full quote →</button></div>
   <p class="note">Follow-ups queued if no answer: day 1, day 3 and day 7, each drafted for approval. Sending from your email or texting needs those accounts connected; until then, approved replies are copied for you to paste.</p>`;
  const ST=['New','Qualified','Proposal','Contract','Won'];
  $('#aipipe').innerHTML=ST.map(st=>{const ls=L.filter(x=>x.stage===st),v=ls.reduce((a,x)=>a+(x.sc.qt?x.sc.qt.total:0),0);return `<div class="col2"><b>${st}</b><small class="muted">${ls.length} · ${money2(v)}</small>${ls.map(x=>`<div class="pcard" data-lead="${x.id}">${esc((x.q.type||'Inquiry'))} · ${x.q.guests||'?'}</div>`).join('')}</div>`}).join('');
@@ -632,6 +706,104 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
 $('#lgadd').addEventListener('submit',e=>{e.preventDefault();const v=$('#lgnew').value.trim();if(!v)return;S.lq.push({t:v,st:'open'});$('#lgnew').value='';save();renderLegal()});
 renderLegal();
 renderTools();renderApprovals();route();
+/* ---- Quotes ---- */
+
+S.quotes=S.quotes||[];S.qn=S.qn||1000;
+const QDEF=()=>({no:null,v:0,name:'',client:'',date:'',guests:150,style:'plated',tier:'premium',bar:'standard',hours:5,disc:0,notes:'',addons:{passed:true},crew:null,lead:null,budget:null,diet:[],status:'Draft'});
+S.qd=S.qd||QDEF();save();
+function qSuggestCrew(q){const g=+q.guests||0,ratio={plated:12,buffet:25,stations:20,cocktail:30}[q.style];
+ return {captain:1+Math.floor(g/250),server:Math.ceil(g/ratio),runner:Math.ceil(g/(q.style==='plated'?40:60)),bartender:q.bar==='none'?0:Math.ceil(g/75),chef:Math.max(1,Math.ceil(g/50))}}
+function qCalc(q,tierOverride){const B=S.qbook,g=+q.guests||0,tier=tierOverride||q.tier,hrs=(+q.hours||0)+3;
+ const crew=q.crew||qSuggestCrew(q),lines=[];let cost=0;
+ const pp=B.menu[q.style][tier],food=g*pp;lines.push({k:'food',t:`Menu · ${tier[0].toUpperCase()+tier.slice(1)} ${({plated:'plated dinner',buffet:'buffet',stations:'stations',cocktail:'cocktail reception'})[q.style]}`,d:`${g} guests × ${QM(pp)}`,a:food,svc:1});cost+=food*B.foodCost/100;
+ if(q.bar!=='none'){const bp=B.bar[q.bar],bar=g*bp;lines.push({k:'bar',t:`Bar · ${({beerwine:'Beer & wine',standard:'Standard',premium:'Premium'})[q.bar]}`,d:`${g} guests × ${QM(bp)}`,a:bar,svc:1});cost+=bar*B.barCost/100}
+ B.addons.forEach(([id,label,p])=>{if(q.addons&&q.addons[id]){const a=g*p;lines.push({k:id,t:label,d:`${g} × ${QM(p)}`,a,svc:1});cost+=a*B.foodCost/100}});
+ const r=B.rent[q.style]*g;lines.push({k:'rent',t:'Rentals · china, glass, flatware, linens',d:`${g} × ${QM(B.rent[q.style])}`,a:r,svc:0});cost+=r*B.rentCost/100;
+ let lab=0,heads=0;B.roles.forEach(([id,label,bill,wage])=>{const n=+crew[id]||0;if(!n)return;heads+=n;const a=n*hrs*bill;lab+=a;cost+=n*hrs*wage*(1+B.burden/100);lines.push({k:id,t:`Staff · ${label}`,d:`${n} × ${hrs} h × ${QM(bill)}`,a,svc:0})});
+ const sub=lines.reduce((s,l)=>s+l.a,0),disc=sub*(+q.disc||0)/100,svcBase=lines.filter(l=>l.svc).reduce((s,l)=>s+l.a,0)*(1-(+q.disc||0)/100);
+ const svc=svcBase*B.service/100,pre=sub-disc+svc,tax=pre*B.tax/100,total=pre+tax;cost+=pre*(B.overhead||0)/100;const margin=pre?((pre-cost)/pre)*100:0;
+ return {lines,sub,disc,svc,tax,total,pre,cost,margin,heads,hrs,crew,per:g?total/g:0,deposit:total*B.deposit/100}}
+function qFlags(q,c){const B=S.qbook,f=[];
+ if(!q.name)f.push(['warn','Add an event name.']);
+ if(!q.date)f.push(['warn','No event date yet.']);else if(q.date<new Date().toISOString().slice(0,10))f.push(['bad','The event date is in the past.']);
+ if(c.total<B.minimum)f.push(['bad',`Below your ${QM0(B.minimum)} minimum.`]);
+ if(c.margin<B.target)f.push(['bad',`Margin ${c.margin.toFixed(1)}% is under your ${B.target}% target.`]);
+ if((+q.disc||0)>10)f.push(['warn','Discount over 10% needs owner approval.']);
+ if(q.budget){const r=q.total||c.total;if(c.total>q.budget*1.1)f.push(['warn',`${QM0(c.total)} is over the client's stated budget of ${QM0(q.budget)}. The Good option comes in at ${QM0(qCalc(q,'classic').total)}.`]);else f.push(['ok',`Within the client's stated budget of ${QM0(q.budget)}.`])}
+ if(q.diet&&q.diet.length)f.push(['warn',`Dietary needs from the inquiry: ${q.diet.join(', ')}. Confirm plates before the BEO.`]);
+ return f}
+function qClientText(q,c){const lines=c.lines.map(l=>`  ${l.t} (${l.d}): ${QM(l.a)}`).join('\n');const B=S.qbook;
+ const until=new Date(Date.now()+B.valid*864e5).toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+ return `Quote ${q.no?('Q-'+q.no+(q.v>1?' v'+q.v:'')):'(draft)'}\n${q.name||'Your event'}${q.client?' · '+q.client:''}${q.date?' · '+new Date(q.date+'T12:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'}):''}\n${q.guests} guests\n\n${lines}\n${c.disc?`  Discount (${q.disc}%): -${QM(c.disc)}\n`:''}  Service charge (${B.service}%): ${QM(c.svc)}\n  Sales tax (${B.tax}%): ${QM(c.tax)}\n\nTotal: ${QM(c.total)} (about ${QM(c.per)} per guest)\nDeposit to reserve the date (${B.deposit}%): ${QM(c.deposit)}\n\n${q.notes?q.notes+'\n\n':''}This quote is valid until ${until}. Final pricing is confirmed with your guaranteed guest count.`}
+function renderQuotes(){const q=S.qd,c=qCalc(q),B=S.qbook;
+ const L=(S.leads||[]);$('#qfromlead').innerHTML='<option value="">Start from an inquiry…</option>'+L.map(l=>`<option value="${l.id}">#${l.id} · ${esc(l.text.slice(0,50))}…</option>`).join('');
+ document.querySelectorAll('[data-q]').forEach(el=>{if(document.activeElement!==el)el.value=q[el.dataset.q]??''});
+ $('#qno').textContent=q.no?`Q-${q.no}${q.v>1?' v'+q.v:''} · ${q.status}`:'New quote · not saved';
+ $('#qaddons').innerHTML=B.addons.map(([id,label,p])=>`<label class="chk"><input type="checkbox" data-qadd="${id}" ${q.addons&&q.addons[id]?'checked':''}>${esc(label)} <small class="muted">${QM(p)}/guest</small></label>`).join('');
+ const sug=qSuggestCrew(q),cr=q.crew||sug;
+ $('#qcrew').innerHTML=`<div class="qcrew">${B.roles.map(([id,label])=>`<label>${esc(label)}<input type="number" min="0" step="1" data-qcrew="${id}" value="${cr[id]||0}"></label>`).join('')}</div><p class="note" style="margin:4px 0 0">${c.heads} crew × ${c.hrs} h (event hours plus 3 h setup and breakdown).${q.crew?' <button class="sm" id="qcrewreset">Use suggested crew</button>':''}</p>`;
+ const fl=qFlags(q,c);
+ $('#qout').innerHTML=`<div class="ph"><h2>${esc(q.name||'Untitled event')}</h2><span class="src sample" style="margin:0">Sample prices</span></div>
+  <table><tbody>${c.lines.map(l=>`<tr><td>${esc(l.t)}<br><small class="muted">${esc(l.d)}</small></td><td class="r">${QM(l.a)}</td></tr>`).join('')}
+  ${c.disc?`<tr><td>Discount (${q.disc}%)</td><td class="r">−${QM(c.disc)}</td></tr>`:''}
+  <tr><td>Service charge (${B.service}% of food, bar &amp; add-ons)</td><td class="r">${QM(c.svc)}</td></tr>
+  <tr><td>Sales tax (${B.tax}%)</td><td class="r">${QM(c.tax)}</td></tr>
+  <tr class="qtot"><td><b>Total</b><br><small class="muted">${QM(c.per)} per guest · deposit ${QM(c.deposit)}</small></td><td class="r"><b>${QM(c.total)}</b></td></tr></tbody></table>
+  <div class="qint"><b>Internal only</b><div class="row"><span>Estimated cost (food, bar, rentals, loaded labor, ${B.overhead}% overhead)</span><b>${QM0(c.cost)}</b></div><div class="row"><span>Margin after overhead</span><b class="${c.margin<B.target?'bad':'good'}">${c.margin.toFixed(1)}%</b></div><div class="hrow"><span>vs ${B.target}% target</span><div class="t"><i style="width:${Math.max(0,Math.min(100,c.margin*2))}%;background:${c.margin<B.target?'var(--stop)':'var(--go)'}"></i></div><b>${c.margin.toFixed(0)}%</b></div></div>
+  <div>${fl.map(f=>`<p class="qflag ${f[0]}">${f[0]==='ok'?'✓':f[0]==='bad'?'⚠':'•'} ${esc(f[1])}</p>`).join('')}</div>
+  <div class="chips"><button class="pri" id="qsave">${q.no?'Save new version':'Save quote'}</button><button id="qcopy">Approve &amp; copy for client</button><button id="qprint">Print / PDF</button>${q.no&&q.status!=='Accepted'?`<button id="qaccept">Mark accepted</button><button id="qdecline">Mark declined</button>`:''}${q.status==='Accepted'?'<a class="btn" href="beo.html">Open BEO Studio →</a>':''}</div>
+  <p class="note">Approving copies the client-facing quote for you to paste into your own email; costs and margin are never included. Nothing is sent, signed or charged from here.</p>`;
+ $('#qgbb').innerHTML=['classic','premium','signature'].map((t,i)=>{const cc=qCalc(q,t);return `<div class="qopt ${t===q.tier?'on':''}"><small class="muted">${['Good','Better','Best'][i]}</small><h3>${t[0].toUpperCase()+t.slice(1)}</h3><div class="n">${QM0(cc.total)}</div><small>${QM(cc.per)}/guest · margin ${cc.margin.toFixed(0)}%</small><button class="sm" data-qtier="${t}" ${t===q.tier?'disabled':''}>${t===q.tier?'Selected':'Use this'}</button></div>`}).join('');
+ const all=S.quotes;const open=all.filter(x=>['Draft','Approved','Sent'].includes(x.status)),won=all.filter(x=>x.status==='Accepted'),dec=all.filter(x=>x.status==='Declined');
+ const avgM=all.length?all.reduce((a,x)=>a+x.margin,0)/all.length:null;
+ $('#qkpi').innerHTML=[[open.length,'open quotes'],[QM0(open.reduce((a,x)=>a+x.total,0)),'value of open quotes'],[won.length+dec.length?Math.round(won.length/(won.length+dec.length)*100)+'%':'—','win rate (accepted ÷ decided)'],[avgM==null?'—':avgM.toFixed(1)+'%','average quoted margin']].map(k=>`<div class="kpi"><div class="n">${k[0]}</div><small>${k[1]}</small><span class="src real">Live</span></div>`).join('');
+ const today=new Date().toISOString().slice(0,10);
+ $('#qlist').innerHTML=all.length?[...all].reverse().map(x=>`<tr><td>Q-${x.no}${x.v>1?' v'+x.v:''}</td><td>${esc(x.name||'Untitled')}</td><td>${esc(x.date||'—')}</td><td class="r">${x.guests}</td><td class="r">${QM0(x.total)}</td><td class="r">${x.margin.toFixed(1)}%</td><td><span class="st ${x.status==='Accepted'?'on':x.status==='Declined'?'nc':'req'}">${x.status}${x.status!=='Accepted'&&x.status!=='Declined'&&x.until<today?' · expired':''}</span></td><td>${x.until}</td><td><button class="sm" data-qopen="${x.no}|${x.v}">Open</button></td></tr>`).join(''):'<tr><td colspan="9" class="muted">No saved quotes yet. Build one above and press Save quote.</td></tr>';
+ const R=(lbl,key,step)=>`<label>${lbl}<input type="number" step="${step||1}" data-qb="${key}" value="${key.split('.').reduce((o,k)=>o[k],B)}"></label>`;
+ $('#qbook').innerHTML=`<h3>Menu per guest</h3><div class="qbook">${Object.keys(B.menu).map(s=>['classic','premium','signature'].map(t=>R(`${s} · ${t}`,`menu.${s}.${t}`,0.5)).join('')).join('')}</div>
+  <h3>Bar per guest</h3><div class="qbook">${['beerwine','standard','premium'].map(b=>R(b==='beerwine'?'beer & wine':b,`bar.${b}`,0.5)).join('')}</div>
+  <h3>Add-ons per guest</h3><div class="qbook">${B.addons.map((a,i)=>R(a[1],`addons.${i}.2`,0.5)).join('')}</div>
+  <h3>Rentals per guest</h3><div class="qbook">${Object.keys(B.rent).map(s=>R(s,`rent.${s}`,0.5)).join('')}</div>
+  <h3>Staff: bill rate and wage per hour</h3><div class="qbook">${B.roles.map((r,i)=>R(r[1]+' · bill',`roles.${i}.2`)+R(r[1]+' · wage',`roles.${i}.3`)).join('')}</div>
+  <h3>Rules</h3><div class="qbook">${R('Food cost %','foodCost')}${R('Bar cost %','barCost')}${R('Rental cost %','rentCost')}${R('Labor burden %','burden')}${R('Overhead % of sales','overhead')}${R('Service charge %','service')}${R('Sales tax %','tax',0.25)}${R('Deposit %','deposit')}${R('Minimum ($)','minimum',50)}${R('Target margin %','target')}${R('Quote valid (days)','valid')}</div>
+  <p class="note">Sales tax and service charge rules vary; check how your accountant wants them applied.</p>`;
+}
+function qFromLead(l){const p=qualify(l.text),q=QDEF();q.guests=p.guests||100;q.style=p.style||'plated';q.lead=l.id;q.budget=p.budget;q.diet=p.diet;
+ q.name=(p.type?p.type.replace(/^\w/,c=>c.toUpperCase()):'Event')+(p.guests?` · ${p.guests} guests`:'');q.bar=/cocktail|bar/i.test(l.text)?'standard':'none';q.notes='Prepared from your inquiry. Menu selections are confirmed at the tasting.';
+ const m=p.date&&p.date.match(/(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+(\d{1,2}),?\s*(\d{4})?/i);
+ if(m){const mo='JanFebMarAprMayJunJulAugSepOctNovDec'.indexOf(m[1].slice(0,3).replace(/^./,c=>c.toUpperCase()))/3+1,yr=m[3]||String(new Date().getFullYear()+((mo<new Date().getMonth()+1)?1:0));q.date=`${yr}-${String(mo).padStart(2,'0')}-${String(m[2]).padStart(2,'0')}`}
+ return q}
+function qSaveCurrent(status){const q=S.qd,c=qCalc(q);if(!q.no){q.no=++S.qn;q.v=1}else q.v=(Math.max(0,...S.quotes.filter(x=>x.no===q.no).map(x=>x.v)))+1;
+ q.status=status||q.status||'Draft';const until=new Date(Date.now()+S.qbook.valid*864e5).toISOString().slice(0,10);
+ S.quotes.push({...JSON.parse(JSON.stringify(q)),total:c.total,margin:c.margin,until,saved:new Date().toISOString()});save()}
+function qSetStatus(st){const q=S.qd;if(!q.no)qSaveCurrent();q.status=st;S.quotes.filter(x=>x.no===q.no).forEach(x=>x.status=st);
+ if(st==='Accepted'){const c=qCalc(q);S.quoteToBeo={no:q.no,v:q.v,name:q.name,client:q.client,date:q.date,guests:+q.guests,style:q.style,diet:q.diet||[],notes:q.notes,total:c.total,crew:c.crew};
+  if(q.lead){const l=(S.leads||[]).find(x=>x.id===q.lead);if(l)l.stage='Won'}}
+ if(st==='Declined'&&q.lead){const l=(S.leads||[]).find(x=>x.id===q.lead);if(l)l.stage='Lost'}save();renderQuotes();if(typeof renderAI==='function')renderAI()}
+document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
+ if(d.q){S.qd[d.q]=t.type==='number'?(t.value===''?'':+t.value):t.value;if(['guests','style','bar'].includes(d.q))S.qd.crew=null;save();renderQuotes();return}
+ if(d.qcrew){const q=S.qd;q.crew=q.crew||qSuggestCrew(q);q.crew[d.qcrew]=+t.value||0;save();renderQuotes();return}
+ if(d.qb){const ks=d.qb.split('.');let o=S.qbook;ks.slice(0,-1).forEach(k=>o=o[k]);o[ks[ks.length-1]]=+t.value||0;save();renderQuotes()}});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset.qadd){S.qd.addons=S.qd.addons||{};S.qd.addons[t.dataset.qadd]=t.checked;save();renderQuotes()}
+ if(t.id==='qfromlead'&&t.value){const l=(S.leads||[]).find(x=>x.id==t.value);if(l){S.qd=qFromLead(l);save();renderQuotes();$('#qmsg').innerHTML=`<p class="note">Started from inquiry #${l.id}. Check the menu tier, bar and crew before saving.</p>`}}});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(d.toquote){const l=(S.leads||[]).find(x=>x.id==d.toquote);if(l){S.qd=qFromLead(l);save();renderQuotes();location.hash='#quotes'}return}
+ if(d.qtier){S.qd.tier=d.qtier;save();renderQuotes();return}
+ if(d.qopen){const [no,v]=d.qopen.split('|').map(Number),x=S.quotes.find(y=>y.no===no&&y.v===v);if(x){const {total,margin,until,saved,...q}=JSON.parse(JSON.stringify(x));S.qd=q;save();renderQuotes();scrollTo({top:0,behavior:'smooth'})}return}
+ if(b.id==='qnew'){S.qd=QDEF();save();renderQuotes();return}
+ if(b.id==='qcrewreset'){S.qd.crew=null;save();renderQuotes();return}
+ if(b.id==='qsave'){qSaveCurrent();renderQuotes();$('#qmsg').innerHTML=`<p class="note">Saved Q-${S.qd.no}${S.qd.v>1?' v'+S.qd.v:''}. Earlier versions stay in the list.</p>`;return}
+ if(b.id==='qcopy'){const q=S.qd,c=qCalc(q);qSaveCurrent('Approved');const txt=qClientText(q,c);try{navigator.clipboard.writeText(txt)}catch(_){}renderQuotes();$('#qmsg').innerHTML=`<p class="note">Approved and copied Q-${q.no}${q.v>1?' v'+q.v:''}. Paste it into your email; mark it accepted when the client says yes.</p><pre class="qpre">${esc(txt)}</pre>`;return}
+ if(b.id==='qprint'){const q=S.qd,c=qCalc(q);let box=document.getElementById('qprintbox');if(!box){box=document.createElement('div');box.id='qprintbox';document.body.appendChild(box)}
+  box.innerHTML=`<h1>${esc(q.name||'Event quote')}</h1><pre>${esc(qClientText(q,c))}</pre>`;document.body.classList.add('qprinting');setTimeout(()=>{try{print()}catch(_){}document.body.classList.remove('qprinting')},50);return}
+ if(b.id==='qaccept'){qSetStatus('Accepted');$('#qmsg').innerHTML='<p class="note">Marked accepted. Open BEO Studio and choose "From an accepted quote" to start the BEO. Record the deposit in accounting yourself.</p>';return}
+ if(b.id==='qdecline'){qSetStatus('Declined');return}
+ if(b.id==='qbookreset'){S.qbook=JSON.parse(JSON.stringify(QBOOK0));save();renderQuotes();return}
+ if(b.id==='qcsv'){if(!S.quotes.length){$('#qmsg').innerHTML='<p class="note">No saved quotes to export yet.</p>';return}
+  const csv='Quote,Version,Event,Client,Date,Guests,Style,Tier,Total,Margin %,Status,Valid until\n'+S.quotes.map(x=>[`Q-${x.no}`,x.v,`"${(x.name||'').replace(/"/g,'""')}"`,`"${(x.client||'').replace(/"/g,'""')}"`,x.date,x.guests,x.style,x.tier,x.total.toFixed(2),x.margin.toFixed(1),x.status,x.until].join(',')).join('\n');
+  try{const u=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const a=document.createElement('a');a.href=u;a.download='showcall-quotes.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},500);$('#qmsg').innerHTML=`<p class="note">Exported ${S.quotes.length} quote versions.</p>`}catch(_){$('#qmsg').innerHTML='<p class="note">Downloads are blocked in this preview. Use the installed app.</p>'}}});
+renderQuotes();
 }
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
