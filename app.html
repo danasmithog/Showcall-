@@ -220,6 +220,7 @@ try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catc
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 const me=()=>PEOPLE.find(p=>p.n===S.me)||PEOPLE[0];
 const manage=()=>MANAGE.includes(me().r);
+const isMgr=()=>me().r==='Event manager';
 const add=(n,v)=>{S.pts[n]=(S.pts[n]||0)+v};
 const stat=n=>S.stats[n]=S.stats[n]||{msgs:0,tasks:0,ok:0};
 const beat=id=>S.beats.find(b=>b.id===id);
@@ -364,7 +365,7 @@ function secChat(){
 function secTasks(){
  const mine=S.tasks.filter(t=>t.to==='Everyone'||t.to===S.me||manage());
  return `<div class="card"><div class="ph"><h2>Tasks</h2><span class="st proto">Prototype</span></div>
- ${manage()?`<form id="tform" class="two"><input id="tT" placeholder="New task" aria-label="Task" required><select id="tW" aria-label="Assign to"><option>Everyone</option>${PEOPLE.map(p=>`<option>${p.n}</option>`).join('')}</select><input id="tD" placeholder="Due: 8:00, before you leave" aria-label="Due"><button class="pri" type="submit">Add task</button></form>`:'<p class="note">Points, expeditors and managers add tasks. Mark yours done for 10 points.</p>'}
+ ${isMgr()?`<form id="tform" class="two"><input id="tT" placeholder="New task" aria-label="Task" required><select id="tW" aria-label="Assign to"><option>Everyone</option>${PEOPLE.map(p=>`<option>${p.n}</option>`).join('')}</select><input id="tD" placeholder="Due: 8:00, before you leave" aria-label="Due"><button class="pri" type="submit">Add task</button></form>`:'<p class="note">Only managers can create tasks. Mark yours done for 10 points.</p>'}
  ${mine.map(t=>`<div class="row"><div><h3 style="${t.done?'text-decoration:line-through;color:var(--dim)':''}">${esc(t.title)}</h3><small>${esc(t.to)} · ${esc(t.due)} · from ${esc(t.by)}</small></div>${t.done?'<span class="st work">Done</span>':`<button class="sm" data-done="${t.id}">Done</button>`}</div>`).join('')}</div>
  <div class="card"><div class="ph"><h2>Ideas from the floor</h2><span class="st proto">Prototype</span></div>
  <form id="iform" class="two"><input id="iT" placeholder="Your idea" aria-label="Idea" required><button class="pri" type="submit">Submit · 5 pts</button></form>
@@ -777,7 +778,7 @@ document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.id;
  if(f==='sform2'){seedShifts();const n=S.newShift,ev=EVENTS.find(e=>e[0]===n.ev);let id=Math.max(...S.shifts.map(y=>y.id));for(let i=0;i<Math.min(20,n.n||1);i++)S.shifts.push({id:++id,ev:n.ev,date:ev[1],role:n.role,start:n.start,end:n.end,who:null,status:'open'});S.toast=`Added ${n.n} open ${n.role} shift${n.n>1?'s':''}.`}
  if(f==='vform'){const v=$('#vq');ask(v.value);v.value=''}
  if(f==='cform'){const tx=S.draft.trim();if(!tx)return;S.msgs.push({id:++S.nid,ch:S.ch,who:S.me,role:me().r,text:tx,t:S.clock,re:{}});S.draft='';add(S.me,1);stat(S.me).msgs++}
- if(f==='tform'){S.tasks.push({id:++S.nid,title:$('#tT').value.trim(),to:$('#tW').value,due:$('#tD').value.trim()||'Soon',by:S.me,done:false})}
+ if(f==='tform'){if(!isMgr()){S.toast='Only managers can create tasks';render();return}S.tasks.push({id:++S.nid,title:$('#tT').value.trim(),to:$('#tW').value,due:$('#tD').value.trim()||'Soon',by:S.me,done:false})}
  if(f==='iform'){S.ideas.push({id:++S.nid,text:$('#iT').value.trim(),cat:'Floor',by:S.me,votes:[],st:'New'});add(S.me,5)}
  if(f==='bform'){const tx=$('#bT').value.trim();if(!tx)return;const id='b'+(++S.nid);S.msgs.push({id:S.nid,ch:'all',who:S.me,role:'Broadcast',cue:'warn',text:tx,t:S.clock,re:{}});S.updates.push({at:S.clock,text:'Broadcast: '+tx})}
  save();render()});
