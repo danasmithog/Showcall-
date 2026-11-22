@@ -252,7 +252,33 @@ function nextBeat(){return [...S.beats].sort((a,b)=>a.t-b.t).find(b=>b.t>S.clock
 function paused(){const d=beat('doc');return d&&S.clock>=d.t&&S.clock<d.t+d.dur}
 function fire(c,silent){if(S.fired.includes(c.id))return;S.fired.push(c.id);S.cue=c.id;
  S.msgs.push({id:++S.nid,ch:'all',who:'Run of show',role:'Cue',cue:c.sev,text:`${c.title}. ${c.body}`,t:c.at,re:{}});
- if(!silent){const w=$('.watch');if(w){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}phoneAlert(c)}}
+ if(!silent){const w=$('.watch');if(w){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}phoneAlert(c);if(!String(c.id).startsWith('late-')&&!String(c.id).startsWith('test-'))pushOut('cues',c.title,c.body,c.sev)}}
+
+/* Live push (ntfy): real push to every subscribed phone, even with the app closed. Android Wear OS watches mirror the
+   phone notification; AsteroidOS watches get it through AsteroidOS Sync or Gadgetbridge. No account, no key, $0.
+   The topic name works like a password. Codes, phone numbers and guest details are never sent. */
+S.push=S.push||{on:false,server:'https://ntfy.sh',topic:'',cues:true,late:true,updates:true,log:[]};
+function pushTopic(){if(!S.push.topic){const a=new Uint8Array(12);crypto.getRandomValues(a);S.push.topic='showcall-'+[...a].map(x=>x.toString(36).padStart(2,'0')).join('').slice(0,20)}return S.push.topic}
+window.pushSafe=t=>pushSafe(t);function pushSafe(t){return String(t||'').replace(/\+?\d[\d\s().-]{6,}\d/g,'[in vault]').replace(/\b(code|pin|gate|door|ice|parking|validation)\b((\s+code)|\s*[:#])*\s*(?=[A-Z0-9-]*\d)[A-Z0-9-]{3,}\b/gi,'$1 [in vault]')}
+async function pushOut(kind,title,body,sev){
+ if(!S.push.on||!isMgr()||!S.push[kind])return false;
+ const pri=sev==='stop'?5:sev==='warn'?4:3,tags=sev==='stop'?['no_entry']:sev==='go'?['white_check_mark']:['warning'];
+ const url=location.href.split('#')[0].replace(/[^/]*$/,'app.html');
+ const msg={topic:pushTopic(),title:pushSafe(title),message:pushSafe(body)||' ',priority:pri,tags,click:url};
+ const entry={at:S.clock,kind,title:msg.title,ok:null};S.push.log.unshift(entry);S.push.log=S.push.log.slice(0,12);
+ try{const r=await fetch(S.push.server.replace(/\/$/,''),{method:'POST',body:JSON.stringify(msg)});entry.ok=r.ok;entry.err=r.ok?'':'HTTP '+r.status}
+ catch(e){entry.ok=false;entry.err='offline or blocked'}
+ save();if(S.lay==='manager')render();return entry.ok}
+function pushCard(){const P=S.push,t=pushTopic(),srv=P.server.replace(/^https?:\/\//,'').replace(/\/$/,'');
+ return `<div class="card"><div class="ph"><h2>Live push to phones &amp; watches</h2><span class="st ${P.on?'work':'proto'}">${P.on?'On':'Off'}</span></div>
+ <p class="note" style="margin:0">Real push notifications, even when the app is closed or the phone is locked. Crew install the free <b>ntfy</b> app once and subscribe to this event's channel. Wear OS watches mirror it automatically; AsteroidOS watches through AsteroidOS Sync or Gadgetbridge.</p>
+ <div class="row"><div><h3>Channel</h3><small><code>${esc(t)}</code> on ${esc(srv)}</small></div><button class="sm" data-act="push-newtopic">New channel</button></div>
+ <div class="chips"><button data-act="push-toggle" class="${P.on?'':'pri'}">${P.on?'Turn push off':'Turn push on'}</button><button data-act="push-test">Send test push</button><button data-act="push-share">Share join link with crew</button></div>
+ <div class="chips">${[['cues','Run-of-show cues'],['late','Running-late changes'],['updates','Huddle updates']].map(([k,l])=>`<button class="sm" data-act="push-kind" data-k="${k}" aria-pressed="${!!P[k]}">${P[k]?'✓ ':''}${l}</button>`).join('')}</div>
+ <details><summary>How crew join (1 minute)</summary><ol class="note"><li>Install <b>ntfy</b> from Google Play or F-Droid.</li><li>Tap <b>+</b>, enter the channel name above${srv!=='ntfy.sh'?` and server ${esc(srv)}`:''}, subscribe.</li><li>Keep the watch paired; ntfy alerts show on the watch like any phone notification.</li><li>iPhone: install ntfy from the App Store, same steps.</li></ol></details>
+ <label class="note" style="display:grid;gap:4px">Push server (use your own for privacy)<input data-pushsrv value="${esc(P.server)}" aria-label="Push server"></label>
+ ${P.log.length?`<div>${P.log.slice(0,5).map(l=>`<div class="row"><small>${fmt(l.at)} · ${esc(l.title)}</small><span class="st ${l.ok?'work':l.ok===false?'warn':'proto'}">${l.ok?'Delivered to server':l.ok===false?esc(l.err||'Failed'):'Sending'}</span></div>`).join('')}</div>`:''}
+ <p class="note">Only the event manager can send. Door, parking and ice codes, phone numbers and guest details are stripped before anything leaves this phone.</p></div>`}
 /* Built-in connector: phone notifications + vibration. On Android, Wear OS watches mirror these automatically;
    AsteroidOS watches get them through AsteroidOS Sync or Gadgetbridge. Works while the app is open; background
    alerts need a push service (planned). */
@@ -261,10 +287,12 @@ function phoneAlert(c){
  const pat=c.sev==='stop'?[400,150,400,150,400]:c.sev==='go'?[150,80,150]:[250,120,250];
  try{navigator.vibrate&&navigator.vibrate(pat)}catch(e){}
  try{if('Notification' in window&&Notification.permission==='granted'){
-  const title=(c.sev==='stop'?'⛔ ':c.sev==='go'?'✅ ':'⚠️ ')+c.title,opt={body:c.body,tag:c.id,renotify:true,vibrate:pat,icon:'icon-192.png',badge:'icon-192.png',requireInteraction:c.sev==='stop'};
+  const title=(c.sev==='stop'?'⛔ ':c.sev==='go'?'✅ ':'⚠️ ')+c.title,opt={body:c.body,tag:c.id,renotify:true,vibrate:pat,icon:'icon-192.png',badge:'icon-192.png',requireInteraction:c.sev==='stop',data:{id:c.id},actions:String(c.id).startsWith('late-')?[{action:'ack',title:'Got it'}]:[{action:'open',title:'Open'}]};
   if(navigator.serviceWorker&&navigator.serviceWorker.ready)navigator.serviceWorker.ready.then(r=>r.showNotification(title,opt)).catch(()=>new Notification(title,opt));
   else new Notification(title,opt)}}catch(e){}
 }
+if(navigator.serviceWorker)navigator.serviceWorker.addEventListener('message',e=>{const m=e.data||{};if(m.type==='ack'&&m.id){S.acks[m.id]=S.acks[m.id]||[];if(!S.acks[m.id].includes(S.me))S.acks[m.id].push(S.me);S.toast='Acknowledged from your notification.';save();render()}});
+try{const h=location.hash.match(/^#ack=(.+)$/);if(h){const id=decodeURIComponent(h[1]);S.acks[id]=S.acks[id]||[];if(!S.acks[id].includes(S.me))S.acks[id].push(S.me);history.replaceState(null,'',location.pathname);setTimeout(()=>{S.toast='Acknowledged from your notification.';save();render()},0)}}catch(e){}
 async function enableAlerts(){
  if(!('Notification' in window)){S.alerts=true;S.alertMsg='This browser has no notifications; the phone will vibrate only.';return}
  try{const r=await Notification.requestPermission();S.alerts=r==='granted';S.alertMsg=r==='granted'?'Alerts on. Cues now buzz this phone and show on a paired Wear OS or AsteroidOS watch.':'Notifications were blocked. Turn them on in your phone settings for Showcall.'}catch(e){S.alertMsg='Notifications aren\'t available here. Install the app to your home screen first.'}
@@ -401,7 +429,8 @@ function secAlerts(){
  <p class="muted" style="margin:0">Cues buzz this phone with their own vibration pattern and show as notifications. A paired Wear OS watch mirrors them automatically; AsteroidOS watches get them through AsteroidOS Sync or Gadgetbridge.</p>
  ${S.alerts?`<div class="chips"><button class="sm" data-act="testalert">Send a test cue</button><button class="sm" data-act="alertsoff">Turn off</button></div>`:`<button class="pri" data-act="alerts">Turn on phone &amp; watch alerts</button>`}
  ${S.alertMsg?`<p class="note">${esc(S.alertMsg)}</p>`:''}
- <p class="note">Works while Showcall is open or recently open on your phone. Alerts with the app fully closed need a push service, which is on the roadmap.${perm==='denied'?' Notifications are blocked for this site in your phone settings.':''}</p></div>`;
+ <p class="note">These work while Showcall is open.${perm==='denied'?' Notifications are blocked for this site in your phone settings.':''}</p>
+ <div class="row" style="align-items:flex-start"><div><h3>With the app closed: live push</h3><small>${S.push.on?`Your manager is sending live push on channel <code>${esc(pushTopic())}</code>. Install the free <b>ntfy</b> app, tap +, and subscribe to that channel. Cues then reach your phone and watch even when Showcall is closed or the phone is locked.`:'Your event manager turns on live push from the Manager view, then shares a channel name for you to subscribe to in the free ntfy app.'}</small></div>${S.push.on?`<button class="sm" data-act="push-copytopic">Copy channel</button>`:''}</div></div>`;
 }
 function secWatch(){
  return secAlerts()+`<div class="card"><div class="ph"><h2>Smartwatch</h2><span class="st plan">Wear OS &amp; AsteroidOS · coming soon</span></div>
@@ -652,6 +681,7 @@ function manager(){
   ['calloff','Staffing','Call-off: 1 runner for Nov 28 — fill in Nowsta','Open in Nowsta'],
   ...S.ideas.filter(i=>i.st!=='Approved').map(i=>['idea'+i.id,'Crew idea',i.text,'Approve idea'])];
  return `${secShifts()}<div class="board"><div class="col">
+${pushCard()}
  <div class="card"><div class="ph"><h2>Tonight at a glance</h2><span class="st proto">Live from this event</span></div>
   <div class="mgrk"><div><b>${onc}/${PEOPLE.length}</b><small>clocked in</small></div><div><b>${shr}</b><small>sharing a zone</small></div><div><b>${sent.length}</b><small>cues sent</small></div><div><b>${ackRate}%</b><small>cue acknowledgement</small></div><div><b>${lateMin?'+'+lateMin+'m':'On time'}</b><small>schedule</small></div><div><b>${conf}/6</b><small>specials confirmed</small></div></div>
   <p class="note">Team-level numbers only. No individual scores; zone locations aren't stored.</p></div>
@@ -702,6 +732,12 @@ document.addEventListener('click',e=>{
  const b=e.target.closest('button');if(!b)return;const d=b.dataset;
  if(d.lay){S.lay=d.lay;if((d.lay==='planner'||d.lay==='manager')&&!manage())S.me='Avery';save();render();return}
  if(d.tab){S.tab=d.tab;save();render();scrollTo(0,0);return}
+ if(d.act==='push-toggle'){if(!isMgr()){S.toast='Only the event manager can send push.';render();return}S.push.on=!S.push.on;pushTopic();save();render();return}
+ if(d.act==='push-copytopic'){shareText('Showcall channel',pushTopic()).then(()=>render());return}
+ if(d.act==='push-newtopic'){S.push.topic='';pushTopic();S.toast='New channel made. Crew need to subscribe again.';save();render();return}
+ if(d.act==='push-kind'){S.push[d.k]=!S.push[d.k];save();render();return}
+ if(d.act==='push-test'){if(!S.push.on){S.toast='Turn push on first.';render();return}pushOut('cues','Showcall test','If you see this on your phone and watch, push works.','go').then(ok=>{S.toast=ok?'Test sent. Check a subscribed phone.':'Could not reach the push server.';render()});return}
+ if(d.act==='push-share'){const t=pushTopic(),srv=S.push.server.replace(/\/$/,'');shareText('Join Showcall alerts',`Get tonight's Showcall cues on your phone and watch:\n1. Install the free ntfy app.\n2. Subscribe to: ${t}${srv!=='https://ntfy.sh'?' (server '+srv+')':''}\nWeb: ${srv}/${t}`).then(()=>render());return}
  if(d.speed){S.speed=+d.speed;save();render();return}
  if(d.say){ask(d.say);save();render();return}
  if(d.act==='voice-dismiss'){const lv=[...S.voice].reverse().find(v=>v.who===S.me);if(lv)lv.at=-999;save();render();return}
@@ -736,7 +772,7 @@ document.addEventListener('click',e=>{
   for(const c of P.changes){const b=beat(c.id);b.t=c.to;b.moved=(b.moved||0)+P.mins}
   const id='late-'+(++S.nid);S.late.push({id,at:S.clock,mins:P.mins,reason:S.lateDraft.reason,note:S.lateDraft.note.trim(),by:S.me,changes:P.changes});
   S.updates.push({at:S.clock,text:`Running ${P.mins} min late (${S.lateDraft.reason}). ${P.changes.length} beats moved; crew notified.`});
-  S.lateDraft={mins:P.mins,reason:S.lateDraft.reason,note:'',preview:false};retime();tick();S.cue=id;save();render();buzz();return}
+  pushOut('late',`Running ${P.mins} min late`,P.changes.map(c=>`${c.label||c.id}: ${fmt(c.from)} → ${fmt(c.to)}`).join('\n')+'\nOpen Showcall and tap Got it.','warn');S.lateDraft={mins:P.mins,reason:S.lateDraft.reason,note:'',preview:false};retime();tick();S.cue=id;save();render();buzz();return}
  if(d.act==='late-undo'){const L=[...S.late].reverse().find(x=>!x.undo&&!x.reverted);if(!L)return;
   for(const c of L.changes){const b=beat(c.id);if(b){b.t-=L.mins;b.moved=(b.moved||0)-L.mins}}L.reverted=true;
   const id='late-'+(++S.nid);S.late.push({id,at:S.clock,mins:L.mins,undo:true,reason:'',note:'',by:S.me,changes:L.changes.map(c=>({...c,from:c.to,to:c.from}))});
@@ -748,6 +784,7 @@ document.addEventListener('click',e=>{
  if(d.act==='reset'){const lay=S.lay,me_=S.me;S=JSON.parse(JSON.stringify(DEF));S.lay=lay;S.me=me_;S.started=true;S.clock=T(19,10);save();render();return}
  if(d.act==='nextq'){S.qi++;S.ans=null;save();render();return}
  if(d.act==='simacks'){for(const c of cues())if(S.fired.includes(c.id))S.acks[c.id]=[...new Set([...(S.acks[c.id]||[]),...PEOPLE.filter((p,i)=>i%4!==3).map(p=>p.n)])];save();render();return}
+ if(d.act&&d.act.startsWith('upd-')){const n0=S.updates.length;setTimeout(()=>{if(S.updates.length>n0)pushOut('updates','Floor update',S.updates[S.updates.length-1].text,'warn')},0)}
  if(d.act==='upd-depart'){const dp=beat('depart');if(dp.t!==T(21,0)){S.updates.push({at:S.clock,text:`Guest departure ${fmt(dp.t)} → 9:00 PM (floor lead, huddle). Home-stretch cue now 8:55 PM.`});dp.moved=(dp.moved||0)+(T(21,0)-dp.t);dp.t=T(21,0);retime();tick()}save();render();return}
  if(d.act==='upd-doc'){const dc=beat('doc');S.updates.push({at:S.clock,text:`Documentary ${fmt(dc.t)} → ${fmt(dc.t+10)}. Pause and go cues moved 10 min.`});moveBeat('doc',10);save();render();return}
  if(d.move){const [id,v]=d.move.split('|');moveBeat(id,+v);save();render();return}
@@ -773,7 +810,7 @@ document.addEventListener('change',e=>{const t=e.target;
 document.addEventListener('change',e=>{const t=e.target;if(t.dataset&&t.dataset.assign){seedShifts();const x=S.shifts.find(y=>y.id==t.dataset.assign);x.who=t.value||null;x.status=t.value?'assigned':'open';save();render();return}
  if(['nsEv','nsRole','nsStart','nsEnd','nsN'].includes(t.id)){S.newShift={ev:$('#nsEv').value,role:$('#nsRole').value,start:$('#nsStart').value,end:$('#nsEnd').value,n:+$('#nsN').value||1};save();return}
  if(t.id!=='csv'||!t.files||!t.files[0])return;const f=t.files[0];f.text().then(txt=>{S.importMsg=importStaff(txt);save();render()}).catch(()=>{S.importMsg='Could not read that file.';render()})});
-document.addEventListener('input',e=>{if(e.target.id==='draft')S.draft=e.target.value;if(e.target.id==='lateNote')S.lateDraft.note=e.target.value});
+document.addEventListener('input',e=>{if(e.target.dataset&&e.target.dataset.pushsrv!==undefined){const v=e.target.value.trim();if(/^https:\/\//.test(v)){S.push.server=v;save()}return}if(e.target.id==='draft')S.draft=e.target.value;if(e.target.id==='lateNote')S.lateDraft.note=e.target.value});
 document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.id;
  if(f==='sform2'){seedShifts();const n=S.newShift,ev=EVENTS.find(e=>e[0]===n.ev);let id=Math.max(...S.shifts.map(y=>y.id));for(let i=0;i<Math.min(20,n.n||1);i++)S.shifts.push({id:++id,ev:n.ev,date:ev[1],role:n.role,start:n.start,end:n.end,who:null,status:'open'});S.toast=`Added ${n.n} open ${n.role} shift${n.n>1?'s':''}.`}
  if(f==='vform'){const v=$('#vq');ask(v.value);v.value=''}
