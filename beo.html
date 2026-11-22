@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Showcall — BEO Studio</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* VOICE: practical, exact — this document feeds a kitchen, a floor crew and a client.
+   IDEA: the BEO written once, checked as you type, and handed straight to the run of show.
+   PICTURE: the live BEO preview beside the form, with checks lighting up as you write.
+   COLOUR and TYPE: Showcall black & gold; the preview is a white "paper" sheet like a printed BEO.
+   LAYOUT: steps on the left, paper preview on the right; stacks on phones. */
+:root{color-scheme:dark;--bg:#0b0c0f;--panel:#15171c;--soft:#1d2027;--line:#2a2f38;--ink:#f3f1ea;--dim:#a6abb4;
+ --gold:#d9b45f;--on:#1a1408;--stop:#ff5d4d;--stopbg:#3a120e;--go:#5fd394;--gobg:#0f2e1e;--warn:#f3b843;--warnbg:#33270e;
+ --fd:"Fredoka",system-ui,sans-serif;--fb:"Rubik",system-ui,sans-serif}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--fb);overflow-x:clip}
+h1,h2,h3{font-family:var(--fd);font-weight:600;margin:0}h1{font-size:clamp(26px,3.2vw,38px)}h2{font-size:19px}h3{font-size:15.5px;font-family:var(--fb);font-weight:500}
+header.top{position:sticky;top:0;z-index:5;background:#0b0c0fea;backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .in{max-width:1400px;margin:0 auto;padding:10px max(16px,3vw);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font:600 23px var(--fd);margin-right:auto}.brand b{color:var(--gold);font-weight:600}.brand svg{width:30px;height:30px}
+.role{font:600 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:var(--on);border-radius:99px;padding:3px 10px}
+.toplinks{display:flex;gap:14px;flex-wrap:wrap}.toplinks a{color:var(--dim);text-decoration:none;font-size:15px}
+.shell{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;padding:18px max(16px,3vw) 60px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+label{display:grid;gap:3px;font-size:14px;color:var(--dim)}
+input,select,textarea{font:400 16px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+textarea{min-height:60px;resize:vertical}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+button{font:500 14.5px var(--fb);min-height:40px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
+button.pri{background:var(--gold);color:var(--on);border-color:var(--gold)}button.sm{min-height:32px;font-size:13px;padding:0 9px}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.line{display:grid;grid-template-columns:5.5em minmax(0,1fr) auto;gap:6px;align-items:center}
+.mline{display:grid;grid-template-columns:minmax(0,1.6fr) 5em minmax(0,1fr) auto;gap:6px;align-items:center}
+.tag{display:inline-flex;gap:3px;flex-wrap:wrap}.tag label{display:inline-flex;align-items:center;gap:3px;font-size:12.5px;color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:2px 6px}
+.tag input{width:auto}
+.note{margin:0;padding:8px 12px;border:1px dashed var(--line);border-radius:9px;color:var(--dim);font-size:13.5px}
+.checks{display:grid;gap:6px}.ck{border-radius:10px;padding:8px 11px;font-size:14px;border:1px solid var(--line);background:var(--soft)}
+.ck.s{border-color:#7a2c23;background:var(--stopbg)}.ck.c{border-color:#5b4516;background:var(--warnbg)}.ck.ok{border-color:#22603f;background:var(--gobg)}
+.ck b{font:600 11px var(--fb);letter-spacing:.05em;margin-right:6px}.ck.s b{color:var(--stop)}.ck.c b{color:var(--warn)}.ck.ok b{color:var(--go)}
+.paper{position:sticky;top:76px;align-self:start;background:#fbfaf6;color:#1c1c1c;border-radius:6px;padding:28px 30px;font:13.5px/1.5 Georgia,"Times New Roman",serif;box-shadow:0 20px 50px #0008;max-height:calc(100vh - 100px);overflow:auto}
+.paper h2{font:700 20px Georgia,serif;margin:0}.paper h4{font:700 12.5px var(--fb);letter-spacing:.06em;text-transform:uppercase;margin:16px 0 6px;border-bottom:1.5px solid #1c1c1c;padding-bottom:3px}
+.paper table{width:100%;border-collapse:collapse}.paper td{padding:3px 4px;vertical-align:top;border-bottom:1px solid #e4e0d6}.paper td.q{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.paper .tg{font:600 10.5px var(--fb);color:#6b5a2a}.paper .sp{background:#fff1c9;padding:1px 4px}.paper .vault{background:#e8e8e8;padding:0 5px;border-radius:3px;font-family:var(--fb);font-size:11.5px}
+.paper .hd{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media (max-width:980px){.shell{grid-template-columns:minmax(0,1fr)}.paper{position:static;max-height:none}}
+@media (max-width:520px){.g2,.g3{grid-template-columns:minmax(0,1fr)}.mline{grid-template-columns:minmax(0,1fr) 4.5em;}.mline>:nth-child(n+3){grid-column:1/-1}.toplinks{display:none}.paper{padding:20px 16px}}
+@media print{header.top,.form{display:none}.shell{display:block;padding:0}.paper{box-shadow:none;max-height:none;position:static}body{background:#fff}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0c0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<header class="top"><div class="in">
+ <a class="brand" href="index.html"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f3f1ea" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg><span>Show<b>call</b></span></a>
+ <span class="role">BEO Studio</span>
+ <div class="toplinks"><a href="app.html">Crew &amp; planner app</a><a href="owner.html">Owner portal</a><a href="index.html">Website</a></div>
+</div></header>
+<div class="shell">
+ <div class="form">
+  <h1>Write the BEO. Showcall checks it as you go.</h1>
+  <p class="muted" style="color:var(--dim);margin:6px 0 14px">Start blank, from a sales inquiry, or from a template. Every check that caught problems on the proof-night gala runs live here.</p>
+  <div class="card"><div class="ph"><h2>Start from</h2></div><div class="chips" id="starts"></div></div>
+  <div class="card"><h2>1 · Event</h2>
+   <div class="g2"><label>Event name<input data-k="name"></label><label>Client<input data-k="client"></label>
+   <label>Date<input type="date" data-k="date"></label><label>Venue<input data-k="venue"></label>
+   <label>Guests<input type="number" min="1" data-k="guests"></label><label>Service style<select data-k="style"><option>Plated</option><option>Buffet</option><option>Stations</option><option>Cocktail reception</option></select></label>
+   <label>Overage buffer %<input type="number" min="0" max="20" step="0.5" data-k="overage"></label><label>Uniform<input data-k="uniform"></label></div></div>
+  <div class="card"><div class="ph"><h2>2 · Timeline</h2><button class="sm" id="addbeat">+ Beat</button></div><div id="beats"></div>
+   <p class="note">Tick "pause" for speeches, films or presentations where all food service stops — it becomes a red cue on every watch.</p></div>
+  <div class="card"><div class="ph"><h2>3 · Menu</h2><button class="sm" id="additem">+ Item</button></div><div id="menu"></div>
+   <p class="note">Key: V vegetarian · VG vegan · GF gluten free · DF dairy free · CN contains nuts · CE contains egg · CSY contains soy · CS contains sesame. Use "Special plate for" to tie a plate to a dietary note.</p></div>
+  <div class="card"><div class="ph"><h2>4 · Dietary specials</h2><button class="sm" id="addspec">+ Special</button></div><div id="specs"></div>
+   <p class="note">Write each exactly as the client gave it. Once the BEO is finalized, these lines are locked word for word.</p></div>
+  <div class="card"><h2>5 · Staffing &amp; logistics</h2>
+   <div class="g3"><label>Servers<input type="number" data-k="servers"></label><label>Chefs<input type="number" data-k="chefs"></label><label>Event managers<input type="number" data-k="managers"></label></div>
+   <div class="chips"><button class="sm" id="suggest">Suggest staffing for this style</button><span id="sugtxt" class="muted" style="color:var(--dim);font-size:13.5px"></span></div>
+   <div class="g2"><label>Crew arrival<input type="time" data-k="arrive"></label><label>Team entrance<input data-k="entrance"></label>
+   <label>Parking<input data-k="parking"></label><label>Meal markers<input data-k="markers" placeholder="cow = beef, chix = chicken, carrot = veg"></label></div>
+   <label>Notes for the floor<textarea data-k="notes"></textarea></label>
+   <p class="note">Door, parking and ice codes don't go on the BEO. Add them to the private vault in the app; the BEO shows [in vault].</p></div>
+ </div>
+ <div>
+  <div class="card"><div class="ph"><h2>Live checks</h2><span id="ckcount" class="muted" style="color:var(--dim)"></span></div><div class="checks" id="checks"></div>
+   <div class="chips"><button class="pri" id="finalize">Finalize BEO</button><button id="print">Print / PDF</button><button id="copy">Copy text</button><button id="json">Download for intake</button></div><div id="msg"></div></div>
+  <div class="paper" id="paper" aria-label="BEO preview"></div>
+ </div>
+</div>
+<script>
+{
+const $=s=>document.querySelector(s),esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='showcall-beo';const TAGS=['V','VG','GF','DF','CN','CE','CSY','CS'];
+const PRICE={Plated:78,Buffet:52,Stations:64,'Cocktail reception':38},RATIO={Plated:20,Buffet:30,Stations:25,'Cocktail reception':35};
+const TEMPLATES={
+ gala:{name:'Sample Anniversary Gala',client:'Sample Client',date:'2027-03-07',venue:'Downtown Venue · Grand Hall',guests:400,style:'Plated',overage:5,uniform:'Formal',servers:20,chefs:8,managers:2,arrive:'14:45',entrance:'Side entrance',parking:'Venue garage (validation in vault)',markers:'cow = beef, chix = chicken, carrot = veg',notes:'Respectful, quiet, efficient — presentations during dinner.',
+  beats:[['18:00','Guests arrive · stations open',0],['18:45','Invite guests to seats',0],['19:05','Salad course',0],['19:25','Documentary',1],['19:45','Clear salads · dinner service',0],['20:00','Dessert station opens',0],['21:15','Closing speech',1],['22:00','Guest departure',0]],
+  menu:[['Garden salad','Salad',400,['V','GF'],''],['Sirloin filet, herb butter, red wine demi','Entree',180,['GF'],''],['Thyme roasted chicken','Entree',200,['GF'],''],['Vegetable ravioli, tomato cream','Entree',18,['V'],''],['Moroccan chickpea cake, tomato & arugula salad','Entree',1,['VG','GF'],'1 vegetarian entree free from tomatoes and nuts'],['Dessert station','Dessert',400,['V','CE'],'']],
+  specs:['1 vegetarian entree free from tomatoes and nuts','2 nut free salads']},
+ wedding:{name:'Wedding reception',client:'',date:'',venue:'',guests:180,style:'Plated',overage:3,uniform:'Formal',servers:9,chefs:4,managers:1,arrive:'14:00',entrance:'',parking:'',markers:'cow = beef, chix = chicken, carrot = veg',notes:'',
+  beats:[['17:00','Ceremony',0],['17:30','Cocktail hour',0],['18:30','Grand entrance & toasts',1],['18:45','Salad course',0],['19:15','Dinner service',0],['20:00','First dance & cake cutting',1],['22:30','Last call',0],['23:00','Guest departure',0]],
+  menu:[['Mixed greens salad','Salad',180,['V','GF','DF'],''],['Braised short rib','Entree',100,['GF'],''],['Herb chicken','Entree',75,['GF','DF'],''],['Wild mushroom risotto','Entree',5,['V','GF'],''],['Wedding cake (client provided)','Dessert',180,[],'']],specs:[]},
+ corporate:{name:'Corporate holiday party',client:'',date:'',venue:'',guests:220,style:'Stations',overage:5,uniform:'Black & white',servers:9,chefs:4,managers:1,arrive:'15:30',entrance:'',parking:'',markers:'',notes:'',
+  beats:[['18:00','Doors · bar & stations open',0],['19:00','CEO remarks',1],['19:15','Stations refreshed',0],['21:30','Last call',0],['22:00','Guest departure',0]],
+  menu:[['Carving station','Station',220,['GF','DF'],''],['Pasta station','Station',220,['V'],''],['Dessert bites','Dessert',660,['V','CE','CN'],'']],specs:[]}};
+let B;try{B=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){}
+if(!B)B=JSON.parse(JSON.stringify(TEMPLATES.gala));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(B))}catch(e){}};
+const fmt=t=>{if(!t)return '';const [h,m]=t.split(':').map(Number);return `${(h+11)%12+1}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
+function leads(){try{const o=JSON.parse(localStorage.getItem('showcall-owner')||'{}');return o.leads||[]}catch(e){return []}}
+function startButtons(){const L=leads();$('#starts').innerHTML=`<button data-tpl="blank">Blank</button><button data-tpl="gala">Gala template</button><button data-tpl="wedding">Wedding</button><button data-tpl="corporate">Corporate</button>`+(L.length?`<select id="fromlead" style="width:auto"><option value="">From a sales inquiry…</option>${L.map(l=>`<option value="${l.id}">#${l.id} · ${esc(l.text.slice(0,48))}…</option>`).join('')}</select>`:'<span class="note" style="padding:4px 10px">Open the AI sales desk once to pull inquiries in here.</span>')}
+function fillForm(){document.querySelectorAll('[data-k]').forEach(el=>{el.value=B[el.dataset.k]??''});drawBeats();drawMenu();drawSpecs();update()}
+function drawBeats(){$('#beats').innerHTML=B.beats.map((b,i)=>`<div class="line"><input type="time" value="${b[0]}" data-beat="${i}|0" aria-label="Time"><input value="${esc(b[1])}" data-beat="${i}|1" aria-label="What happens"><span class="chips"><label style="display:inline-flex;gap:4px;align-items:center;color:var(--ink)"><input type="checkbox" ${b[2]?'checked':''} data-beat="${i}|2" style="width:auto">pause</label><button class="sm" data-delbeat="${i}" aria-label="Remove">✕</button></span></div>`).join('')}
+function drawMenu(){$('#menu').innerHTML=B.menu.map((m,i)=>`<div class="card" style="background:var(--soft);margin:0;padding:10px;gap:6px"><div class="mline"><input value="${esc(m[0])}" data-menu="${i}|0" aria-label="Item"><input type="number" step="0.5" value="${m[2]}" data-menu="${i}|2" aria-label="Quantity"><select data-menu="${i}|1" aria-label="Course">${['Appetizer','Salad','Entree','Station','Dessert','Beverage'].map(c=>`<option${m[1]===c?' selected':''}>${c}</option>`).join('')}</select><button class="sm" data-delitem="${i}" aria-label="Remove">✕</button></div>
+ <div class="tag">${TAGS.map(t=>`<label><input type="checkbox" data-tag="${i}|${t}" ${m[3].includes(t)?'checked':''}>${t}</label>`).join('')}</div>
+ <select data-menu="${i}|4" aria-label="Special plate for"><option value="">Regular item (not a special plate)</option>${B.specs.map(s=>`<option${m[4]===s?' selected':''}>${esc(s)}</option>`).join('')}</select></div>`).join('')}
+function drawSpecs(){$('#specs').innerHTML=B.specs.map((s,i)=>`<div class="line" style="grid-template-columns:minmax(0,1fr) auto"><input value="${esc(s)}" data-spec="${i}" ${B.final?'readonly':''} aria-label="Dietary special, word for word"><button class="sm" data-delspec="${i}" ${B.final?'disabled':''}>✕</button></div>`).join('')||'<p class="note">No dietary specials yet.</p>'}
+const ALLER=[[/nut/i,'CN'],[/egg/i,'CE'],[/soy/i,'CSY'],[/sesame/i,'CS'],[/dairy|lactose|\bdf\b/i,'DAIRY'],[/gluten/i,'GLUTEN']];
+function checks(){
+ const out=[],g=+B.guests||0,beats=[...B.beats].sort((a,b)=>a[0].localeCompare(b[0]));
+ if(!B.name)out.push(['c','Event name is missing']);if(!B.date)out.push(['c','Event date is missing']);if(!g)out.push(['s','Guest count is missing']);
+ const ent=B.menu.filter(m=>m[1]==='Entree'&&!m[4]),entTot=ent.reduce((a,m)=>a+(+m[2]||0),0)+B.menu.filter(m=>m[1]==='Entree'&&m[4]).reduce((a,m)=>a+(+m[2]||0),0);
+ if(g&&ent.length&&entTot!==g)out.push([entTot>g?'c':'s',`Entrées total ${entTot} for ${g} guests (${entTot>g?'+':''}${entTot-g})${entTot<g?' — not every guest has a plate':''}`]);
+ for(const m of B.menu){const q=+m[2]||0;if(!Number.isInteger(q))out.push(['c',`${m[0]}: fractional quantity ${q}`]);
+  if(g&&['Salad','Dessert'].includes(m[1])&&q>g*(1+(+B.overage||0)/100)+0.01)out.push(['c',`${m[0]}: ${q} for ${g} guests is more than your ${B.overage||0}% buffer`]);}
+ for(const s of B.specs){const plate=B.menu.find(m=>m[4]===s);
+  if(/entr|plate|chicken|beef|vegetarian|vegan/i.test(s)&&!plate)out.push(['s',`No special plate assigned for "${s}"`]);
+  if(plate){const free=(s.match(/free (?:from|of)?\s*(.+)$/i)||[])[1]||s;
+   for(const [re,tag] of ALLER){if(re.test(free)){if(['CN','CE','CSY','CS'].includes(tag)&&plate[3].includes(tag))out.push(['s',`"${s}" but ${plate[0]} is tagged ${tag}`]);
+    if(tag==='DAIRY'&&!plate[3].includes('DF')&&!plate[3].includes('VG'))out.push(['s',`"${s}" but ${plate[0]} isn't marked DF`]);if(tag==='GLUTEN'&&!plate[3].includes('GF'))out.push(['s',`"${s}" but ${plate[0]} isn't marked GF`]);}}
+   const words=(free.match(/[a-z]{4,}/gi)||[]).filter(w=>!/free|from|with|only|guest|entree|plate|vegetarian|vegan|allerg|dairy|lactose|gluten|derived|products|nuts|seeds|sesame|eggs|salads?/i.test(w));
+   for(const w of words){const st=w.toLowerCase().replace(/(oes|es|s)$/,x=>x==='oes'?'o':'');if(new RegExp('\\b'+st,'i').test(plate[0]))out.push(['s',`"${s}" but its plate (${plate[0]}) lists ${st}`])}}}
+ const pauses=beats.filter(b=>b[2]);for(const p of pauses){const i=beats.indexOf(p),nx=beats[i+1];if(!nx)out.push(['c',`Pause "${p[1]}" has no beat after it to mark the end`])}
+ if(g&&B.servers){const need=Math.ceil(g/(RATIO[B.style]||25));if(B.servers<need)out.push(['c',`${B.servers} servers for ${g} guests ${B.style.toLowerCase()} — the usual ratio suggests about ${need}`])}
+ if(!B.markers&&B.style==='Plated'&&ent.length>1)out.push(['c','Plated with several entrées but no meal markers set']);
+ if(/\b\d{4}\b/.test(B.parking||'')||/code/i.test(B.parking||''))out.push(['s','Parking field may contain a code — keep codes in the vault, not on the BEO']);
+ return out;
+}
+function paper(){
+ const g=+B.guests||0,beats=[...B.beats].sort((a,b)=>a[0].localeCompare(b[0])),courses=['Appetizer','Salad','Entree','Station','Dessert','Beverage'];
+ const est=g?Math.round(g*(PRICE[B.style]||60)):0;
+ return `<div class="hd"><div><div class="tg">EVENT ORDER${B.final?' · FINAL':' · DRAFT'}</div><h2>${esc(B.name||'Untitled event')}</h2></div><div style="text-align:right">${esc(B.date||'Date TBD')}<br>${g} guests · ${esc(B.style)}</div></div>
+ <table style="margin-top:8px"><tr><td>Client</td><td>${esc(B.client)||'—'}</td><td>Venue</td><td>${esc(B.venue)||'—'}</td></tr><tr><td>Crew arrival</td><td>${fmt(B.arrive)||'—'}</td><td>Uniform</td><td>${esc(B.uniform)||'—'}</td></tr></table>
+ <h4>Timeline</h4><table>${beats.map(b=>`<tr><td class="q" style="width:5.5em">${fmt(b[0])}</td><td>${esc(b[1])}${b[2]?' — <b>ALL FOOD SERVICE AND CLEARING PAUSE</b>':''}</td></tr>`).join('')}</table>
+ <h4>Menu</h4>${courses.map(c=>{const it=B.menu.filter(m=>m[1]===c);return it.length?`<div class="tg" style="margin-top:6px">${c.toUpperCase()}</div><table>${it.map(m=>`<tr><td>${esc(m[0])} <span class="tg">${m[3].join(' | ')}</span>${m[4]?`<br><span class="sp">Special: ${esc(m[4])}</span>`:''}</td><td class="q">${m[2]}</td></tr>`).join('')}</table>`:''}).join('')}
+ <h4>Dietary notes</h4>${B.specs.length?B.specs.map(s=>`<div>${esc(s)}</div>`).join(''):'<div>None</div>'}
+ <div style="margin-top:6px;font-size:11.5px">Dietary key: V Vegetarian | VG Vegan | GF Gluten Free | DF Dairy Free | CN Contains Nuts | CE Contains Egg | CSY Contains Soy | CS Contains Sesame</div>
+ <h4>Staffing &amp; logistics</h4><table><tr><td>Staffing</td><td>${B.managers||0} event manager · ${B.servers||0} servers · ${B.chefs||0} chefs</td></tr><tr><td>Team entrance</td><td>${esc(B.entrance)||'—'}</td></tr><tr><td>Parking</td><td>${esc(B.parking)||'—'} <span class="vault">codes in vault</span></td></tr><tr><td>Meal markers</td><td>${esc(B.markers)||'—'}</td></tr>${B.notes?`<tr><td>Notes</td><td>${esc(B.notes)}</td></tr>`:''}</table>
+ ${est?`<h4>Estimate</h4><div>About $${est.toLocaleString('en-US')} food at the sample ${esc(B.style.toLowerCase())} price — set real prices in the owner portal.</div>`:''}`;
+}
+function update(){const c=checks();$('#ckcount').textContent=c.length?`${c.length} to look at`:'All clear';
+ $('#checks').innerHTML=c.length?c.map(x=>`<div class="ck ${x[0]}"><b>${x[0]==='s'?'SAFETY':'CHECK'}</b>${esc(x[1])}</div>`).join(''):'<div class="ck ok"><b>OK</b>No problems found by the checks.</div>';
+ $('#paper').innerHTML=paper();save()}
+function text(){const d=document.createElement('div');d.innerHTML=paper();return d.innerText}
+document.addEventListener('input',e=>{const t=e.target,d=t.dataset;
+ if(d.k){B[d.k]=t.type==='number'?(t.value===''?'':+t.value):t.value;update();return}
+ if(d.beat){const [i,j]=d.beat.split('|');B.beats[i][j]=j==='2'?t.checked:t.value;update();return}
+ if(d.menu){const [i,j]=d.menu.split('|');B.menu[i][j]=j==='2'?+t.value:t.value;update();return}
+ if(d.spec!==undefined&&!B.final){const old=B.specs[+d.spec];B.specs[+d.spec]=t.value;B.menu.forEach(m=>{if(m[4]===old)m[4]=t.value});update();return}});
+document.addEventListener('change',e=>{const t=e.target,d=t.dataset;
+ if(d.tag){const [i,tag]=d.tag.split('|'),a=B.menu[i][3];t.checked?a.push(tag):a.splice(a.indexOf(tag),1);update();return}
+ if(d.beat||d.menu||d.spec!==undefined){if(d.spec!==undefined||d.menu&&d.menu.endsWith('|4'))drawMenu();update();return}
+ if(t.id==='fromlead'&&t.value){const l=leads().find(x=>x.id==t.value);if(!l)return;const tx=l.text;
+  const n=(tx.match(/(\d{2,4})\s*(guests|people|employees|attendees)/i)||[])[1],st=/plated/i.test(tx)?'Plated':/station/i.test(tx)?'Stations':/buffet/i.test(tx)?'Buffet':'Plated';
+  const diet=(tx.match(/[^.]*\b(vegan|vegetarian|gluten[- ]free|nut allergy|dairy[- ]free|allerg\w*)[^.]*\./gi)||[]).map(x=>x.trim());
+  B=JSON.parse(JSON.stringify(TEMPLATES[/wedding/i.test(tx)?'wedding':/corporate|holiday/i.test(tx)?'corporate':'gala']));
+  Object.assign(B,{name:(tx.match(/wedding|corporate holiday party|holiday party|gala|birthday|rehearsal dinner|fundraiser/i)||['New event'])[0].replace(/^\w/,c=>c.toUpperCase()),client:'',venue:'',guests:n?+n:B.guests,style:st,specs:diet,final:false,notes:'From sales inquiry #'+l.id+': '+tx});
+  B.menu.forEach(m=>m[4]='');fillForm();$('#msg').innerHTML='<p class="note">Filled from the inquiry. Dietary lines are copied word for word from what the client wrote — check them and assign each a plate.</p>'}});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(d.tpl){B=d.tpl==='blank'?{name:'',client:'',date:'',venue:'',guests:'',style:'Plated',overage:5,uniform:'',servers:'',chefs:'',managers:'',arrive:'',entrance:'',parking:'',markers:'',notes:'',beats:[['18:00','Guests arrive',0]],menu:[],specs:[]}:JSON.parse(JSON.stringify(TEMPLATES[d.tpl]));fillForm();return}
+ if(b.id==='addbeat'){B.beats.push(['','',0]);drawBeats();update();return}
+ if(d.delbeat){B.beats.splice(+d.delbeat,1);drawBeats();update();return}
+ if(b.id==='additem'){B.menu.push(['','Entree',0,[],'']);drawMenu();update();return}
+ if(d.delitem){B.menu.splice(+d.delitem,1);drawMenu();update();return}
+ if(b.id==='addspec'){if(B.final)return;B.specs.push('');drawSpecs();drawMenu();update();return}
+ if(d.delspec){const s=B.specs.splice(+d.delspec,1)[0];B.menu.forEach(m=>{if(m[4]===s)m[4]=''});drawSpecs();drawMenu();update();return}
+ if(b.id==='suggest'){const g=+B.guests||0,s=Math.ceil(g/(RATIO[B.style]||25)),c=Math.max(2,Math.ceil(g/50)),m=g>300?2:1;B.servers=s;B.chefs=c;B.managers=m;fillForm();$('#sugtxt').textContent=`About 1 server per ${RATIO[B.style]} guests for ${B.style.toLowerCase()} — a starting point, adjust to your standards.`;return}
+ if(b.id==='finalize'){const s=checks().filter(x=>x[0]==='s');if(s.length){$('#msg').innerHTML=`<p class="note" style="color:var(--stop)">Fix or confirm ${s.length} safety item${s.length>1?'s':''} before finalizing.</p>`;return}B.final=true;drawSpecs();update();$('#msg').innerHTML='<p class="note">Finalized. Dietary lines are now locked word for word.</p>';return}
+ if(b.id==='print'){try{window.print()}catch(_){$('#msg').innerHTML='<p class="note">Printing is blocked in this preview — use the installed app.</p>'}return}
+ if(b.id==='copy'){navigator.clipboard&&navigator.clipboard.writeText(text()).then(()=>$('#msg').innerHTML='<p class="note">BEO text copied.</p>').catch(()=>$('#msg').innerHTML='<p class="note">Copy isn\'t available here.</p>');return}
+ if(b.id==='json'){try{const u=URL.createObjectURL(new Blob([JSON.stringify(B,null,1)],{type:'application/json'}));const a=document.createElement('a');a.href=u;a.download='beo-'+(B.name||'event').replace(/\W+/g,'-').toLowerCase()+'.json';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},500);$('#msg').innerHTML='<p class="note">Downloaded. Showcall intake reads this directly — no PDF parsing needed.</p>'}catch(_){$('#msg').innerHTML='<p class="note">Downloads are blocked in this preview — use the installed app.</p>'}}});
+startButtons();fillForm();
+}
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>

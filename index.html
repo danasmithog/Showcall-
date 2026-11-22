@@ -331,7 +331,7 @@ footer{border-top:1px solid var(--line);color:var(--dim);font-size:14px}footer .
  </form>
 </div></section>
 
-<footer><div class="wrap"><span>© 2026 Showcall · Detroit, Michigan</span><span><a href="app.html">App</a> · <a href="owner.html">Owner portal</a> · <a href="#faq">FAQ</a></span></div></footer>
+<footer><div class="wrap"><span>© 2026 Showcall · Detroit, Michigan</span><span><a href="app.html">App</a> · <a href="owner.html">Owner portal</a> · <a href="beo.html">BEO Studio</a> · <a href="#faq">FAQ</a></span></div></footer>
 <a class="btn pri sticky" href="#request">Get early access</a>
 
 <script>
@@ -428,7 +428,7 @@ $('#vchips').addEventListener('click',e=>{const b=e.target.closest('[data-vq]');
 /* ---------- roles ---------- */
 const ROLES={
  crew:[['Your shift in one screen','Team, sections, point, expeditor and duties by phase'],['Cues on your wrist','Pause, go, station flips, home stretch'],['Find & call crew','Venue zones, only while clocked in'],['Ask by voice','Answers from the record only'],['Chat, tasks, ideas, trivia','Points for fun — never for rating anyone']],
- planner:[['BEO to event record','Every value linked to its page and line'],['Conflict flags','Counts, specials, times — you confirm'],['Run of show','Nudge any beat; every cue re-times'],['Running late','Preview, lock, notify everyone, see who heard'],['Specials tracker','Fired → carried → served → confirmed']],
+ planner:[['BEO Studio','Write BEOs from templates or a sales inquiry, checked as you type'],['BEO to event record','Every value linked to its page and line'],['Conflict flags','Counts, specials, times — you confirm'],['Run of show','Nudge any beat; every cue re-times'],['Running late','Preview, lock, notify everyone, see who heard'],['Specials tracker','Fired → carried → served → confirmed']],
  manager:[['Tonight at a glance','Clocked in, cues, acknowledgements, delays'],['One approvals queue','Flags, client drafts, call-offs, crew ideas'],['Close-out','Aprons and rentals counted before the truck leaves'],['Post-event report','Builds itself from the night'],['Team-level numbers','No individual scores']],
  owner:[['Every department','Sales, marketing, service, HR, accounting, inventory, ops, security'],['Projected profit','Your inputs + suggested changes from real documents'],['Integrations hub','46 researched tools mapped to your business'],['Pilots & AI tool scout','Measured, reversible, read-only'],['Savings locked at $0','Until results are measured']]};
 const MOCK={crew:'<div class="r"><span>Now</span><b style="color:var(--stop)">SERVICE STOPS</b></div><div class="r"><span>Team</span><span>B · sections 3 &amp; 4</span></div><div class="r"><span>Point / expeditor</span><span>Kit / Mo</span></div><div class="r"><span>Markers</span><span>cow · chix · carrot</span></div>',
@@ -442,7 +442,7 @@ $$('[data-role]').forEach(b=>b.addEventListener('click',()=>drawRole(b.dataset.r
 /* ---------- calculator & pricing ---------- */
 const PLANS=[{n:'Crew',m:0,d:'For every staff member on a Showcall event.',f:['Phone app: shift, cues, chat','Watch cues (Wear OS & AsteroidOS)','Find & call crew on the clock','Voice questions']},
  {n:'Team',m:400,d:'One company, up to 75 crew.',f:['BEO, pack list & staffing intake','Conflict flags with sources','Run of show, cues, running late','Specials tracker & private vault','Manager view & close-out']},
- {n:'Company',m:1000,d:'Unlimited events and crew.',hot:1,f:['Everything in Team','Owner portal: every department','Projected profit & suggestions','Integrations hub & pilots','Priority onboarding']},
+ {n:'Company',m:1000,d:'Unlimited events and crew.',hot:1,f:['Everything in Team','AI sales desk: read, score, quote, draft replies','Owner portal: every department','Projected profit & suggestions','Integrations hub & pilots','Priority onboarding']},
  {n:'Enterprise',m:null,d:'Multi-site operators.',f:['Everything in Company','Nowsta & accounting integrations','SSO and custom roles','Custom document formats','Dedicated success manager']}];
 let annual=true;
 function drawPlans(){$('#plans').innerHTML=PLANS.map(p=>{const price=p.m===null?'Talk to us':p.m===0?'Free':'$'+(annual?Math.round(p.m*10/12):p.m);

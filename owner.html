@@ -77,6 +77,10 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
 .y{color:var(--go)}.n{color:var(--dim)}
 @media (max-width:1000px){.shell{grid-template-columns:minmax(0,1fr)}nav.rail{position:sticky;top:60px;z-index:4;flex-direction:row;overflow-x:auto;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line)}nav.rail a{flex:none;white-space:nowrap}.meter{display:none}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:640px){.grid2{grid-template-columns:minmax(0,1fr)}.toplinks{display:none}.hrow{grid-template-columns:7em minmax(0,1fr) 4.5em}table{font-size:13.5px}}
+.score{font:600 20px var(--fd);min-width:2.4em;text-align:center;border-radius:10px;padding:4px 6px}.score.hi{background:var(--gobg);color:var(--go)}.score.mid{background:var(--warnbg);color:var(--warn)}.score.lo{background:var(--soft);color:var(--dim)}
+.lead.on{background:#221c0d;border-radius:10px;padding-inline:8px}
+.pipe{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}.col2{background:var(--soft);border-radius:12px;padding:10px;display:grid;gap:6px;align-content:start}.pcard{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:7px 9px;font-size:13.5px;cursor:pointer}
+@media (max-width:720px){.pipe{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0b0c0f">
@@ -91,12 +95,12 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
 <header class="top"><div class="in">
  <a class="brand" href="index.html"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f3f1ea" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg><span>Show<b>call</b></span></a>
  <span class="role">Owner portal</span>
- <div class="toplinks"><a href="app.html">Crew &amp; planner app</a><a href="index.html">Website</a></div>
+ <div class="toplinks"><a href="beo.html">BEO Studio</a><a href="app.html">Crew &amp; planner app</a><a href="index.html">Website</a></div>
 </div></header>
 
 <div class="shell">
  <nav class="rail" aria-label="Portal sections">
-  <a href="#overview">Overview</a><a href="#profit">Profit &amp; suggestions</a><a href="#events">Events</a><a href="#sales">Sales</a><a href="#marketing">Marketing</a><a href="#service">Customer service</a><a href="#people">HR &amp; people</a><a href="#payroll">Payroll</a><a href="#finance">Accounting</a><a href="#inventory">Inventory</a><a href="#ops">Ops &amp; logistics</a><a href="#security">Security</a>
+  <a href="#overview">Overview</a><a href="#profit">Profit &amp; suggestions</a><a href="#events">Events</a><a href="#aisales">AI sales desk</a><a href="#sales">Sales</a><a href="#marketing">Marketing</a><a href="#service">Customer service</a><a href="#people">HR &amp; people</a><a href="#payroll">Payroll</a><a href="#finance">Accounting</a><a href="#inventory">Inventory</a><a href="#ops">Ops &amp; logistics</a><a href="#legal">Legal</a><a href="#security">Security</a>
   <a href="#integrations">Integrations</a><a href="#pilots">Pilots</a><a href="#ai">AI tool scout</a><a href="#approvals">Approvals</a><a href="#governance">Governance</a>
   <div class="meter"><b id="mtr">1 of 47</b>data sources connected<div class="bar"><i id="mtrbar" style="width:2%"></i></div><span style="display:block;margin-top:8px">Everything else is labeled <span class="src sample" style="margin:0">Sample</span> or <span class="src need" style="margin:0">Needs integration</span>.</span></div>
  </nav>
@@ -193,6 +197,55 @@ input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);bor
   </div>
   <div class="card"><div class="ph"><h2>Suggested changes</h2><span class="src real" style="margin:0">From the gala documents</span></div><div id="sugg"></div>
    <p class="note">Toggle a suggestion to see it in the projection. "Send for approval" adds it to Approvals; it doesn't change the event. Estimated savings never count toward the savings tracker until measured.</p></div>
+ </section>
+
+ <section id="s-aisales">
+  <h1>AI sales desk</h1>
+  <p class="lede">Every inquiry answered fast: read, qualified, scored, quoted from your own price list, and a reply drafted — then a person approves before anything goes out. The fastest responder usually wins the event.</p>
+  <div class="kpis" id="aikpi"></div>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Inquiry inbox</h2><span class="src sample" style="margin:0">Sample inquiries</span></div><div id="ailist"></div>
+    <form id="aiform" style="display:grid;gap:8px"><textarea id="aitext" rows="3" placeholder="Paste a new inquiry (email, form or call notes) and Showcall will read it" style="font:400 15px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:9px 11px"></textarea><button class="pri" type="submit">Read &amp; qualify</button></form></div>
+   <div class="card" id="aidetail"></div>
+  </div>
+  <div class="card"><div class="ph"><h2>Pipeline</h2><span class="src sample" style="margin:0">Sample values</span></div><div id="aipipe" class="pipe"></div><div id="aiforecast" class="muted"></div></div>
+  <div class="card scroll"><div class="ph"><h2>AI sales tools to connect</h2><span class="src real" style="margin:0">Researched Nov 22, 2026</span></div>
+   <table><thead><tr><th>Tool</th><th>What it adds</th><th>Pricing found</th><th>Status</th></tr></thead><tbody>
+   <tr><td>Tripleseat Intelligence</td><td>AI suite inside Tripleseat for leads, contracts and event workflows (launched May 2026)</td><td>Not published</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Event Temple AI Sales Coordinator</td><td>Reads inquiries from any channel and creates bookings for the sales team (Sept 2026)</td><td>Not published</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>AddSalt AI · Hostie AI</td><td>AI phone agents that create leads in Tripleseat</td><td>Not published</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Perfect Venue AI Reply</td><td>Drafts personalized inquiry replies within minutes</td><td>Published: $199 / $299 per location/mo</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Slang.ai · Zanus AI · Frontdesk AI</td><td>24/7 phone and web inquiry capture</td><td>Slang published from $399/location/mo; others not verified</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>VenueX AI · iVvy AI</td><td>Venue inquiry handling and follow-up</td><td>Not published</td><td><span class="st nc">Watch</span></td></tr>
+   <tr><td>AiSDR · Artisan · 11x</td><td>Outbound AI prospecting for corporate event clients</td><td>Third-party figures vary widely — UNVERIFIED</td><td><span class="st nc">Watch</span></td></tr>
+   </tbody></table>
+   <p class="note">In this demo, reading and drafting use built-in rules so every field shows its source text. A language model can be plugged in later for messier inquiries. Nothing is ever sent, called or posted without an approval.</p></div>
+ </section>
+
+ <section id="s-legal">
+  <h1>Legal</h1>
+  <p class="lede">Contracts, clauses, licenses, insurance and employment rules in one place, with every item that needs a lawyer routed to one review queue. Showcall organizes and flags; it doesn't give legal advice.</p>
+  <div class="kpis" id="lgkpi"></div>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Contract checker</h2><span class="src real" style="margin:0">Works now · checklist</span></div>
+    <p class="muted" style="margin:0">Paste a client contract, venue agreement or vendor terms. Showcall checks for the clauses an event contract usually needs and flags what's missing for your attorney.</p>
+    <textarea id="lgtext" rows="7" placeholder="Paste contract text here" style="font:400 14.5px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:9px 11px"></textarea>
+    <div class="chips"><button class="pri" id="lgcheck">Check clauses</button><button id="lgsample">Try a sample contract</button></div>
+    <div id="lgout"></div></div>
+   <div class="card"><div class="ph"><h2>Attorney review queue</h2><span class="st req">Needs a lawyer</span></div><div id="lgqueue"></div>
+    <form id="lgadd" class="row" style="gap:8px"><input id="lgnew" placeholder="Add a question for your attorney" style="flex:1"><button type="submit">Add</button></form></div>
+  </div>
+  <div class="card scroll"><div class="ph"><h2>Contracts register</h2><span class="src sample" style="margin:0">Sample</span></div><table><thead><tr><th>Contract</th><th>Party</th><th>Type</th><th>Signed</th><th>Renews / ends</th><th>Watch</th></tr></thead><tbody id="lgcontracts"></tbody></table></div>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Licenses, permits &amp; insurance</h2><span class="src sample" style="margin:0">Sample dates — enter yours</span></div><div id="lgcal"></div></div>
+   <div class="card"><div class="ph"><h2>Employment &amp; privacy</h2><span class="src real" style="margin:0">From how Showcall works</span></div><div id="lgemp"></div></div>
+  </div>
+  <div class="card scroll"><div class="ph"><h2>Legal tools to connect</h2></div><table><thead><tr><th>Tool</th><th>What it adds</th><th>Pricing (report)</th><th>Status</th></tr></thead><tbody>
+   <tr><td>Ironclad (Jurist AI)</td><td>Contract lifecycle, AI first-pass redlines, obligation tracking</td><td>Not published (~$40K/yr median — UNVERIFIED)</td><td><span class="st nc">Watch</span></td></tr>
+   <tr><td>Perfect Venue / Tripleseat e-sign</td><td>Client contracts signed inside the sales platform</td><td>Included in those plans</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Checkr</td><td>Background screening with consent records</td><td>Published: $29.99–$94.99 per report</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>SafetyCulture</td><td>Incident reports with photos, for claims and insurers</td><td>Published: free up to 10 users</td><td><span class="st nc">Not connected</span></td></tr></tbody></table>
+   <p class="note">Not legal advice. Requirements differ by state and city; confirm licensing, alcohol service, employment and privacy rules with a Michigan attorney and the agencies that issue your licenses.</p></div>
  </section>
 
  <section id="s-payroll">
@@ -397,7 +450,7 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
  if(d.req){if(!S.req.includes(d.req))S.req.push(d.req);save();renderTools();renderApprovals();document.querySelectorAll(`[data-req="${d.req}"]`).forEach(x=>{x.disabled=true;x.textContent='Requested'});return}
  if(d.dec){const [id,v]=d.dec.split('|');S.dec[id]=v;save();renderApprovals();return}});
 $('#q').addEventListener('input',e=>{q=e.target.value.toLowerCase().trim();renderTools()});
-const SECTIONS=['overview','profit','events','sales','marketing','service','people','payroll','finance','inventory','ops','security','integrations','pilots','ai','approvals','governance'];
+const SECTIONS=['overview','profit','events','aisales','sales','marketing','service','people','payroll','finance','inventory','ops','legal','security','integrations','pilots','ai','approvals','governance'];
 function route(){const h=(location.hash||'#overview').slice(1),id=SECTIONS.includes(h)?h:'overview';
  SECTIONS.forEach(s=>{document.getElementById('s-'+s).classList.toggle('on',s===id)});
  document.querySelectorAll('nav.rail a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));}
@@ -497,6 +550,87 @@ document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)r
   try{const u=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const a=document.createElement('a');a.href=u;a.download='showcall-payroll-2026-11-16_29.csv';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove()},500);$('#paymsg').innerHTML=`<p class="note">Exported ${rows.length} approved timesheets. Upload the file to your payroll provider; nothing was paid or sent.</p>`}
   catch(_){$('#paymsg').innerHTML='<p class="note">Downloads are blocked in this preview. Use the installed app.</p>'}}});
 renderPayroll();
+/* ---- AI sales desk ---- */
+const PRICE={plated:78,buffet:52,stations:64,cocktail:38},STAFF={plated:20,buffet:30,stations:25,cocktail:35},WAGE=24,HOURS=7,CARD=3.8;
+const LEADS0=[
+ {id:1,src:'Web form',ago:12,stage:'New',text:'Hi! We\'re planning our wedding reception for about 180 guests on June 13, 2027 in Detroit. Looking for a plated dinner, budget around $15,000. Two guests are vegan and one has a nut allergy. Can you send pricing?'},
+ {id:2,src:'Email',ago:95,stage:'Qualified',text:'Corporate holiday party for 220 employees, Friday December 11. Stations style, cocktails after. Budget $18k. Need a quote by Monday.'},
+ {id:3,src:'AI phone agent',ago:300,stage:'Proposal',text:'Caller: nonprofit gala, 400 guests, plated, March 7 2027. Budget roughly $35,000. Gluten free options needed. Stage program with speeches.'},
+ {id:4,src:'Web form',ago:4,stage:'New',text:'Last-minute birthday party Saturday for 40 people, buffet, budget $900.'}];
+S.leads=S.leads||LEADS0;S.sel=S.sel||1;save();
+function qualify(t){
+ const n=(t.match(/(\d{2,4})\s*(guests|people|employees|attendees|ppl)/i)||[])[1],budget=(t.match(/\$\s?([\d,]+(?:\.\d+)?)\s*(k)?/i)||[]);
+ const b=budget[1]?parseFloat(budget[1].replace(/,/g,''))*(budget[2]?1000:1):null;
+ const style=/plated/i.test(t)?'plated':/station/i.test(t)?'stations':/buffet/i.test(t)?'buffet':/cocktail/i.test(t)?'cocktail':null;
+ const date=(t.match(/((Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2}(,?\s*\d{4})?)|(\b(Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\b[^.,]*)/i)||[])[0];
+ const diet=[...new Set((t.match(/vegan|vegetarian|gluten[- ]free|nut allergy|dairy[- ]free|kosher|halal|allerg\w*/gi)||[]).map(x=>x.toLowerCase()))];
+ const type=(t.match(/wedding|corporate|holiday party|gala|birthday|fundraiser|conference|nonprofit|rehearsal dinner|reception|banquet|retirement|graduation|party/i)||[])[0];
+ const guests=n?+n:null;
+ return {guests,budget:b,style,date:date||null,diet,type:type||null};
+}
+function quote(q){if(!q.guests||!q.style)return null;const food=q.guests*PRICE[q.style],crew=Math.ceil(q.guests/STAFF[q.style]),labor=crew*HOURS*WAGE*1.6,rent=q.guests*(q.style==='plated'?6:3.5),sub=food+labor+rent,fee=sub*CARD/100;return {food,crew,labor,rent,fee,total:sub+fee}}
+function score(q,lead){const qt=quote(q);let fit=0,bud=0,urg=0,comp=0;
+ comp=['guests','style','date','budget'].filter(k=>q[k]).length*25;
+ if(qt&&q.budget){const r=q.budget/qt.total;bud=r>=0.95?100:r>=0.75?60:r>=0.5?30:10}else bud=40;
+ fit=q.guests?(q.guests>=60?100:q.guests>=30?60:30):40;
+ urg=lead.ago<15?100:lead.ago<60?70:40;
+ return {total:Math.round(fit*.3+bud*.35+comp*.2+urg*.15),fit,bud,comp,urg,qt};}
+const money2=n=>'$'+Math.round(n).toLocaleString('en-US');
+function draft(q,qt){const who=q.type?q.type.replace(/^\w/,c=>c.toUpperCase()):'event';
+ return `Hi there,\n\nThank you for reaching out about your ${q.type||'event'}${q.date?' on '+q.date:''}! We'd love to help.\n\n${qt?`For ${q.guests} guests with ${q.style} service, our estimate is ${money2(qt.total)} (about ${money2(qt.total/q.guests)} per guest), including food, a crew of ${qt.crew}, rentals and service fees.`:`To put together pricing, could you share your guest count${q.style?'':' and service style (plated, buffet or stations)'}?`}${q.diet.length?`\n\nWe noted ${q.diet.join(', ')} — our chef will plan those plates with you directly.`:''}\n\nWould you have 15 minutes this week for a quick call, or would you like to book a tasting?\n\nWarm regards,\n[Your name]`}
+function renderAI(){
+ const L=S.leads.map(l=>{const q=qualify(l.text),sc=score(q,l);return {...l,q,sc}});
+ const newC=L.filter(l=>l.stage==='New').length,fast=L.filter(l=>l.ago<=15).length,pipe=L.filter(l=>!['Won','Lost'].includes(l.stage)).reduce((a,l)=>a+(l.sc.qt?l.sc.qt.total:0),0);
+ $('#aikpi').innerHTML=[[newC,'new inquiries waiting','sample'],[fast+'/'+L.length,'answered or seen within 15 min','sample'],[money2(pipe),'open pipeline (estimated quotes)','sample'],[Object.keys(S.aisent||{}).length,'replies approved','real']].map(k=>`<div class="kpi"><div class="n">${k[0]}</div><small>${k[1]}</small><span class="src ${k[2]}">${k[2]==='real'?'Live':'Sample'}</span></div>`).join('');
+ $('#ailist').innerHTML=L.sort((a,b)=>b.sc.total-a.sc.total).map(l=>`<div class="row lead ${l.id===S.sel?'on':''}" data-lead="${l.id}" role="button" tabindex="0" style="cursor:pointer"><div><h3>${esc((l.q.type||'Inquiry').replace(/^\w/,c=>c.toUpperCase()))} · ${l.q.guests||'?'} guests</h3><small>${esc(l.src)} · ${l.ago<60?l.ago+' min':Math.round(l.ago/60)+' h'} ago · ${l.stage}</small></div><span class="score ${l.sc.total>=70?'hi':l.sc.total>=45?'mid':'lo'}">${l.sc.total}</span></div>`).join('');
+ const l=L.find(x=>x.id===S.sel)||L[0],q=l.q,sc=l.sc,qt=sc.qt,sent=(S.aisent||{})[l.id];
+ const f=(k,v)=>`<div class="row"><span>${k}</span><b>${v==null||v===''||(Array.isArray(v)&&!v.length)?'<span class="muted">not stated — ask</span>':esc(Array.isArray(v)?v.join(', '):v)}</b></div>`;
+ $('#aidetail').innerHTML=`<div class="ph"><h2>Lead #${l.id} · score ${sc.total}</h2><span class="src sample" style="margin:0">${esc(l.src)}</span></div>
+  <blockquote style="margin:0;padding:10px 12px;border-left:3px solid var(--gold);background:var(--soft);border-radius:8px;font-size:14.5px">${esc(l.text)}</blockquote>
+  <div>${f('Event type',q.type)}${f('Date',q.date)}${f('Guests',q.guests)}${f('Service style',q.style)}${f('Budget',q.budget&&money2(q.budget))}${f('Dietary needs',q.diet)}</div>
+  <div class="hrow"><span>Fit</span><div class="t"><i style="width:${sc.fit}%;background:var(--go)"></i></div><b>${sc.fit}</b></div><div class="hrow"><span>Budget vs quote</span><div class="t"><i style="width:${sc.bud}%;background:var(--go)"></i></div><b>${sc.bud}</b></div><div class="hrow"><span>Details complete</span><div class="t"><i style="width:${sc.comp}%;background:var(--go)"></i></div><b>${sc.comp}</b></div><div class="hrow"><span>Freshness</span><div class="t"><i style="width:${sc.urg}%;background:var(--go)"></i></div><b>${sc.urg}</b></div>
+  ${qt?`<div class="card" style="background:var(--soft)"><h3>Quote from your price list</h3><div class="row"><span>Food · ${q.guests} × ${money2(PRICE[q.style])} (${q.style})</span><b>${money2(qt.food)}</b></div><div class="row"><span>Crew · ${qt.crew} people × ${HOURS} h (loaded)</span><b>${money2(qt.labor)}</b></div><div class="row"><span>Rentals</span><b>${money2(qt.rent)}</b></div><div class="row"><span>Card processing ${CARD}%</span><b>${money2(qt.fee)}</b></div><div class="row"><span><b>Estimate</b></span><b style="font:600 22px var(--fd)">${money2(qt.total)}</b></div>${q.budget?`<small class="${q.budget>=qt.total?'':'muted'}" style="color:${q.budget>=qt.total*0.95?'var(--go)':'var(--warn)'}">Their budget ${money2(q.budget)} is ${Math.round(q.budget/qt.total*100)}% of the estimate${q.budget<qt.total*0.95?' — suggest a buffet or stations option':''}.</small>`:''}</div>`:'<p class="note">Not enough details for a quote yet — the draft asks for them.</p>'}
+  <h3>Drafted reply</h3><textarea id="aidraft" rows="10" style="font:400 14.5px/1.5 var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:10px 12px">${esc(S.aiedit&&S.aiedit[l.id]||draft(q,qt))}</textarea>
+  <div class="chips">${sent?'<span class="st on">Approved · copied</span>':`<button class="pri" data-aiok="${l.id}">Approve &amp; copy reply</button>`}<button data-aistage="${l.id}">Move to next stage</button><button data-ailost="${l.id}">Mark lost</button></div>
+  <p class="note">Follow-ups queued if no answer: day 1, day 3 and day 7, each drafted for approval. Sending from your email or texting needs those accounts connected; until then, approved replies are copied for you to paste.</p>`;
+ const ST=['New','Qualified','Proposal','Contract','Won'];
+ $('#aipipe').innerHTML=ST.map(st=>{const ls=L.filter(x=>x.stage===st),v=ls.reduce((a,x)=>a+(x.sc.qt?x.sc.qt.total:0),0);return `<div class="col2"><b>${st}</b><small class="muted">${ls.length} · ${money2(v)}</small>${ls.map(x=>`<div class="pcard" data-lead="${x.id}">${esc((x.q.type||'Inquiry'))} · ${x.q.guests||'?'}</div>`).join('')}</div>`}).join('');
+ const W={New:.1,Qualified:.25,Proposal:.5,Contract:.8,Won:1};
+ $('#aiforecast').textContent='Weighted forecast: '+money2(L.reduce((a,x)=>a+(x.sc.qt?x.sc.qt.total*(W[x.stage]||0):0),0))+' (stage-weighted estimates; sample values).';
+}
+document.addEventListener('click',e=>{const ld=e.target.closest('[data-lead]');if(ld){S.sel=+ld.dataset.lead;save();renderAI();return}
+ const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.aiok){const id=+b.dataset.aiok,txt=$('#aidraft').value;S.aisent=S.aisent||{};S.aisent[id]=true;try{navigator.clipboard.writeText(txt)}catch(_){}save();renderAI()}
+ if(b.dataset.aistage){const ST=['New','Qualified','Proposal','Contract','Won'],l=S.leads.find(x=>x.id==b.dataset.aistage),i=ST.indexOf(l.stage);if(i>=0&&i<4)l.stage=ST[i+1];save();renderAI()}
+ if(b.dataset.ailost){const l=S.leads.find(x=>x.id==b.dataset.ailost);l.stage='Lost';save();renderAI()}});
+document.addEventListener('input',e=>{if(e.target.id==='aidraft'){S.aiedit=S.aiedit||{};S.aiedit[S.sel]=e.target.value;save()}});
+$('#aiform').addEventListener('submit',e=>{e.preventDefault();const t=$('#aitext').value.trim();if(!t)return;const id=Math.max(...S.leads.map(x=>x.id))+1;S.leads.push({id,src:'Pasted',ago:0,stage:'New',text:t});S.sel=id;$('#aitext').value='';save();renderAI()});
+renderAI();
+/* ---- Legal ---- */
+const CLAUSES=[['Cancellation & refunds',/cancel/i],['Deposit & payment schedule',/deposit|payment schedule|balance due/i],['Final guest count deadline',/final (guest )?count|guarantee/i],['Force majeure',/force majeure|act of god|beyond (its|our|the parties') control/i],['Allergen & dietary disclaimer',/allerg|dietary/i],['Liability & insurance',/liabilit|insurance|indemn/i],['Alcohol service terms',/alcohol|liquor|bar service/i],['Service charge vs gratuity',/service charge|gratuity/i],['Damage to venue or rentals',/damage/i],['Governing law',/governing law|laws of the state/i]];
+const SAMPLE_K='This agreement is between the Caterer and Client for an event on June 13, 2027. A deposit of 30% is due at signing; the balance due 14 days before the event. Final guest count is due 10 days before. Client may cancel with written notice; deposits are non-refundable. A 20% service charge applies. Caterer carries general liability insurance.';
+S.lq=S.lq||[{t:'Location sharing for crew while clocked in: consent wording and retention period',st:'open'},{t:'Overtime and classification for event crew (including any special rules for your workers)',st:'open'},{t:'Opt-in wording and STOP handling before sending crew text messages',st:'open'},{t:'Allergen disclaimer wording for client contracts and the guest needs portal',st:'open'},{t:'Is a "service charge" paid to crew as tips? How to word and handle it',st:'open'}];
+function renderLegal(){
+ const due=[['Food service license','2027-03-31'],['Caterer liquor license / permit','2027-04-30'],['General liability insurance','2027-01-15'],['Liquor liability insurance','2027-01-15'],['Workers\' compensation policy','2027-02-01'],['Health inspection (commissary)','2026-12-10'],['Vehicle insurance (truck)','2027-05-01'],['Sales tax filing','2026-12-20']];
+ const today='2026-11-22',days=d=>Math.round((new Date(d)-new Date(today))/864e5);
+ $('#lgcal').innerHTML=due.sort((a,b)=>a[1].localeCompare(b[1])).map(x=>{const n=days(x[1]);return `<div class="row"><span>${x[0]}</span><span><b>${x[1]}</b> <span class="st ${n<=30?'req':'nc'}">${n<=30?n+' days':'in '+n+' days'}</span></span></div>`}).join('');
+ $('#lgcontracts').innerHTML=[['Client event agreement — Sample Gala','Sample Client','Client','2026-10-02','After event','Final count deadline'],['Venue partner agreement','Downtown Venue','Venue','2026-01-15','2027-01-15','Renewal in 54 days'],['Glassware rentals','Glassware vendor','Vendor','2026-03-01','Rolling','Damage charges'],['Staffing platform terms','Nowsta','Software','—','—','Data processing terms'],['Showcall customer terms','Your customers','Software (you sell)','Draft','—','Needs attorney review']].map(r=>`<tr>${r.map((c,i)=>`<td>${i===5?`<span class="st ${/review|Renewal/.test(c)?'req':'nc'}">${c}</span>`:c}</td>`).join('')}</tr>`).join('');
+ $('#lgemp').innerHTML=[['Location sharing','Opt-in, venue zones only, only while clocked in, wiped at event close','on'],['Codes & phone numbers','Encrypted vault, never exported','on'],['Guest data','Table/seat-level dietary needs only; no guest identities','on'],['Payroll','Showcall never pays; hours exported to your payroll provider','on'],['Overtime & classification','Confirm with attorney before paying','req'],['Crew text messages','Need written opt-in and STOP before turning on','req'],['Background checks','Through Checkr with candidate consent','nc']].map(x=>`<div class="row"><div><h3>${x[0]}</h3><small>${x[1]}</small></div><span class="st ${x[2]}">${x[2]==='on'?'In place':x[2]==='req'?'Review':'Planned'}</span></div>`).join('');
+ $('#lgqueue').innerHTML=S.lq.map((q,i)=>`<div class="row"><span style="${q.st==='done'?'text-decoration:line-through;color:var(--dim)':''}">${esc(q.t)}</span>${q.st==='done'?'<span class="st on">Answered</span>':`<button data-lqdone="${i}">Mark answered</button>`}</div>`).join('');
+ const open=S.lq.filter(q=>q.st!=='done').length,soon=due.filter(x=>days(x[1])<=30).length;
+ $('#lgkpi').innerHTML=[[open,'questions for your attorney','real'],[soon,'renewals in the next 30 days','sample'],['5','contracts tracked','sample'],['0','contracts signed without review','real']].map(k=>`<div class="kpi"><div class="n">${k[0]}</div><small>${k[1]}</small><span class="src ${k[2]}">${k[2]==='real'?'Live':'Sample'}</span></div>`).join('');
+}
+function checkContract(t){const res=CLAUSES.map(c=>[c[0],c[1].test(t)]),miss=res.filter(r=>!r[1]);
+ $('#lgout').innerHTML=`<div class="card" style="background:var(--soft)"><b>${res.length-miss.length} of ${res.length} usual clauses found</b>${res.map(r=>`<div class="row"><span>${r[0]}</span><span class="st ${r[1]?'on':'req'}">${r[1]?'Found':'Missing'}</span></div>`).join('')}
+ ${miss.length?`<button class="pri" id="lgsend">Send ${miss.length} missing clause${miss.length>1?'s':''} to attorney queue</button>`:''}<p class="note">A keyword checklist to speed up review — it doesn't judge whether a clause is good or enforceable.</p></div>`;
+ S.lgmiss=miss.map(m=>m[0]);}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.id==='lgcheck'){checkContract($('#lgtext').value)}
+ if(b.id==='lgsample'){$('#lgtext').value=SAMPLE_K;checkContract(SAMPLE_K)}
+ if(b.id==='lgsend'){(S.lgmiss||[]).forEach(m=>S.lq.push({t:'Contract is missing: '+m+' — draft wording?',st:'open'}));S.lgmiss=[];save();renderLegal();$('#lgout').innerHTML='<p class="note">Added to the attorney review queue.</p>'}
+ if(b.dataset.lqdone){S.lq[+b.dataset.lqdone].st='done';save();renderLegal()}});
+$('#lgadd').addEventListener('submit',e=>{e.preventDefault();const v=$('#lgnew').value.trim();if(!v)return;S.lq.push({t:v,st:'open'});$('#lgnew').value='';save();renderLegal()});
+renderLegal();
 renderTools();renderApprovals();route();
 }
 </script>

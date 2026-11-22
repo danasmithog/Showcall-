@@ -299,7 +299,7 @@ function topbar(){
  return `<header class="top"><div class="in">
  <a class="brand" href="index.html" title="Showcall home">${LOGO}<span>Show<b>call</b></span></a>
  <div class="clock"><label class="muted persona"><span class="vlab">Viewing as</span> <select id="me" aria-label="Viewing as">${PEOPLE.map(p=>`<option value="${p.n}"${S.me===p.n?' selected':''}>${p.n} · ${p.r}</option>`).join('')}</select></label>
-  <div class="seg" role="group" aria-label="Layout"><button data-lay="floor" aria-pressed="${S.lay==='floor'}">Crew</button><button data-lay="planner" aria-pressed="${S.lay==='planner'}">Planner</button><button data-lay="manager" aria-pressed="${S.lay==='manager'}">Manager</button></div><a class="ownerlink" href="owner.html">Owner portal →</a></div>
+  <div class="seg" role="group" aria-label="Layout"><button data-lay="floor" aria-pressed="${S.lay==='floor'}">Crew</button><button data-lay="planner" aria-pressed="${S.lay==='planner'}">Planner</button><button data-lay="manager" aria-pressed="${S.lay==='manager'}">Manager</button></div><a class="ownerlink" href="beo.html">BEO Studio</a><a class="ownerlink" href="owner.html">Owner portal →</a></div>
  </div>
  <div class="demo"><div class="in">
   <span class="pill">Demo event</span><span class="time" aria-live="off">${fmt(S.clock)}</span>

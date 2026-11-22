@@ -24,6 +24,10 @@
  ],
  "shortcuts": [
   {
+   "name": "BEO Studio",
+   "url": "beo.html"
+  },
+  {
    "name": "Owner portal",
    "url": "owner.html"
   },
