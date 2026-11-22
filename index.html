@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Showcall — Every cue, every crew, on time</title>
+<meta name="description" content="Showcall turns your BEO into a live run of show that calls every cue to your crew's phones and watches.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* VOICE: confident, warm, specific — a product that already worked on a real 510-guest night. Plain about safety and price.
+   IDEA: calling the show — the visitor plays the night themselves: scrub the clock, scan the BEO, run late, find a runner, ask the wrist.
+   PICTURE: a live phone + round watch driven by a time scrubber across the gala night.
+   COLOUR and TYPE: gala black & gold with signal red (stop) and green (go); Fredoka display, Rubik text.
+   LAYOUT: one long sales page of hands-on demos, then roles, calculator, pricing, proof, FAQ, request form. */
+:root{color-scheme:dark;--bg:#0a0b0e;--panel:#14161b;--soft:#1c1f26;--line:#292e37;--ink:#f4f2eb;--dim:#a7acb5;
+ --gold:#dcb760;--gold2:#f3d998;--on:#1a1408;--stop:#ff5d4d;--stopbg:#3a120e;--go:#5fd394;--gobg:#0f2e1e;--warn:#f3b843;--warnbg:#33270e;--info:#8bb8ff;
+ --fd:"Fredoka",system-ui,sans-serif;--fb:"Rubik",system-ui,sans-serif}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:76px}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 var(--fb);overflow-x:clip}
+a{color:var(--gold)}
+h1,h2,h3{font-family:var(--fd);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:clamp(40px,6.2vw,72px);line-height:1}
+h2{font-size:clamp(30px,4vw,48px);line-height:1.05}
+h3{font-size:20px;line-height:1.2}
+p{margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:max(5vw,18px)}
+.band{padding-block:clamp(56px,8vw,110px)}
+.alt{background:#0f1014;border-block:1px solid var(--line)}
+.head{max-width:46em;margin-bottom:34px}.head p{color:var(--dim);margin-top:12px;font-size:18.5px}
+.kicker{color:var(--gold);font-weight:600;font-size:14.5px;margin-bottom:10px}
+nav.top{position:sticky;top:0;z-index:20;background:#0a0b0ee8;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+nav.top .wrap{display:flex;align-items:center;gap:18px;min-height:66px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--ink);font:600 25px var(--fd);margin-right:auto}.brand b{color:var(--gold);font-weight:600}.brand svg{width:32px;height:32px}
+.links{display:flex;gap:18px;flex-wrap:wrap}.links a{color:var(--dim);text-decoration:none;font-size:15px}.links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 22px;border-radius:13px;font:600 16px var(--fb);text-decoration:none;border:1px solid var(--line);color:var(--ink);background:var(--soft);cursor:pointer}
+.btn.pri{background:var(--gold);border-color:var(--gold);color:var(--on)}
+.btn.sm{min-height:40px;padding:0 15px;font-size:14.5px;border-radius:11px}
+.btn:hover{filter:brightness(1.1)}
+.btn:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid var(--gold2);outline-offset:3px}
+button{font:500 15px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:11px;min-height:44px;padding:0 14px;cursor:pointer}
+button[aria-pressed=true]{background:var(--gold);color:var(--on);border-color:var(--gold)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px}
+.muted{color:var(--dim)}
+/* reveal */
+.rv{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
+/* hero */
+.hero{background:radial-gradient(1100px 620px at 78% 8%,#2c2310 0%,transparent 60%),var(--bg)}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:clamp(24px,5vw,60px);align-items:center;padding-block:clamp(36px,6vw,76px)}
+.lede{font-size:clamp(18px,2vw,21px);color:#d8d6cf;margin:18px 0 26px;max-width:33em}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.trust{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;color:var(--dim);font-size:14.5px}.trust span::before{content:"✓ ";color:var(--go)}
+.live{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:18px;display:grid;gap:14px;box-shadow:0 30px 80px #0009}
+.livehead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.clock{font:600 30px var(--fd);color:var(--gold);font-variant-numeric:tabular-nums}
+.devices{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:16px;align-items:center}
+.phone{border-radius:34px;background:#050608;border:8px solid #262a31;box-shadow:0 0 0 2px #3c414a;padding:16px 12px;min-height:330px}
+.phone .pb{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);margin-bottom:8px}
+.now{border-radius:14px;padding:11px;background:var(--soft);border:1px solid var(--line);margin-bottom:8px;transition:background .3s,border-color .3s}
+.now b{display:block;font:600 19px/1.1 var(--fd)}
+.now span{font-size:12.5px;color:#d6d8dc}
+.now.stop{background:var(--stopbg);border-color:#7a2c23}.now.stop b{color:var(--stop)}
+.now.go{background:var(--gobg);border-color:#22603f}.now.go b{color:var(--go)}
+.now.warn{background:var(--warnbg);border-color:#5b4516}.now.warn b{color:var(--warn)}
+.tl{list-style:none;margin:0;padding:0;font-size:12.5px}
+.tl li{display:grid;grid-template-columns:4.6em 1fr;gap:6px;padding:5px 0;border-top:1px solid var(--line);transition:opacity .3s}
+.tl li i{font-style:normal;color:var(--gold);font-weight:600;white-space:nowrap}
+.tl li.past{opacity:.38}.tl li.cur{color:var(--ink);font-weight:600}.tl li.p i{color:var(--stop)}
+.watch{width:100%;max-width:210px;aspect-ratio:1;margin:0 auto;border-radius:50%;background:#050608;border:9px solid #2b2f36;box-shadow:0 0 0 2px #464b55,0 0 0 8px #1b1e23,0 20px 40px #000b;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;text-align:center;padding:14%;position:relative;transition:background .35s}
+.watch:after{content:"";position:absolute;right:-19px;top:calc(50% - 14px);width:8px;height:28px;border-radius:4px;background:#3b4049}
+.watch .wt{font:600 13px var(--fd);color:#9aa2ad}.watch .wh{font:600 clamp(22px,3.2vw,30px)/1 var(--fd);color:var(--ink)}.watch .wb{font-size:12px;line-height:1.3;color:#d9dbe0}
+.watch.stop{background:#3a0d09}.watch.stop .wh{color:#ff6a5b}.watch.go{background:#0b2618}.watch.go .wh{color:#68e0a0}.watch.warn .wh{color:var(--warn)}
+.watch.buzz{animation:buzz .45s 2}@keyframes buzz{0%,100%{transform:translateX(0)}30%{transform:translateX(-4px)}70%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.watch.buzz{animation:none}}
+input[type=range]{width:100%;accent-color:var(--gold);height:32px}
+.ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--dim);margin-top:-4px}
+/* proof strip */
+.proof{background:var(--gold);color:var(--on)}
+.proof .wrap{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr));gap:20px;align-items:center;padding-block:28px}
+.proof .n{font:600 clamp(34px,4vw,48px)/1 var(--fd);font-variant-numeric:tabular-nums}
+.proof small{display:block;font-size:14px;font-weight:500;opacity:.85}
+/* demo blocks */
+.demo{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:clamp(20px,4vw,48px);align-items:center}
+.demo.flip{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+.demo .copy p{color:var(--dim);font-size:18px;margin-top:12px}
+.demo .copy ul{color:#d6d8dc;padding-left:20px;margin:14px 0 0}
+.stage{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:18px;display:grid;gap:12px;min-height:360px}
+/* scanner */
+.doc{background:#f3efe4;color:#1b1b1b;border-radius:10px;padding:14px 16px;font:12.5px/1.55 ui-monospace,Menlo,monospace;height:220px;overflow:hidden;position:relative}
+.doc div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.doc .hit{background:#ffd6cf}.doc .hitc{background:#ffe9b8}
+.doc .beam{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--gold),transparent);box-shadow:0 0 18px var(--gold);top:0;opacity:0}
+.flags{display:grid;gap:8px;max-height:230px;overflow:auto}
+.fl{border-radius:12px;padding:9px 12px;border:1px solid var(--line);background:var(--soft);font-size:14px;animation:pop .35s ease}
+.fl.s{border-color:#7a2c23;background:var(--stopbg)}.fl.c{border-color:#5b4516;background:var(--warnbg)}
+.fl b{font:600 11px var(--fb);letter-spacing:.05em;margin-right:6px}.fl.s b{color:var(--stop)}.fl.c b{color:var(--warn)}.fl.i b{color:var(--info)}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+.count{display:flex;gap:18px;flex-wrap:wrap}.count div{font-size:14px;color:var(--dim)}.count b{display:block;font:600 30px var(--fd);color:var(--ink);font-variant-numeric:tabular-nums}
+/* late */
+.crew{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+.av{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font:600 13px var(--fd);background:var(--soft);border:2px solid var(--line);color:var(--dim);transition:all .3s}
+.av.ping{border-color:var(--warn);color:var(--ink);box-shadow:0 0 0 4px #f3b84333}
+.av.ok{border-color:var(--go);background:var(--gobg);color:var(--go);box-shadow:none}
+.lt{font-size:14px}.lt .row{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line)}
+.lt s{color:var(--dim)}.lt b{color:var(--gold)}
+/* map */
+.map{width:100%;height:auto;display:block;background:#0f1013;border-radius:12px}
+.pin{cursor:pointer;transition:opacity .3s}
+.callbar{border-radius:12px;padding:10px 12px;background:var(--gobg);border:1px solid #22603f;font-size:14.5px;min-height:46px}
+/* roles */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.role{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+.role ul{margin:0;padding-left:20px;color:#d6d8dc}.role li{margin:6px 0}
+.mock{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;display:grid;gap:8px;font-size:14.5px}
+.mock .r{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-top:1px solid var(--line)}.mock .r:first-of-type{border-top:0}
+.tag{display:inline-block;font:600 11px var(--fb);letter-spacing:.04em;border-radius:6px;padding:2px 8px;white-space:nowrap}
+.tag.now{background:var(--gobg);color:var(--go)}.tag.soon{background:var(--warnbg);color:var(--warn)}
+/* calculator */
+.calc{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label{display:flex;justify-content:space-between;font-size:15px}.field label b{color:var(--gold);font-variant-numeric:tabular-nums}
+.big{font:600 clamp(40px,6vw,64px)/1 var(--fd);font-variant-numeric:tabular-nums}
+/* pricing */
+.billing{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:22px}
+.billing button{border:0;border-radius:0}
+.plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.plan{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:10px}
+.plan.hot{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 24px 60px #dcb76022;position:relative}
+.plan.hot::before{content:"Most popular";position:absolute;top:-12px;left:22px;background:var(--gold);color:var(--on);font:600 12px var(--fb);padding:3px 10px;border-radius:99px}
+.price{font:600 42px/1 var(--fd);font-variant-numeric:tabular-nums}.price small{font:500 15px var(--fb);color:var(--dim)}
+.plan ul{margin:6px 0 0;padding-left:18px;font-size:15px;color:#d6d8dc;flex:1}.plan li{margin:5px 0}
+.founder{margin-top:18px;border:1px dashed var(--gold);border-radius:18px;padding:18px 22px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap;background:#17140c}
+/* case */
+.quote{font:600 clamp(22px,2.6vw,30px)/1.25 var(--fd)}
+.stat3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.stat3 div{background:var(--soft);border-radius:14px;padding:14px}.stat3 b{display:block;font:600 34px var(--fd)}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+details.faq{border-top:1px solid var(--line);padding:14px 0}details.faq summary{cursor:pointer;font:600 18px var(--fd);list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.faq summary::after{content:"+";color:var(--gold);font-size:24px;line-height:1}details.faq[open] summary::after{content:"−"}
+details.faq p{color:var(--dim);margin-top:8px;max-width:60em}
+form.req{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+form.req label{display:grid;gap:4px;font-size:14.5px;color:var(--dim)}
+form.req input,form.req select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:11px;padding:11px 12px;min-height:48px}
+form.req .full{grid-column:1/-1}
+.done{border:1px solid #22603f;background:var(--gobg);border-radius:14px;padding:14px;display:none}
+.final{background:radial-gradient(900px 420px at 50% 0%,#2c2310 0%,transparent 70%),var(--bg)}
+footer{border-top:1px solid var(--line);color:var(--dim);font-size:14px}footer .wrap{display:flex;flex-wrap:wrap;gap:10px 24px;justify-content:space-between;padding-block:26px}
+.sticky{position:fixed;bottom:16px;right:16px;z-index:15;display:none}
+@media (max-width:1000px){.hero .wrap,.demo,.demo.flip,.role,.calc{grid-template-columns:minmax(0,1fr)}.demo.flip .stage{order:2}.plans{grid-template-columns:repeat(2,minmax(0,1fr))}.proof .wrap{grid-template-columns:repeat(2,minmax(0,1fr))}.proof .wrap>:first-child{grid-column:1/-1}.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:620px){.links{display:none}.plans,form.req,.stat3{grid-template-columns:minmax(0,1fr)}.devices{grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:10px}.phone{min-height:300px;padding:12px 9px}.crew{grid-template-columns:repeat(4,minmax(0,1fr))}.sticky{display:block}nav.top .btn{display:none}}
+[hidden]{display:none!important}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0c0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Showcall">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<nav class="top"><div class="wrap">
+ <a class="brand" href="#top"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#dcb760" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f4f2eb" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg><span>Show<b>call</b></span></a>
+ <div class="links"><a href="#try">Try it</a><a href="#roles">Who it's for</a><a href="#calc">Your numbers</a><a href="#pricing">Pricing</a><a href="#faq">FAQ</a></div>
+ <a class="btn sm" href="app.html">Open the app</a><a class="btn pri sm" href="#request">Get early access</a>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+ <div class="rv">
+  <p class="kicker">For caterers, banquet teams and event staffing companies</p>
+  <h1>Every cue. Every crew member. On time.</h1>
+  <p class="lede">Showcall reads your BEO, catches what's wrong before doors, and calls the whole night to every phone and watch on your crew. When the film starts, the room stops. When it ends, every runner knows it's go.</p>
+  <div class="cta"><a class="btn pri" href="#request">Get early access</a><a class="btn" href="#try">Play the night →</a></div>
+  <div class="trust"><span>Built on a real 510-guest gala</span><span>Android &amp; Linux watches</span><span>Allergens kept word for word</span></div>
+ </div>
+ <div class="live rv" aria-label="Interactive demo: drag the clock through the gala night">
+  <div class="livehead"><span class="clock" id="hclock">7:20 PM</span><div class="chips"><button id="hplay" class="sm" aria-pressed="false">▶ Play the night</button></div></div>
+  <div class="devices">
+   <div class="phone"><div class="pb"><span>Team B · sections 3 &amp; 4</span><span id="pclock">7:20 PM</span></div><div class="now" id="pnow"><b>—</b><span></span></div><ol class="tl" id="ptl"></ol></div>
+   <div class="watch" id="hwatch"><span class="wt" id="wt"></span><span class="wh" id="wh"></span><span class="wb" id="wb"></span></div>
+  </div>
+  <div><input type="range" id="scrub" min="1080" max="1380" step="1" value="1160" aria-label="Time of night"><div class="ticks"><span>6 PM</span><span>7 PM</span><span>8 PM</span><span>9 PM</span><span>10 PM</span><span>11 PM</span></div></div>
+  <p class="muted" style="font-size:13.5px">Drag the clock. This is the real run of show from the Sample Anniversary Gala, Downtown Venue.</p>
+ </div>
+</div></header>
+
+<section class="proof"><div class="wrap">
+ <h3>On its first real night, Showcall read three PDFs and caught:</h3>
+ <div><span class="n" data-count="13">13</span><small>document conflicts</small></div>
+ <div><span class="n" data-count="4">4</span><small>allergen &amp; safety problems</small></div>
+ <div><span class="n" data-count="29">29</span><small>extra entrées on the order</small></div>
+ <div><span class="n" data-count="0">0</span><small>codes leaked in exports</small></div>
+</div></section>
+
+<section class="band" id="try"><div class="wrap">
+ <div class="head rv"><p class="kicker">Try it — four things, thirty seconds each</p><h2>Don't read about it. Run it.</h2></div>
+
+ <div class="demo rv">
+  <div class="copy"><h3 style="font-size:28px">1 · Drop in a BEO. Watch it get caught.</h3>
+   <p>Showcall reads every line of the BEO, pack list and staffing sheet and checks them against each other. Wrong counts, missing special plates, an allergen on the wrong plate — flagged for a person to confirm, never "fixed" behind your back.</p>
+   <ul><li>Every value links to its page and line</li><li>Allergen text copied word for word</li><li>Codes go straight into an encrypted vault</li></ul></div>
+  <div class="stage">
+   <div class="doc" id="doc"><div class="beam" id="beam"></div></div>
+   <div class="chips"><button class="btn pri sm" id="scan">Scan the gala BEO</button><button class="btn sm" id="rescan" hidden>Scan again</button></div>
+   <div class="count"><div><b id="cAll">0</b>flags</div><div><b id="cSafe" style="color:var(--stop)">0</b>safety</div><div><b id="cCount" style="color:var(--warn)">0</b>counts</div><div><b id="cVault" style="color:var(--go)">0</b>secrets vaulted</div></div>
+   <div class="flags" id="flags" aria-live="polite"></div>
+  </div>
+ </div>
+
+ <div class="demo flip rv" style="margin-top:clamp(50px,7vw,90px)">
+  <div class="stage">
+   <div class="chips"><span class="muted" style="align-self:center">Program running long?</span><button data-late="5">+5 min</button><button data-late="10">+10 min</button><button data-late="15">+15 min</button><button id="lreset">Reset</button></div>
+   <div class="lt" id="lt"></div>
+   <div class="crew" id="crew"></div>
+   <p class="muted" style="font-size:14px" id="lstatus">Tap a delay. Every phone and watch gets it, and you watch the "Got it" taps come in.</p>
+  </div>
+  <div class="copy"><h3 style="font-size:28px">2 · Running late? Move the whole night in one tap.</h3>
+   <p>Pick how late. Lock the times that can't move, like the venue's hard out. Showcall shows every old time next to its new one, then tells every crew member at once — and you can see who's heard it.</p>
+   <ul><li>Every cue tied to a moved beat re-times</li><li>Undo tells everyone you're back on schedule</li><li>No radios, no shouting across the hall</li></ul></div>
+ </div>
+
+ <div class="demo rv" style="margin-top:clamp(50px,7vw,90px)">
+  <div class="copy"><h3 style="font-size:28px">3 · Find anyone on the floor. Call them in one tap.</h3>
+   <p>Once crew clock in, they can see which part of the venue each teammate is in — Section 3, the pass, coat check — and call or ping them without anyone's personal number showing.</p>
+   <ul><li>Venue zones only, never GPS</li><li>Starts at clock-in, stops at clock-out, pausable for breaks</li><li>Wiped when the event closes</li></ul></div>
+  <div class="stage">
+   <div class="chips"><button id="clockin" aria-pressed="false">Clock in &amp; share my zone</button></div>
+   <div id="mapwrap"></div>
+   <div class="callbar" id="callbar">Clock in to see your crew.</div>
+  </div>
+ </div>
+
+ <div class="demo flip rv" style="margin-top:clamp(50px,7vw,90px)">
+  <div class="stage" style="align-content:center">
+   <div class="watch" id="vwatch" style="max-width:230px"><span class="wt">Ask Showcall</span><span class="wh" style="font-size:22px">🎤</span><span class="wb">Tap a question below</span></div>
+   <div class="chips" id="vchips" style="justify-content:center"></div>
+  </div>
+  <div class="copy"><h3 style="font-size:28px">4 · Ask your wrist. Get the record, not a guess.</h3>
+   <p>"What should I be doing?" "What time is dinner?" "Where's Kit?" Showcall answers only from tonight's event record — and when something isn't in it, it says so and sends you to your point person.</p>
+   <ul><li>Codes are never spoken or shown on a watch</li><li>Specials read exactly as written on the BEO</li><li>Silent during service pauses</li></ul></div>
+ </div>
+</div></section>
+
+<section class="band alt" id="roles"><div class="wrap">
+ <div class="head rv"><p class="kicker">One record, four views</p><h2>Built for everyone who works the night.</h2></div>
+ <div class="tabs rv" role="tablist"><button data-role="crew" aria-pressed="true">Crew</button><button data-role="planner" aria-pressed="false">Event planner</button><button data-role="manager" aria-pressed="false">Manager</button><button data-role="owner" aria-pressed="false">Owner</button></div>
+ <div class="role rv" id="rolebox"></div>
+</div></section>
+
+<section class="band" id="calc"><div class="wrap">
+ <div class="head rv"><p class="kicker">Your numbers</p><h2>What is the paper run of show costing you?</h2><p>Move the sliders to match your operation. This is your estimate from your inputs — not a promise of savings.</p></div>
+ <div class="calc rv">
+  <div class="card">
+   <div class="field"><label>Events per month <b id="v-ev">12</b></label><input type="range" id="ev" min="1" max="80" value="12"></div>
+   <div class="field"><label>Crew per event <b id="v-cr">30</b></label><input type="range" id="cr" min="5" max="120" value="30"></div>
+   <div class="field"><label>Minutes per person lost to huddles, hunting for info and re-briefs <b id="v-mn">20</b></label><input type="range" id="mn" min="0" max="60" value="20"></div>
+   <div class="field"><label>Loaded hourly labor cost <b id="v-wg">$24</b></label><input type="range" id="wg" min="15" max="45" value="24"></div>
+   <div class="field"><label>Extra plates ordered per event (like the gala's 29) <b id="v-pl">15</b></label><input type="range" id="pl" min="0" max="60" value="15"></div>
+   <div class="field"><label>Food cost per plate <b id="v-pc">$14</b></label><input type="range" id="pc" min="4" max="40" value="14"></div>
+  </div>
+  <div class="card" style="justify-content:center">
+   <span class="muted">Your estimated monthly cost of running on paper</span>
+   <div class="big" id="cost">$0</div>
+   <div class="muted" id="costbreak"></div>
+   <div style="border-top:1px solid var(--line);padding-top:12px;display:grid;gap:6px"><span>Showcall plan that fits: <b id="fitplan">Team</b></span><span class="muted" id="payback"></span></div>
+   <a class="btn pri" href="#pricing" style="width:max-content">See pricing</a>
+  </div>
+ </div>
+</div></section>
+
+<section class="band alt" id="pricing"><div class="wrap">
+ <div class="head rv"><p class="kicker">Pricing</p><h2>Free for your crew. Simple for your company.</h2><p>Every crew member on a Showcall event uses the app free. You pay per company, not per head.</p></div>
+ <div class="billing rv" role="group" aria-label="Billing"><button data-bill="m" aria-pressed="false">Monthly</button><button data-bill="y" aria-pressed="true">Annual · 2 months free</button></div>
+ <div class="plans rv" id="plans"></div>
+ <div class="founder rv"><div><h3>Founding partner program</h3><p class="muted" style="margin-top:4px">For the first 10 event companies: founding pricing kept for as long as you stay, and we set up your next event from your own BEO with you.</p></div><a class="btn pri" href="#request">Apply</a></div>
+</div></section>
+
+<section class="band" id="proof"><div class="wrap">
+ <div class="demo rv">
+  <div class="copy"><p class="kicker">The proof night</p><p class="quote">The vegetarian special had to be tomato-free. Its assigned plate listed tomato. Showcall flagged it from the documents before service.</p>
+   <p style="margin-top:16px">Sample Anniversary Gala · Downtown Venue, Detroit · 510 guests, plated, with a 20-minute documentary in the middle of dinner service.</p></div>
+  <div class="stage" style="min-height:0">
+   <div class="stat3"><div><b>3→1</b><span class="muted">PDFs into one record</span></div><div><b>21</b><span class="muted">run-of-show beats</span></div><div><b>6</b><span class="muted">specials, word for word</span></div></div>
+   <div class="fl s"><b>SAFETY</b>Special must be free from "tomatoes", but its plate (Moroccan Chickpea Cake) lists it</div>
+   <div class="fl c"><b>COUNT</b>Beef: section header says 198, line items say 209</div>
+   <div class="fl c"><b>COUNT</b>Salad ordered at 535.5 covers for 510 guests</div>
+   <div class="fl s"><b>SAFETY</b>No separate special plate on the menu for "1 DF &amp; soy free chicken"</div>
+  </div>
+ </div>
+</div></section>
+
+<section class="band alt"><div class="wrap">
+ <div class="head rv"><p class="kicker">Rules built in, not settings</p><h2>Some things should never be up to an app.</h2></div>
+ <div class="grid3 rv">
+  <div class="card"><h3>Allergens stay word for word</h3><p class="muted">Paraphrases are rejected in code. There's no edit button on a dietary restriction.</p></div>
+  <div class="card"><h3>Codes in a private vault</h3><p class="muted">Door, parking and ice codes are encrypted, never exported and never shown on a watch.</p></div>
+  <div class="card"><h3>People decide</h3><p class="muted">No auto-sending, auto-accepting shifts or auto-buying. Every conflict waits for a person.</p></div>
+  <div class="card"><h3>No guessing</h3><p class="muted">If a time, code or name isn't in a source, Showcall says UNKNOWN.</p></div>
+  <div class="card"><h3>Location only on the clock</h3><p class="muted">Venue zones only, opt-in, pausable, wiped after the event. Never used to rate anyone.</p></div>
+  <div class="card"><h3>Every decision logged</h3><p class="muted">Flags, approvals, vault reveals and exports all land in the audit log.</p></div>
+ </div>
+</div></section>
+
+<section class="band" id="faq"><div class="wrap" style="max-width:900px">
+ <div class="head rv"><p class="kicker">FAQ</p><h2>Questions event companies ask first</h2></div>
+ <div class="rv">
+ <details class="faq"><summary>Does it replace Nowsta or our scheduling tool?</summary><p>No. Your scheduling tool stays the system of record for rosters, shift offers, clock-in for pay and payroll. Showcall reads staffing in and runs the night itself. It never accepts, declines or offers a shift.</p></details>
+ <details class="faq"><summary>Which watches work?</summary><p>Wear OS watches (Android) and watches running AsteroidOS (open-source Linux). Cues first arrive as phone notifications the watch shows; the native watch apps add the full-screen pause and one-tap acknowledge. Crew without a watch get the same cues on their phone.</p></details>
+ <details class="faq"><summary>Do crew have to pay or buy anything?</summary><p>No. The crew app is free for everyone working a Showcall event. A watch is optional.</p></details>
+ <details class="faq"><summary>What documents can it read?</summary><p>BEOs, pack lists and staffing sheets as PDFs today, starting with the formats we've proven on real events. Other formats are added as we onboard each company.</p></details>
+ <details class="faq"><summary>Is my crew being tracked?</summary><p>Only while they're clocked in and only if they agree — and only which venue zone they're in, never GPS. They can pause it, it stops at clock-out, and it's wiped when the event closes.</p></details>
+ <details class="faq"><summary>What if the venue has bad signal?</summary><p>The night's cue schedule is copied to phones and watches before doors so cues still fire offline. That offline mode is on the roadmap for early access.</p></details>
+ <details class="faq"><summary>What's ready today and what's coming?</summary><p>Ready in early access: document intake, conflict flags, the event record, private vault, run of show, running-late changes, crew app, manager view and owner portal. Rolling out: native Wear OS and AsteroidOS apps, voice on the watch, live crew locator with venue zone tags, and integrations like Nowsta and accounting tools.</p></details>
+ </div>
+</div></section>
+
+<section class="band final" id="request"><div class="wrap" style="max-width:860px">
+ <div class="head rv" style="text-align:center;margin-inline:auto"><p class="kicker">Early access</p><h2>Run your next event on Showcall.</h2><p>Tell us about your events. Founding partners get set up on their own next BEO.</p></div>
+ <form class="req card rv" id="reqform" novalidate>
+  <label>Your name<input name="name" required autocomplete="name"></label>
+  <label>Company<input name="company" required autocomplete="organization"></label>
+  <label>Work email<input name="email" type="email" required autocomplete="email"></label>
+  <label>Your role<select name="role"><option>Owner</option><option>Operations / event manager</option><option>Sales</option><option>Chef / kitchen</option><option>Other</option></select></label>
+  <label>Events per month<select name="events"><option>1–5</option><option>6–20</option><option>21–50</option><option>50+</option></select></label>
+  <label>Crew per event<select name="crew"><option>Under 15</option><option>15–40</option><option>40–100</option><option>100+</option></select></label>
+  <div class="full chips" style="justify-content:space-between;align-items:center"><span class="muted" style="font-size:13.5px">We'll only use this to contact you about Showcall.</span><button class="btn pri" type="submit">Request early access</button></div>
+  <div class="full done" id="done" role="status"></div>
+ </form>
+</div></section>
+
+<footer><div class="wrap"><span>© 2026 Showcall · Detroit, Michigan</span><span><a href="app.html">App</a> · <a href="owner.html">Owner portal</a> · <a href="#faq">FAQ</a></span></div></footer>
+<a class="btn pri sticky" href="#request">Get early access</a>
+
+<script>
+{
+/* Set these before launch: a form endpoint (on your own hosting) and the inbox that receives requests. */
+const FORM_ENDPOINT='',SALES_EMAIL='';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt=m=>{m=Math.round(m);const h=Math.floor(m/60),mm=m%60;return `${(h+11)%12+1}:${String(mm).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
+const T=(h,m)=>h*60+m;
+/* ---------- hero: the gala night ---------- */
+const B=[[T(18,0),'Guests arrive · stations open'],[T(18,45),'Invite guests to seats'],[T(19,5),'Salad course'],[T(19,15),'Welcome · prayer · orchestra'],[T(19,25),'Documentary — service pause','p'],[T(19,45),'Clear salads · dinner service'],[T(20,0),'Charcuterie flips to dessert'],[T(20,45),'Tribute · quiet window'],[T(21,15),'Closing speech'],[T(22,0),'Guest departure'],[T(23,0),'Crew departure']];
+function stateAt(t){
+ if(t>=T(19,20)&&t<T(19,25))return {c:'warn',h:'HOLD SOON',b:'Documentary in '+(T(19,25)-t)+' min. Finish your table.',nb:'Documentary in '+(T(19,25)-t)+' min',ns:'Finish your current table, then hold.'};
+ if(t>=T(19,25)&&t<T(19,44))return {c:'stop',h:'PAUSE',b:'No service.<br>No clearing.',nb:'SERVICE STOPS',ns:'No food service, no clearing. Resumes 7:45 PM.'};
+ if(t>=T(19,44)&&t<T(19,52))return {c:'go',h:'GO',b:'Clear salads.<br>Entrées start.',nb:'GO — clear salads',ns:'Markers: cow = beef, chix = chix, carrot = veg.'};
+ if(t>=T(19,52)&&t<T(20,0))return {c:'warn',h:'FLIP',b:'Charcuterie becomes dessert at 8:00.',nb:'Station flip at 8:00',ns:'No backup except crackers and bread.'};
+ if(t>=T(20,30)&&t<T(20,45))return {c:'warn',h:'CHECK',b:'Tribute at 8:45. Clear quietly.',nb:'Mid-evening check',ns:'Tribute at 8:45 — stay out of sightlines.'};
+ if(t>=T(21,55)&&t<T(22,5))return {c:'go',h:'HOME',b:'Final clearing.<br>Apron in the bag.',nb:'Home stretch',ns:'Breakdown, apron in the laundry bag, parking validation.'};
+ const nx=B.find(x=>x[0]>t),cur=[...B].reverse().find(x=>x[0]<=t);
+ return {c:'',h:nx?'in '+(nx[0]-t)+'m':'Done',b:nx?nx[1].split(' ·')[0].split(' —')[0]:'Shift over',nb:cur?cur[1]:'Before doors',ns:nx?'Next: '+nx[1]+' at '+fmt(nx[0]):'Thanks, crew.'};
+}
+let last='';
+function drawHero(t){
+ const s=stateAt(t);$('#hclock').textContent=fmt(t);$('#pclock').textContent=fmt(t);
+ const n=$('#pnow');n.className='now '+s.c;n.innerHTML=`<b>${s.nb}</b><span>${s.ns}</span>`;
+ const w=$('#hwatch');w.className='watch '+s.c;$('#wt').textContent=fmt(t);$('#wh').textContent=s.h;$('#wb').innerHTML=s.b;
+ if(s.c&&s.h!==last&&!still){void w.offsetWidth;w.classList.add('buzz')}last=s.h;
+ const cur=[...B].reverse().find(x=>x[0]<=t);
+ $('#ptl').innerHTML=B.slice(1,9).map(x=>`<li class="${x[2]?'p':''} ${x===cur?'cur':x[0]<t?'past':''}"><i>${fmt(x[0])}</i><span>${x[1]}</span></li>`).join('');
+}
+const scrub=$('#scrub');scrub.addEventListener('input',()=>drawHero(+scrub.value));
+let playing=null;
+$('#hplay').addEventListener('click',()=>{if(playing){clearInterval(playing);playing=null;$('#hplay').textContent='▶ Play the night';$('#hplay').setAttribute('aria-pressed','false');return}
+ if(+scrub.value>=1375)scrub.value=T(19,10);$('#hplay').textContent='❚❚ Pause';$('#hplay').setAttribute('aria-pressed','true');
+ playing=setInterval(()=>{let v=+scrub.value+1;if(v>1380){clearInterval(playing);playing=null;$('#hplay').textContent='▶ Play the night';return}scrub.value=v;drawHero(v)},still?400:120)});
+drawHero(+scrub.value);
+/* ---------- scanner ---------- */
+const DOCL=[['Event Order 0001',''],['Guests: 510   Service Style: Plated',''],['7:25PM: Documentary Begins - Crew TO PAUSE FOOD SERVICE',''],['PLATED SALAD AND BREAD COURSE',''],['Michigan Greens Salad ........ 535.5','c'],['Artisan White Rolls .......... 1','s'],['PLATED BEEF ENTREE COURSE ..... 198','c'],['Sirloin Filet ................ 209','c'],['PLATED BEEF ENTREE - Lactose Intolerant ... 1','s'],['PLATED CHICKEN ENTREE COURSE .. 290','c'],['Thyme Roasted Chicken ........ 305','c'],['PLATED VEGETARIAN ENTREE ...... 20','c'],['Moroccan Chickpea Cake ... Tomato ...','s'],['Parking Validation: Code ••••','v'],['Ice: On-Site, Code ••••','v'],['Dietary Notes: 1 DF beef','s'],['1 DF & soy free chicken','s'],['1 vegetarian entree free from ... tomatoes ...','s']];
+const FL=[['s','Special must be free from "tomatoes", but its plate lists tomato'],['c','Beef count: header 198, line items 209'],['c','Chicken count: header 290, line items 305'],['c','Vegetarian count: header 20, line items 23'],['c','Salad ordered at 535.5 covers for 510 guests'],['s','3 guests need an Artisan white roll; 1 ordered'],['s','"1 DF beef" vs plate labeled "Lactose Intolerant"'],['s','No separate plate for "1 DF & soy free chicken"'],['c','Brioche rolls at 535.5 for 510 guests'],['i','1 GF cheese roll with no dietary note'],['i','BEO asks for 30 trays; pack list packs 35'],['i','Event manager duty differs between team sheets'],['i','BEO estimates 2 event managers; sheets name 1']];
+function docInit(){$('#doc').innerHTML='<div class="beam" id="beam"></div>'+DOCL.map((d,i)=>`<div data-i="${i}">${esc(d[0])}</div>`).join('');$('#flags').innerHTML='';['cAll','cSafe','cCount','cVault'].forEach(id=>$('#'+id).textContent='0')}
+docInit();
+let scanning=false;
+function scan(){if(scanning)return;scanning=true;docInit();$('#scan').hidden=true;
+ const beam=$('#beam'),rows=$$('#doc div[data-i]');let i=0,f=0,vs=0;const step=still?30:170;
+ beam.style.opacity=1;
+ const tick=setInterval(()=>{
+  if(i<rows.length){const r=rows[i],k=DOCL[i][1];beam.style.top=(r.offsetTop+r.offsetHeight)+'px';
+   const doc=$('#doc');if(r.offsetTop>doc.clientHeight-40)doc.scrollTop=r.offsetTop-doc.clientHeight+60;
+   if(k==='s'||k==='c')r.className=k==='s'?'hit':'hitc';if(k==='v'){vs++;$('#cVault').textContent=vs}
+   i++;if(i%2===0&&f<FL.length){addFlag(FL[f++])}}
+  else if(f<FL.length){addFlag(FL[f++])}
+  else{clearInterval(tick);beam.style.opacity=0;scanning=false;$('#rescan').hidden=false}},step);
+}
+function addFlag(x){const el=document.createElement('div');el.className='fl '+x[0];el.innerHTML=`<b>${x[0]==='s'?'SAFETY':x[0]==='c'?'COUNT':'CHECK'}</b>${esc(x[1])}`;$('#flags').prepend(el);
+ const all=$$('#flags .fl');$('#cAll').textContent=all.length;$('#cSafe').textContent=all.filter(e=>e.classList.contains('s')).length;$('#cCount').textContent=all.filter(e=>e.classList.contains('c')).length}
+$('#scan').addEventListener('click',scan);$('#rescan').addEventListener('click',()=>{$('#rescan').hidden=true;scan()});
+/* ---------- running late ---------- */
+const LB=[['Documentary',T(19,25)],['Dinner service',T(19,45)],['Dessert flip',T(20,0)],['Tribute',T(20,45)],['Guest departure',T(22,0)],['Crew departure',T(23,0),1]];
+const CREW=['Da','Mo','Ki','Ar','Th','Pr','Le','Ju','Ra','So','Ni','Av'];let delay=0,ackT=[];
+function drawLate(){$('#lt').innerHTML=LB.map(b=>`<div class="row"><span>${b[0]}${b[2]?' <span class="tag now">locked</span>':''}</span><span>${delay&&!b[2]?`<s>${fmt(b[1])}</s> → <b>${fmt(b[1]+delay)}</b>`:fmt(b[1])}</span></div>`).join('')}
+function drawCrew(state){$('#crew').innerHTML=CREW.map((c,i)=>`<div class="av ${state[i]||''}">${c}</div>`).join('')}
+drawLate();drawCrew([]);
+function runLate(m){ackT.forEach(clearTimeout);ackT=[];delay+=m;drawLate();const st=CREW.map(()=>'ping');drawCrew(st);
+ $('#lstatus').innerHTML=`<b style="color:var(--warn)">LATE +${delay}</b> sent to ${CREW.length} phones and watches…`;
+ const order=CREW.map((_,i)=>i).sort(()=>Math.random()-.5);let n=0;
+ order.forEach((i,k)=>ackT.push(setTimeout(()=>{if(k<11){st[i]='ok';n++;drawCrew(st);$('#lstatus').innerHTML=`<b style="color:var(--warn)">LATE +${delay}</b> · <b style="color:var(--go)">${n}/${CREW.length}</b> tapped "Got it"${n===11?' · one still on a tray — their point gets a nudge':''}`}},still?50:350+k*260)))}
+$$('[data-late]').forEach(b=>b.addEventListener('click',()=>runLate(+b.dataset.late)));
+$('#lreset').addEventListener('click',()=>{ackT.forEach(clearTimeout);delay=0;drawLate();drawCrew([]);$('#lstatus').textContent='Back on original times. Everyone gets that too.'});
+/* ---------- map ---------- */
+const Z={s1:[20,60,120,120,'Section 1'],s2:[150,60,110,120,'Section 2'],s3:[340,60,110,120,'Section 3'],s4:[460,60,120,120,'Section 4'],st:[270,60,60,120,'Table 1'],coat:[20,200,170,80,'Coat check'],door:[200,200,180,80,'Side entrance'],pass:[390,200,190,80,'Pass · kitchen']};
+const PEEPS=[['Kit','Point','s3'],['Mo','Expeditor','pass'],['Ari','Lead 4','s4'],['Theo','Runner','pass'],['Priya','Runner','s3'],['Jules','Expeditor','pass'],['Rae','Point','s1'],['Sol','Runner','s2'],['Avery','Event manager','st']];
+let clocked=false;
+function drawMap(){
+ if(!clocked){$('#mapwrap').innerHTML=`<svg class="map" viewBox="0 0 600 296" aria-hidden="true">${Object.values(Z).map(z=>`<rect x="${z[0]}" y="${z[1]}" width="${z[2]}" height="${z[3]}" rx="8" fill="#17191e" stroke="#2c313a"/><text x="${z[0]+8}" y="${z[1]+16}" font-size="11" fill="#5c626c">${z[4]}</text>`).join('')}<text x="300" y="30" text-anchor="middle" font-size="14" fill="#a7acb5">🔒 Locator unlocks when you clock in</text></svg>`;return}
+ const by={};PEEPS.forEach(p=>(by[p[2]]=by[p[2]]||[]).push(p));by.s4=(by.s4||[]).concat([['You','Runner','s4']]);
+ let dots='';for(const [k,ps] of Object.entries(by)){const z=Z[k];ps.forEach((p,i)=>{const cols=Math.max(1,Math.floor((z[2]-10)/30)),x=z[0]+18+(i%cols)*30,y=z[1]+40+Math.floor(i/cols)*28,me=p[0]==='You';
+  dots+=`<g class="pin" data-p="${p[0]}" role="button" tabindex="0" aria-label="${p[0]}, ${z[4]}"><circle cx="${x}" cy="${y}" r="12" fill="${me?'#5fd394':p[1]==='Event manager'?'#f4f2eb':'#dcb760'}" stroke="#0a0b0e" stroke-width="3"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="9.5" font-weight="600" fill="#111">${p[0].slice(0,2)}</text></g>`})}
+ $('#mapwrap').innerHTML=`<svg class="map" viewBox="0 0 600 296" role="img" aria-label="Venue map with crew">${Object.values(Z).map(z=>`<rect x="${z[0]}" y="${z[1]}" width="${z[2]}" height="${z[3]}" rx="8" fill="${z[4].startsWith('Pass')?'#1d2230':'#17191e'}" stroke="#2c313a"/><text x="${z[0]+8}" y="${z[1]+16}" font-size="11" fill="#8d939d">${z[4]}</text>`).join('')}<rect x="220" y="8" width="160" height="34" rx="8" fill="#2a2312"/><text x="300" y="30" text-anchor="middle" font-size="12" fill="#dcb760">Stage</text>${dots}</svg>`;
+}
+drawMap();
+$('#clockin').addEventListener('click',()=>{clocked=!clocked;$('#clockin').setAttribute('aria-pressed',clocked);$('#clockin').textContent=clocked?'Clock out':'Clock in & share my zone';drawMap();
+ $('#callbar').innerHTML=clocked?'You\'re in <b>Section 4</b>. Tap anyone on the map to call them.':'Clocked out — your location stopped sharing.'});
+$('#mapwrap').addEventListener('click',e=>{const g=e.target.closest('.pin');if(!g||g.dataset.p==='You')return;const p=PEEPS.find(x=>x[0]===g.dataset.p);
+ $('#callbar').innerHTML=`📞 Calling <b>${p[0]}</b> (${p[1]}, ${Z[p[2]][4]}) through Showcall — no personal numbers shown. <button class="btn sm" id="ping" style="margin-left:6px">Ping instead</button>`});
+$('#callbar').addEventListener('click',e=>{if(e.target.id==='ping'){$('#callbar').innerHTML='Ping sent — their watch buzzes: "Dana is looking for you at Section 4".'}});
+/* ---------- voice ---------- */
+const VQ=[['What should I be doing?','Runner and clearing, sections 3 & 4. Dinner service started 7:45.'],['What time is dinner?','Dinner service starts at 7:45 PM, as soon as the documentary ends.'],['When are guests out?','BEO says 10:00 PM. Crew departure 11:00 PM.'],['Any soy-free specials?','Word for word: "1 DF & soy free chicken". Anything else, ask Kit.'],['Where is Kit?','Kit is in Section 3.'],['Parking code?','Codes are never spoken or shown on the watch. Open the vault on your phone.'],['Who won the game last night?','That\'s not in tonight\'s record, so I won\'t guess. Ask Kit.']];
+$('#vchips').innerHTML=VQ.map((q,i)=>`<button class="btn sm" data-vq="${i}">${q[0]}</button>`).join('');
+$('#vchips').addEventListener('click',e=>{const b=e.target.closest('[data-vq]');if(!b)return;const q=VQ[+b.dataset.vq],w=$('#vwatch');
+ w.innerHTML=`<span class="wt">“${esc(q[0])}”</span><span class="wb" style="font-size:13.5px;color:#f4f2eb">…</span>`;
+ setTimeout(()=>{w.innerHTML=`<span class="wt">“${esc(q[0])}”</span><span class="wb" style="font-size:13.5px;color:#f4f2eb">${esc(q[1])}</span>`;if(!still){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}},still?0:500)});
+/* ---------- roles ---------- */
+const ROLES={
+ crew:[['Your shift in one screen','Team, sections, point, expeditor and duties by phase'],['Cues on your wrist','Pause, go, station flips, home stretch'],['Find & call crew','Venue zones, only while clocked in'],['Ask by voice','Answers from the record only'],['Chat, tasks, ideas, trivia','Points for fun — never for rating anyone']],
+ planner:[['BEO to event record','Every value linked to its page and line'],['Conflict flags','Counts, specials, times — you confirm'],['Run of show','Nudge any beat; every cue re-times'],['Running late','Preview, lock, notify everyone, see who heard'],['Specials tracker','Fired → carried → served → confirmed']],
+ manager:[['Tonight at a glance','Clocked in, cues, acknowledgements, delays'],['One approvals queue','Flags, client drafts, call-offs, crew ideas'],['Close-out','Aprons and rentals counted before the truck leaves'],['Post-event report','Builds itself from the night'],['Team-level numbers','No individual scores']],
+ owner:[['Every department','Sales, marketing, service, HR, accounting, inventory, ops, security'],['Projected profit','Your inputs + suggested changes from real documents'],['Integrations hub','46 researched tools mapped to your business'],['Pilots & AI tool scout','Measured, reversible, read-only'],['Savings locked at $0','Until results are measured']]};
+const MOCK={crew:'<div class="r"><span>Now</span><b style="color:var(--stop)">SERVICE STOPS</b></div><div class="r"><span>Team</span><span>B · sections 3 &amp; 4</span></div><div class="r"><span>Point / expeditor</span><span>Kit / Mo</span></div><div class="r"><span>Markers</span><span>cow · chix · carrot</span></div>',
+ planner:'<div class="r"><span>Documentary</span><span><s class="muted">7:25</s> → <b style="color:var(--gold)">7:35 PM</b></span></div><div class="r"><span>Dinner service</span><span><s class="muted">7:45</s> → <b style="color:var(--gold)">7:55 PM</b></span></div><div class="r"><span>Crew departure</span><span>11:00 PM · locked</span></div><div class="r"><span>Acknowledged</span><b style="color:var(--go)">11 / 12</b></div>',
+ manager:'<div class="r"><span>Clocked in</span><b>34 / 37</b></div><div class="r"><span>Pause cue acknowledged</span><b>94%</b></div><div class="r"><span>Aprons returned</span><b>44 / 44 ✓</b></div><div class="r"><span>Approvals waiting</span><b>3</b></div>',
+ owner:'<div class="r"><span>Projected profit</span><b>$21,917 → <span style="color:var(--go)">$22,412</span></b></div><div class="r"><span>Suggested changes</span><b>5</b></div><div class="r"><span>Sources connected</span><b>1 of 47</b></div><div class="r"><span>Claimed savings</span><b>$0 until measured</b></div>'};
+const LINK={crew:'app.html',planner:'app.html',manager:'app.html',owner:'owner.html'};
+function drawRole(r){$$('[data-role]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.role===r));
+ $('#rolebox').innerHTML=`<div><ul>${ROLES[r].map(x=>`<li><b>${x[0]}</b> — <span class="muted">${x[1]}</span></li>`).join('')}</ul><a class="btn pri" href="${LINK[r]}" style="margin-top:16px">Open the ${r==='owner'?'owner portal':r+' view'}</a></div><div class="mock"><span class="muted" style="font-size:13px">Sample screen</span>${MOCK[r]}</div>`}
+$$('[data-role]').forEach(b=>b.addEventListener('click',()=>drawRole(b.dataset.role)));drawRole('crew');
+/* ---------- calculator & pricing ---------- */
+const PLANS=[{n:'Crew',m:0,d:'For every staff member on a Showcall event.',f:['Phone app: shift, cues, chat','Watch cues (Wear OS & AsteroidOS)','Find & call crew on the clock','Voice questions']},
+ {n:'Team',m:149,d:'One company, up to 75 crew.',f:['BEO, pack list & staffing intake','Conflict flags with sources','Run of show, cues, running late','Specials tracker & private vault','Manager view & close-out']},
+ {n:'Company',m:449,d:'Unlimited events and crew.',hot:1,f:['Everything in Team','Owner portal: every department','Projected profit & suggestions','Integrations hub & pilots','Priority onboarding']},
+ {n:'Enterprise',m:null,d:'Multi-site operators.',f:['Everything in Company','Nowsta & accounting integrations','SSO and custom roles','Custom document formats','Dedicated success manager']}];
+let annual=true;
+function drawPlans(){$('#plans').innerHTML=PLANS.map(p=>{const price=p.m===null?'Talk to us':p.m===0?'Free':'$'+(annual?Math.round(p.m*10/12):p.m);
+ return `<div class="plan ${p.hot?'hot':''}"><h3>${p.n}</h3><span class="muted" style="font-size:14.5px">${p.d}</span><div class="price">${price}${p.m?'<small> /month</small>':''}</div>${p.m&&annual?`<span class="muted" style="font-size:13px">billed $${p.m*10}/year</span>`:'<span style="font-size:13px">&nbsp;</span>'}<ul>${p.f.map(x=>`<li>${x}</li>`).join('')}</ul><a class="btn ${p.hot?'pri':''}" href="#request">${p.m===null?'Contact sales':p.m===0?'Included':'Start with '+p.n}</a></div>`}).join('')}
+$$('[data-bill]').forEach(b=>b.addEventListener('click',()=>{annual=b.dataset.bill==='y';$$('[data-bill]').forEach(x=>x.setAttribute('aria-pressed',x===b));drawPlans();calc()}));drawPlans();
+function calc(){const ev=+$('#ev').value,cr=+$('#cr').value,mn=+$('#mn').value,wg=+$('#wg').value,pl=+$('#pl').value,pc=+$('#pc').value;
+ $('#v-ev').textContent=ev;$('#v-cr').textContent=cr;$('#v-mn').textContent=mn;$('#v-wg').textContent='$'+wg;$('#v-pl').textContent=pl;$('#v-pc').textContent='$'+pc;
+ const labor=ev*cr*(mn/60)*wg,food=ev*pl*pc,total=labor+food;
+ $('#cost').textContent='$'+Math.round(total).toLocaleString('en-US');
+ $('#costbreak').textContent=`$${Math.round(labor).toLocaleString('en-US')} in crew time + $${Math.round(food).toLocaleString('en-US')} in extra plates, every month.`;
+ const plan=cr>75?PLANS[2]:PLANS[1],price=annual?Math.round(plan.m*10/12):plan.m;
+ $('#fitplan').textContent=plan.n+` ($${price}/month)`;
+ $('#payback').textContent=total>price?`At your numbers, the paper cost is about ${Math.max(1,Math.round(total/price))}× the plan price.`:'At these numbers, start with the free crew app and a single event.';}
+['ev','cr','mn','wg','pl','pc'].forEach(id=>$('#'+id).addEventListener('input',calc));calc();
+/* ---------- form ---------- */
+$('#reqform').addEventListener('submit',async e=>{e.preventDefault();const f=e.target,d=Object.fromEntries(new FormData(f)),out=$('#done');
+ if(!d.name||!d.company||!/.+@.+\..+/.test(d.email||'')){out.style.display='block';out.style.borderColor='#7a2c23';out.style.background='var(--stopbg)';out.textContent='Please add your name, company and a work email.';return}
+ out.style.borderColor='';out.style.background='';out.style.display='block';
+ if(FORM_ENDPOINT){try{const r=await fetch(FORM_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});if(!r.ok)throw 0;out.innerHTML=`<b>Thanks, ${esc(d.name)}.</b> We've got your request and will reach out to ${esc(d.email)} about your next event.`;f.reset()}catch(_){out.textContent='That didn\'t go through. Please try again in a moment.'}return}
+ out.innerHTML=`<b>This preview isn't connected to an inbox yet, so your request hasn't been sent.</b><br>${SALES_EMAIL?`Email it to ${esc(SALES_EMAIL)}:`:'Here it is to copy:'}<pre style="white-space:pre-wrap;margin:8px 0 0;font-size:13.5px">${esc(`Showcall early access\nName: ${d.name}\nCompany: ${d.company}\nEmail: ${d.email}\nRole: ${d.role}\nEvents/month: ${d.events}\nCrew/event: ${d.crew}`)}</pre>`});
+/* ---------- reveal & counters ---------- */
+const io='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(x=>{if(x.isIntersecting){x.target.classList.add('in');io.unobserve(x.target)}}),{threshold:.12}):null;
+$$('.rv').forEach(el=>io?io.observe(el):el.classList.add('in'));
+const co='IntersectionObserver' in window?new IntersectionObserver(es=>es.forEach(x=>{if(!x.isIntersecting)return;co.unobserve(x.target);const n=+x.target.dataset.count;if(still||!n)return;let i=0;const t=setInterval(()=>{i++;x.target.textContent=Math.round(n*i/20);if(i>=20)clearInterval(t)},40)}),{threshold:.5}):null;
+$$('[data-count]').forEach(el=>co&&co.observe(el));
+}
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>

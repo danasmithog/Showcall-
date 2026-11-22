@@ -1,0 +1,25 @@
+SHOWCALL — INSTALL ON YOUR PHONE
+
+Your phone can only install a web app from an https:// address, so this folder
+first goes on a free host. Pick one:
+
+OPTION A — Netlify Drop (easiest, about 2 minutes, from a computer)
+ 1. Unzip Showcall-install.zip.
+ 2. Go to app.netlify.com/drop and drag the "showcall-install" folder onto the page.
+ 3. It gives you an address like https://something.netlify.app — open it on your phone.
+
+OPTION B — GitHub Pages (your danasmithog account)
+ 1. Create a repository, upload everything in this folder.
+ 2. Settings > Pages > Deploy from branch > main > Save.
+ 3. Open https://danasmithog.github.io/Showcall-/app.html on your phone.
+
+THEN INSTALL
+ Android (Chrome): open the address > menu (three dots) > "Install app" or "Add to Home screen".
+ iPhone (Safari): open the address > Share > "Add to Home Screen".
+
+The Showcall icon appears on your home screen. It opens full screen, starts on the
+app, and keeps working without signal after the first open. Long-press the icon
+for shortcuts to the Owner portal and the website.
+
+Note: demo data lives on each phone only. Real shared chat, logins, watch alerts
+and integrations need the hosted backend and the Android/watch apps.

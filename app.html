@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Showcall — App</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* VOICE: crew-facing is warm and a little nautical-witty (from the I&O prompt); safety and money screens stay plain.
+   IDEA: a banquet run-of-show card that drives every phone and wrist in the room.
+   PICTURE: the live clock + the wrist — a watch face that turns red when service must stop.
+   COLOUR and TYPE: the gala's own black & gold, signal red for pauses, green for go. Fredoka headings, Rubik body.
+   LAYOUT: two shells over one state — Floor (worker phone, bottom tabs) and Planner (board for the event manager). */
+:root{color-scheme:dark;--bg:#0d0e11;--panel:#16181d;--soft:#1e2128;--line:#2c313a;--ink:#f1efe8;--dim:#a3a8b2;
+ --gold:#d9b45f;--on:#1a1408;--stop:#ff5d4d;--stopbg:#3b1512;--warn:#f3b843;--warnbg:#33270e;--go:#5fd394;--gobg:#10301f;--info:#86b6ff;
+ --fd:"Fredoka",system-ui,sans-serif;--fb:"Rubik",system-ui,sans-serif}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--fb);overflow-x:clip}
+body.tabs-on{padding-bottom:84px}
+h1,h2,h3{font-family:var(--fd);font-weight:600;margin:0}
+h1{font-size:clamp(24px,4vw,32px);line-height:1.05}h1 span{color:var(--gold)}
+h2{font-size:18px}h3{font-size:16px;font-family:var(--fb);font-weight:500}
+.top{position:sticky;top:0;z-index:6;background:#0b0c0fee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.top .in{max-width:1180px;margin:0 auto;padding:10px max(16px,3vw);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.clock{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.time{font:600 26px var(--fd);font-variant-numeric:tabular-nums;color:var(--gold);min-width:4.6em}
+.wrap{max-width:1180px;margin:0 auto;padding:14px max(16px,3vw) 40px;display:flex;flex-direction:column;gap:12px}
+.lay-floor .wrap{max-width:640px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.st{display:inline-block;padding:1px 8px;border-radius:5px;font:500 11px var(--fb);letter-spacing:.03em;text-transform:uppercase;background:var(--soft);color:var(--dim);white-space:nowrap}
+.st.proto{color:var(--info);background:#16233a}.st.plan{color:var(--warn);background:var(--warnbg)}.st.work{color:var(--go);background:var(--gobg)}.st.stop{color:var(--stop);background:var(--stopbg)}
+.note{margin:0;padding:8px 12px;border:1px dashed var(--line);border-radius:8px;color:var(--dim);font-size:13.5px}
+button,.btn{font:500 15px var(--fb);min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button.pri{background:var(--gold);color:var(--on);border-color:var(--gold)}
+button.sm{min-height:34px;padding:0 10px;font-size:13.5px}
+button[aria-pressed=true]{background:var(--gold);color:var(--on);border-color:var(--gold)}
+button[disabled]{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;border-radius:0;min-height:38px}
+input,select,textarea{font:400 16px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+textarea{min-height:60px;resize:vertical}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.row:first-child{border-top:0}
+.row small,.muted{color:var(--dim);font-size:13.5px}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{min-height:34px;border-radius:99px;font-size:13.5px}
+/* now / next */
+.now{border-radius:14px;padding:16px;display:grid;gap:6px;border:1px solid var(--line);background:var(--panel)}
+.now.stop{background:var(--stopbg);border-color:#7a2c23}.now.go{background:var(--gobg);border-color:#22603f}
+.now .big{font:600 clamp(26px,6vw,38px)/1.05 var(--fd)}
+.now.stop .big{color:var(--stop)}.now.go .big{color:var(--go)}
+.cd{font-variant-numeric:tabular-nums;color:var(--gold);font-weight:600}
+/* timeline */
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:5.4em minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.tl li:first-child{border-top:0}
+.tl .t{font-weight:600;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tl li.past{opacity:.5}.tl li.cur{background:#211d12;margin:0 -8px;padding:8px;border-radius:8px}
+.tl li.pause .t{color:var(--stop)}
+/* chat */
+.msgs{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto}
+.msg{padding:9px 12px;border-radius:12px;background:var(--soft);display:grid;gap:3px}
+.msg.me{background:#2a2414}.msg.cue{background:var(--warnbg);border:1px solid #5b4516}.msg.cue.stop{background:var(--stopbg);border-color:#7a2c23}
+.msg header{display:flex;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--dim)}.msg header b{color:var(--ink);font-weight:500}
+.msg p{margin:0}.re{display:flex;gap:6px;flex-wrap:wrap}.re button{min-height:28px;padding:0 9px;border-radius:99px;font-size:12.5px}
+/* watch */
+.watchbox{display:grid;place-items:center;padding:8px 0}
+.watch{width:250px;height:250px;border-radius:50%;background:#050608;border:10px solid #2a2e35;box-shadow:0 0 0 2px #444a54,0 0 0 9px #1b1e23,0 18px 40px #0008;padding:30px 34px;display:flex;flex-direction:column;justify-content:center;gap:6px;text-align:center;position:relative;color:#f4f4f4;transition:background .3s}
+.watch:after{content:"";position:absolute;right:-22px;top:calc(50% - 16px);width:9px;height:32px;border-radius:4px;background:#3b4049}
+.watch.asteroid{border-color:#3a3f47;box-shadow:0 0 0 2px #59606b,0 0 0 9px #22262c,0 18px 40px #0008}
+.watch .os{position:absolute;bottom:22px;left:0;right:0;font-size:10px;letter-spacing:.08em;color:#6c7480;text-transform:uppercase}
+.watch .wt{font:600 15px var(--fd);color:#9aa2ad}
+.watch .wh{font:600 30px/1 var(--fd)}
+.watch .wb{max-width:170px;margin:0 auto}
+.watch .wb{font-size:13px;line-height:1.3;color:#d6d8dc}
+.watch.stop{background:#3a0d09}.watch.stop .wh{color:#ff6a5b}
+.watch.warn .wh{color:#f3b843}.watch.go .wh{color:#68e0a0}
+.watch.buzz{animation:buzz .5s 3}
+@keyframes buzz{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (prefers-reduced-motion:reduce){.watch.buzz{animation:none}}
+.watch button{min-height:36px;border-radius:99px;background:#2a2e35;border:0;color:#fff;font-size:14px;margin-top:4px}
+/* games */
+.opts{display:grid;gap:8px}.opts button{text-align:left;padding:10px 12px;min-height:44px}
+.opts button.ok{border-color:var(--go);background:var(--gobg)}.opts button.no{border-color:var(--stop);background:var(--stopbg)}
+.trk{height:10px;border-radius:5px;background:var(--soft);overflow:hidden;flex:1}.trk i{display:block;height:100%;background:var(--gold)}
+.stp{display:grid;grid-template-columns:4.5em minmax(0,1fr) 4.5em;gap:8px;align-items:center;font-size:14px}.stp b{text-align:right;font-weight:500}
+.bdg{padding:4px 11px;border-radius:99px;border:1px solid var(--line);font-size:13px;color:var(--dim)}.bdg.on{background:var(--gold);color:var(--on);border-color:var(--gold)}
+/* planner */
+.board{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px;align-items:start}
+.board .col{display:flex;flex-direction:column;gap:12px}
+.team{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.person{display:flex;justify-content:space-between;gap:6px;font-size:14px;padding:3px 0}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;background:var(--line);margin-left:4px}.dot.ok{background:var(--go)}
+.verb{font-family:ui-monospace,Menlo,monospace;font-size:13.5px;background:#0f1013;border:1px dashed #5b4a24;border-radius:6px;padding:6px 8px}
+.alert{padding:10px 12px;border-radius:10px;background:var(--stopbg);border:1px solid #7a2c23;color:#ffd9d4}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;background:var(--panel);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px))}
+nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px}
+nav.tabs button{border:0;background:none;color:var(--dim);font:500 13.5px var(--fd);padding:0 2px;min-height:50px;position:relative}
+nav.tabs button[aria-current=page]{background:var(--gold);color:var(--on)}
+nav.tabs .pip{position:absolute;top:6px;right:18%;width:8px;height:8px;border-radius:50%;background:var(--stop)}
+@media (max-width:860px){.board{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:460px){.two,.team{grid-template-columns:minmax(0,1fr)}.tl li{grid-template-columns:4.6em minmax(0,1fr)}.tl li>:nth-child(3){grid-column:2}}
+
+.top .in{padding-block:8px}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font:600 24px var(--fd)}.brand b{color:var(--gold);font-weight:600}
+.logo{width:32px;height:32px}
+.persona{display:flex;gap:6px;align-items:center}.persona select{width:auto;min-height:40px;padding:6px 10px}
+.demo{border-top:1px solid var(--line);background:#121317}
+.demo .in{justify-content:flex-start;max-width:1180px;margin:0 auto;padding:6px max(16px,3vw);display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.demo .time{font-size:22px;min-width:5.2em;margin-right:4px}
+.pill{font:600 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;color:var(--on);background:var(--gold);border-radius:99px;padding:3px 9px}
+.jumps{display:flex;gap:6px;flex-wrap:wrap}
+button.ghost{background:transparent}
+.about{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:var(--panel);color:var(--dim);font-size:14px}
+.about summary{cursor:pointer;color:var(--ink);font-weight:500}
+.about p{margin:8px 0 2px}
+@media (max-width:520px){.jumps{width:100%;overflow-x:auto;flex-wrap:nowrap}.jumps button{flex:none}.brand{font-size:21px}.vlab{display:none}.top .in{gap:8px}.top .in>.clock{width:100%;flex-wrap:nowrap}.persona{flex:1}.persona select{width:100%}.demo .time{font-size:19px}}
+.card.late{border-color:#5b4516;background:linear-gradient(180deg,#221c0d,var(--panel) 70%)}
+.preview{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#101114}
+.ok-line{color:var(--go);font-weight:500}
+s.muted{text-decoration:line-through}
+.map{width:100%;height:auto;display:block;background:#0f1013;border-radius:10px}
+.pin{cursor:pointer}.pin:focus{outline:none}.pin:focus circle{stroke:#d9b45f}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin:0;font-size:13px;color:var(--dim)}.legend i{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:-1px}
+.maplock{display:grid;place-items:center;min-height:180px;border:1px dashed var(--line);border-radius:10px;color:var(--dim);text-align:center;padding:16px}
+.clockin.on{border-color:#22603f}
+.callsheet{border-color:#22603f;background:linear-gradient(180deg,#10301f,var(--panel) 80%)}
+.toast{background:var(--gobg);border:1px solid #22603f;color:#d5f5e3;border-radius:10px;padding:10px 12px}
+.watch.voice{gap:8px;padding:34px 30px}.watch .va{font-size:13.5px;line-height:1.35;color:#f1efe8}
+.qa{border-top:1px solid var(--line);padding-top:8px;display:grid;gap:2px}
+.ownerlink{color:var(--gold);text-decoration:none;font-weight:500;font-size:14.5px;white-space:nowrap}
+.mgrk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.mgrk div{background:var(--soft);border-radius:10px;padding:10px}.mgrk b{display:block;font:600 24px var(--fd);font-variant-numeric:tabular-nums}.mgrk small{color:var(--dim)}
+.btn{min-height:44px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--ink);padding:0 14px}
+@media (max-width:520px){.mgrk{grid-template-columns:repeat(2,minmax(0,1fr))}.ownerlink{width:100%}}
+.start{min-height:100vh;display:grid;place-items:center;padding:32px 18px;background:radial-gradient(900px 500px at 70% 0%,#2c2310 0%,transparent 60%),var(--bg)}
+.sin{max-width:860px;display:grid;gap:16px;justify-items:start}.sin .logo{width:54px;height:54px}
+.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%}
+.pc{display:grid;gap:4px;text-align:left;padding:18px;min-height:120px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}
+.pc:hover{border-color:var(--gold)}.pc b{font:600 22px var(--fd);color:var(--gold)}.pc small{color:var(--dim)}.pc span{font-size:14.5px}
+.tip{margin:0;padding:10px 14px;border-radius:10px;background:#221c0d;border:1px solid #5b4516;color:#f0d595;font-size:14.5px}
+@media (max-width:560px){.pick{grid-template-columns:minmax(0,1fr)}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0c0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Showcall">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<div id="app"></div>
+<script>
+{
+const KEY='em-v2-crew-watch';
+const $=s=>document.querySelector(s);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fmt=m=>{m=Math.round(m);const h=Math.floor(m/60)%24,mm=m%60;return `${(h+11)%12+1}:${String(mm).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
+const T=(h,m)=>h*60+m;
+const PEOPLE=[
+ {n:'Dana',r:'Runner',team:'B'},{n:'Mo',r:'Expeditor',team:'B'},{n:'Kit',r:'Point / Lead 3',team:'B'},{n:'Ari',r:'Lead 4',team:'B'},
+ {n:'Theo',r:'Runner',team:'B'},{n:'Priya',r:'Runner',team:'B'},{n:'Lena',r:'Watering',team:'B'},
+ {n:'Jules',r:'Expeditor',team:'A'},{n:'Rae',r:'Point',team:'A'},{n:'Sol',r:'Runner',team:'A'},{n:'Nico',r:'Runner',team:'A'},
+ {n:'Avery',r:'Event manager',team:'Mgmt'}];
+const MANAGE=['Event manager','Expeditor','Point / Lead 3','Point'];
+const CH=[['all','All crew'],['B','Team B'],['A','Team A'],['pass','Pass / kitchen'],['mgr','Managers']];
+const BEATS0=[
+ {id:'crew',t:T(14,45),label:'Crew arrival',kind:'milestone'},
+ {id:'call',t:T(17,15),label:'Your call time · side entrance',kind:'milestone'},
+ {id:'ready',t:T(17,45),label:'Event ready',kind:'milestone'},
+ {id:'doors',t:T(18,0),label:'Guests arrive · charcuterie + beverage stations open',kind:'service'},
+ {id:'seats',t:T(18,45),label:'Invite guests to their seats',kind:'service'},
+ {id:'salad',t:T(19,5),label:'Salad course once guests are seated',kind:'service'},
+ {id:'welcome',t:T(19,15),label:'Welcome speech · prayer · orchestra',kind:'program'},
+ {id:'doc',t:T(19,25),dur:20,label:'Documentary — ALL food service and clearing pause',kind:'pause'},
+ {id:'dinner',t:T(19,45),label:'Clear salads · plated dinner service begins',kind:'service',follows:'doc'},
+ {id:'flip',t:T(20,0),label:'Charcuterie stations flip to dessert',kind:'flip'},
+ {id:'legacy',t:T(20,20),label:'Legacy reflections',kind:'program'},
+ {id:'tribute',t:T(20,45),label:'Honoring the Founder — tribute (quiet window)',kind:'quiet'},
+ {id:'close',t:T(21,15),label:'Closing speech',kind:'program'},
+ {id:'depart',t:T(22,0),label:'Guest departure',kind:'depart'},
+ {id:'crewout',t:T(23,0),label:'Crew departure',kind:'milestone'}];
+const SPECIALS0=[
+ ['salad','3 nut free',''],['salad','3 dairy free + Artisan white roll','Only 1 roll on the BEO — flag open'],['salad','2 cucumber free salads',''],
+ ['entree','1 DF beef','Plate: "Lactose Intolerant" · "No herb butter or demi on site"'],
+ ['entree','1 DF & soy free chicken','No separate plate on the BEO menu — confirm with kitchen'],
+ ['entree','1 vegetarian entree that is free from all nuts, all seeds (sesame etc.) tomatoes, hummus, gluten, lactose and egg derived products','Assigned plate lists tomato — confirm with kitchen']
+].map((s,i)=>({id:i+1,course:s[0],text:s[1],flag:s[2],status:0}));
+const SSTAT=['pending','fired','carried','served','confirmed'];
+const QS=[
+ ['On tonight\'s plates, a carrot marker means:',['Beef','Chicken','Vegetarian','Special'],2],
+ ['During the documentary you should:',['Clear quietly','Keep running entrées','Stop all service and clearing','Refill water only'],2],
+ ['On the BEO dietary key, CN means:',['Contains nuts','Chicken','Contains niacin','Cold'],0],
+ ['Who serves the plate to the guest?',['The runner','The lead','The expeditor','Whoever is closest'],1],
+ ['Plate covers go:',['On the guest table','Into the crates under the table','Back to the kitchen','In the trash'],1],
+ ['The charcuterie station backup is:',['A full second station','Crackers and bread only','Unlimited','Dessert'],1],
+ ['A guest asks if a dish has sesame. You:',['Guess from the menu','Say no','Check the record or ask your point','Ask the guest next to them'],2]];
+const DEF={lay:'floor',tab:'shift',me:'Dana',clock:T(19,10),play:false,speed:1,beats:BEATS0,fired:[],acks:{},cue:null,ch:'all',draft:'',nid:200,
+ msgs:[
+  {id:1,ch:'all',who:'Avery',role:'Event manager',text:'Huddle at 5:30 by the pass. Team B is sections 3 & 4. Respectful, quiet, efficient — there are presentations during dinner.',t:T(17,20),re:{}},
+  {id:2,ch:'B',who:'Kit',role:'Point / Lead 3',text:'Runners: trays load at Mo\'s table, leads serve, covers into the crates under the table.',t:T(17,40),re:{'Aye':['Dana','Theo']}},
+  {id:3,ch:'B',who:'Theo',role:'Runner',text:'Found a single cufflink by the beverage station. It now lives with coat check.',t:T(18,20),re:{'Ha':['Priya','Dana']}},
+  {id:4,ch:'pass',who:'Mo',role:'Expeditor',text:'Two special plates tonight on our side. Don\'t leave the pass without hearing the table number twice.',t:T(18,50),re:{}},
+  {id:5,ch:'mgr',who:'Avery',role:'Event manager',text:'Floor lead says guests likely out around 9, not 10. I\'ll confirm and move the timeline once.',t:T(18,55),re:{}}],
+ tasks:[
+  {id:1,title:'Clear cocktail-hour plates, sections 3 & 4',to:'Dana',due:'6:00–7:30',by:'Kit',done:true},
+  {id:2,title:'Check beverage station 2 levels',to:'Theo',due:'Every 30 min',by:'Kit',done:false},
+  {id:3,title:'Return branded apron to the laundry bag',to:'Everyone',due:'Before you leave',by:'Avery',done:false},
+  {id:4,title:'Dessert table 2 set — elevations, signage',to:'Mo',due:'8:00',by:'Avery',done:false}],
+ ideas:[
+  {id:1,text:'Laminated meal-marker card clipped to every tray stand',cat:'Service',by:'Priya',votes:['Dana','Theo'],st:'Reviewing'},
+  {id:2,text:'Second charcuterie restock pan staged before doors',cat:'Stations',by:'Dana',votes:['Kit'],st:'New'}],
+ pts:{Dana:140,Mo:120,Kit:190,Ari:110,Theo:95,Priya:150,Lena:80,Jules:130,Rae:160,Sol:70,Nico:85,Avery:100},
+ steps:{Dana:11840,Mo:9200,Kit:10350,Ari:8800,Theo:12400,Priya:10900,Lena:7600,Jules:9900,Rae:8400,Sol:13100,Nico:9700,Avery:6200},
+ qi:0,ans:null,streak:0,os:'wear',late:[],onClock:{Dana:false,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:true,Jules:true,Rae:true,Sol:true,Avery:true,Nico:false},sharing:{Dana:null,Mo:true,Kit:true,Ari:true,Theo:true,Priya:true,Lena:false,Jules:true,Rae:true,Sol:true,Avery:true},pauseUntil:{},consentOpen:false,started:false,aprons:null,mgrDec:{},voice:[],speak:true,call:null,toast:null,lateDraft:{mins:10,reason:'Program running long',note:'',preview:false},locked:{crewout:true},stats:{},specials:SPECIALS0,station:{A:'Full',B:'Half'},updates:[],sms:{}};
+let S=JSON.parse(JSON.stringify(DEF));
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const me=()=>PEOPLE.find(p=>p.n===S.me)||PEOPLE[0];
+const manage=()=>MANAGE.includes(me().r);
+const add=(n,v)=>{S.pts[n]=(S.pts[n]||0)+v};
+const stat=n=>S.stats[n]=S.stats[n]||{msgs:0,tasks:0,ok:0};
+const beat=id=>S.beats.find(b=>b.id===id);
+
+/* Reminder engine: cues are derived from beats, so moving a beat re-times every cue that depends on it. */
+function cues(){
+ const out=[],doc=beat('doc'),flip=beat('flip'),trib=beat('tribute'),dep=beat('depart');
+ if(doc){out.push({id:'doc-5',at:doc.t-5,sev:'warn',title:'Documentary in 5',watch:'HOLD SOON',body:`Finish your current table, then hold. ALL food service and clearing stops ${fmt(doc.t)}–${fmt(doc.t+doc.dur)}.`});
+  out.push({id:'doc-0',at:doc.t,sev:'stop',title:'PAUSE — service stops',watch:'PAUSE',body:'No service. No clearing. Stay still and out of sightlines.'});
+  out.push({id:'doc-end',at:doc.t+doc.dur-1,sev:'go',title:'Documentary over — go',watch:'GO',body:'Clear salads, entrées start. Markers: cow = beef, chix = chix, carrot = veg. Two special plates on our side — check the table twice.'});}
+ if(flip)out.push({id:'flip',at:flip.t-10,sev:'warn',title:'Station flip in 10',watch:'FLIP 10',body:'Charcuterie becomes dessert. No backup on charcuterie except crackers and bread.'});
+ if(trib)out.push({id:'mid',at:trib.t-15,sev:'warn',title:'Mid-evening check',watch:'CHECK',body:`Dessert station open. Tribute at ${fmt(trib.t)} — clear quietly, stay out of sightlines. Glance at beverage levels; flag your point, don't leave your role.`});
+ if(dep)out.push({id:'home',at:dep.t-5,sev:'go',title:'Home stretch',watch:'HOME',body:'Guests leaving: final clearing, breakdown, apron in the laundry bag, parking validation code from your vault.'});
+ for(const L of S.late)out.push({id:L.id,at:L.at,sev:'warn',late:true,title:L.undo?'Back on original times':`Running ${L.mins} min late`,watch:L.undo?'RESET':`LATE +${L.mins}`,
+  body:(L.undo?'The last delay was undone. ':`${L.reason}${L.note?' — '+L.note:''}. `)+'New times: '+L.changes.slice(0,4).map(c=>`${c.short} ${fmt(c.to)}`).join(', ')+(L.changes.length>4?` +${L.changes.length-4} more`:'')+'. Check Shift for your timeline.'});
+ return out.sort((a,b)=>a.at-b.at);
+}
+function latePlan(){
+ const d=S.lateDraft,mins=Math.max(1,Math.min(120,Math.round(+d.mins||0)));
+ const fut=[...S.beats].filter(b=>b.t>S.clock).sort((a,b)=>a.t-b.t);
+ const changes=[],warn=[];
+ for(const b of fut){if(S.locked[b.id])continue;changes.push({id:b.id,label:b.label,short:b.label.split(/ — | · /)[0],from:b.t,to:b.t+mins})}
+ for(const lk of fut.filter(b=>S.locked[b.id]))for(const c of changes)if(c.to>=lk.t&&c.from<lk.t)warn.push(`"${c.short}" (${fmt(c.to)}) now runs into fixed "${lk.label.split(/ — | · /)[0]}" at ${fmt(lk.t)} — check with the client.`);
+ const crewOut=beat('crewout');if(crewOut&&!S.locked.crewout&&changes.find(c=>c.id==='crewout'))warn.push(`Crew departure moves to ${fmt(crewOut.t+mins)} — later than scheduled shift ends. Any extra time is a manager decision.`);
+ return {mins,changes,warn:[...new Set(warn)]};
+}
+function curBeat(){let c=null;for(const b of [...S.beats].sort((a,b)=>a.t-b.t))if(b.t<=S.clock)c=b;return c}
+function nextBeat(){return [...S.beats].sort((a,b)=>a.t-b.t).find(b=>b.t>S.clock)}
+function paused(){const d=beat('doc');return d&&S.clock>=d.t&&S.clock<d.t+d.dur}
+function fire(c,silent){if(S.fired.includes(c.id))return;S.fired.push(c.id);S.cue=c.id;
+ S.msgs.push({id:++S.nid,ch:'all',who:'Run of show',role:'Cue',cue:c.sev,text:`${c.title}. ${c.body}`,t:c.at,re:{}});
+ if(!silent){const w=$('.watch');if(w){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}}}
+function tick(){for(const c of cues())if(c.at<=S.clock&&!S.fired.includes(c.id))fire(c)}
+function retime(){/* a moved beat re-arms any of its cues that are now in the future */
+ const now=S.clock;S.fired=S.fired.filter(id=>{const c=cues().find(x=>x.id===id);return c&&c.at<=now});}
+
+/* ---------- sections ---------- */
+const LOGO=`<svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f1efe8" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg>`;
+function topbar(){
+ const jumps=[[T(19,20),'7:20 pause'],[T(19,44),'7:44 go'],[T(20,30),'8:30 check'],[T(21,55),'9:55 home']];
+ return `<header class="top"><div class="in">
+ <a class="brand" href="index.html" title="Showcall home">${LOGO}<span>Show<b>call</b></span></a>
+ <div class="clock"><label class="muted persona"><span class="vlab">Viewing as</span> <select id="me" aria-label="Viewing as">${PEOPLE.map(p=>`<option value="${p.n}"${S.me===p.n?' selected':''}>${p.n} · ${p.r}</option>`).join('')}</select></label>
+  <div class="seg" role="group" aria-label="Layout"><button data-lay="floor" aria-pressed="${S.lay==='floor'}">Crew</button><button data-lay="planner" aria-pressed="${S.lay==='planner'}">Planner</button><button data-lay="manager" aria-pressed="${S.lay==='manager'}">Manager</button></div><a class="ownerlink" href="owner.html">Owner portal →</a></div>
+ </div>
+ <div class="demo"><div class="in">
+  <span class="pill">Demo event</span><span class="time" aria-live="off">${fmt(S.clock)}</span>
+  <button class="sm" data-act="play" aria-pressed="${S.play}">${S.play?'❚❚ Pause':'▶ Play'}</button>
+  <div class="seg" role="group" aria-label="Simulation speed"><button class="sm" data-speed="1" aria-pressed="${S.speed===1}">1×</button><button class="sm" data-speed="5" aria-pressed="${S.speed===5}">5×</button></div>
+  <span class="jumps">${jumps.map(j=>`<button class="sm ghost" data-jump="${j[0]}">${j[1]}</button>`).join('')}</span>
+  <button class="sm ghost" data-act="reset">Reset</button></div></div></header>`;
+}
+function nowCard(){
+ const cb=curBeat(),nb=nextBeat(),p=paused(),c=cues().find(x=>x.id===S.cue);
+ const cls=p?'stop':(c&&c.sev==='go'&&S.clock-c.at<6?'go':'');
+ return `<div class="now ${cls}"><span class="muted">${p?'Right now':'Now'}</span>
+ <div class="big">${p?'SERVICE STOPS':esc(cb?cb.label:'Before call time')}</div>
+ ${p?`<div>No food service, no clearing. Resumes ${fmt(beat('doc').t+beat('doc').dur)}.</div>`:''}
+ ${nb?`<div>Next: <b>${esc(nb.label)}</b> at ${fmt(nb.t)} · <span class="cd">in ${Math.ceil(nb.t-S.clock)} min</span></div>`:''}</div>`;
+}
+function lateBanner(){
+ const L=[...S.late].reverse().find(x=>S.fired.includes(x.id));if(!L)return '';
+ const acked=(S.acks[L.id]||[]).includes(S.me);
+ return `<div class="card late"><div class="ph"><h2>${L.undo?'Schedule restored':`Running ${L.mins} min late`}</h2><span class="st plan">${fmt(L.at)} · from ${esc(L.by)}</span></div>
+ ${L.undo?'':`<p>${esc(L.reason)}${L.note?' — '+esc(L.note):''}</p>`}
+ <div>${L.changes.map(c=>`<div class="row"><span>${esc(c.short)}</span><span><s class="muted">${fmt(c.from)}</s> → <b class="cd">${fmt(c.to)}</b></span></div>`).join('')}</div>
+ ${acked?'<span class="ok-line">✓ You acknowledged this change</span>':`<button class="pri" data-ack="${L.id}">Got it</button>`}</div>`;
+}
+function secShift(){
+ const m=me(),team=m.team==='Mgmt'?'Management':`Team ${m.team}`;
+ return lateBanner()+clockCard()+nowCard()+`<div class="card"><div class="ph"><h2>My shift</h2><span class="st work">From the event record</span></div>
+ <div class="two"><div><small class="muted">Team</small><div>${team}${m.team==='B'?' · sections 3 &amp; 4':m.team==='A'?' · sections 1 &amp; 2':''}</div></div>
+ <div><small class="muted">Role</small><div>${esc(m.r)}</div></div>
+ <div><small class="muted">Point / expeditor</small><div>${m.team==='A'?'Rae / Jules':'Kit / Mo'}</div></div>
+ <div><small class="muted">Shift</small><div>5:15 PM – 11:00 PM</div></div></div>
+ <div class="row"><span>Meal markers</span><span class="verb">cow = beef, chix = chix, carrot = veg</span></div>
+ <div class="row"><span>Parking</span><span>the venue garage · code <span class="st">vault · live app</span></span></div>
+ <div class="row"><span>Uniform</span><span>Formal · branded apron</span></div></div>`+secTimeline(false)+secSpecials(false);
+}
+function secTimeline(edit){
+ const list=[...S.beats].sort((a,b)=>a.t-b.t),cb=curBeat();
+ return `<div class="card"><div class="ph"><h2>Run of show</h2>${edit?'<span class="st work">Tap ±5 to move</span>':'<span class="st proto">Live</span>'}</div>
+ <ul class="tl">${list.map(b=>`<li class="${b.t+(b.dur||0)<=S.clock&&b!==cb?'past':''} ${b===cb?'cur':''} ${b.kind==='pause'?'pause':''}">
+ <span class="t">${fmt(b.t)}${b.dur?`<br><small class="muted">to ${fmt(b.t+b.dur)}</small>`:''}</span>
+ <span>${b.kind==='pause'?'<b style="color:var(--stop)">SERVICE STOPS. </b>':''}${esc(b.label)}${b.moved?` <span class="st plan">moved ${b.moved>0?'+':''}${b.moved}m</span>`:''}</span>
+ ${edit?`<span class="chips"><button class="sm" data-move="${b.id}|-5" aria-label="Earlier 5 minutes">−5</button><button class="sm" data-move="${b.id}|5" aria-label="Later 5 minutes">+5</button></span>`:'<span></span>'}</li>`).join('')}</ul></div>`;
+}
+function secSpecials(edit){
+ return `<div class="card"><div class="ph"><h2>Dietary specials</h2><span class="st stop">Verbatim · no edits</span></div>
+ ${S.specials.map(s=>`<div class="row" style="align-items:flex-start"><div style="flex:1"><small class="muted">${s.course}</small><div class="verb">${esc(s.text)}</div>${s.flag?`<small style="color:var(--warn)">${esc(s.flag)}</small>`:''}</div>
+ <div style="text-align:right"><span class="st ${s.status===4?'work':''}">${SSTAT[s.status]}</span>${edit&&s.status<4?`<br><button class="sm" data-spec="${s.id}" style="margin-top:6px">→ ${SSTAT[s.status+1]}</button>`:''}</div></div>`).join('')}
+ <p class="note">Restriction text is copied word for word from the BEO and can't be edited here. Allergen questions you can't answer from this card go to your point person.</p></div>`;
+}
+function secChat(){
+ const chs=CH.filter(c=>c[0]!=='mgr'||manage()),list=S.msgs.filter(m=>m.ch===S.ch).sort((a,b)=>a.t-b.t);
+ return `<div class="card"><div class="ph"><h2>Crew chat</h2><span class="st proto">Prototype</span></div>
+ <div class="chips" role="group" aria-label="Channel">${chs.map(c=>`<button data-ch="${c[0]}" aria-pressed="${S.ch===c[0]}">${c[1]}</button>`).join('')}</div>
+ ${S.ch==='mgr'?'<p class="note">Managers only. Real role-based access needs logins.</p>':''}
+ <div class="msgs" id="msgs">${list.map(m=>`<div class="msg ${m.who===S.me?'me':''} ${m.cue?'cue '+(m.cue==='stop'?'stop':''):''}"><header><b>${esc(m.who)}</b><span>${esc(m.role)}</span><span>${fmt(m.t)}</span></header><p>${esc(m.text)}</p>
+ ${m.cue?'':`<div class="re">${['Aye','Ha','On it'].map(r=>{const v=(m.re&&m.re[r])||[];return `<button data-re="${m.id}|${r}" aria-pressed="${v.includes(S.me)}">${r}${v.length?' '+v.length:''}</button>`}).join('')}</div>`}</div>`).join('')||'<p class="note">Calm seas. Nothing here yet.</p>'}</div>
+ ${paused()?'<p class="note" style="color:var(--stop)">Documentary playing. Messages still send, but stay off your phone on the floor.</p>':''}
+ <form id="cform" class="two"><textarea id="draft" aria-label="Message" placeholder="Message ${esc(CH.find(c=>c[0]===S.ch)[1])}">${esc(S.draft)}</textarea><button class="pri" type="submit">Send</button></form></div>`;
+}
+function secTasks(){
+ const mine=S.tasks.filter(t=>t.to==='Everyone'||t.to===S.me||manage());
+ return `<div class="card"><div class="ph"><h2>Tasks</h2><span class="st proto">Prototype</span></div>
+ ${manage()?`<form id="tform" class="two"><input id="tT" placeholder="New task" aria-label="Task" required><select id="tW" aria-label="Assign to"><option>Everyone</option>${PEOPLE.map(p=>`<option>${p.n}</option>`).join('')}</select><input id="tD" placeholder="Due: 8:00, before you leave" aria-label="Due"><button class="pri" type="submit">Add task</button></form>`:'<p class="note">Points, expeditors and managers add tasks. Mark yours done for 10 points.</p>'}
+ ${mine.map(t=>`<div class="row"><div><h3 style="${t.done?'text-decoration:line-through;color:var(--dim)':''}">${esc(t.title)}</h3><small>${esc(t.to)} · ${esc(t.due)} · from ${esc(t.by)}</small></div>${t.done?'<span class="st work">Done</span>':`<button class="sm" data-done="${t.id}">Done</button>`}</div>`).join('')}</div>
+ <div class="card"><div class="ph"><h2>Ideas from the floor</h2><span class="st proto">Prototype</span></div>
+ <form id="iform" class="two"><input id="iT" placeholder="Your idea" aria-label="Idea" required><button class="pri" type="submit">Submit · 5 pts</button></form>
+ ${[...S.ideas].sort((a,b)=>b.votes.length-a.votes.length).map(i=>`<div class="row"><div><h3>${esc(i.text)}</h3><small>${esc(i.by)} · ${i.votes.length} second${i.votes.length===1?'':'s'} · ${i.st}</small></div><button class="sm" data-vote="${i.id}" ${i.by===S.me||i.votes.includes(S.me)?'disabled':''}>Second it</button></div>`).join('')}
+ <p class="note">Ideas go to the event manager; approved ones feed the venue playbook.</p></div>`;
+}
+function secGames(){
+ const q=QS[S.qi%QS.length],board=PEOPLE.map(p=>p.n).sort((a,b)=>(S.pts[b]||0)-(S.pts[a]||0)),mx=Math.max(...Object.values(S.steps)),st=stat(S.me);
+ return `<div class="card"><div class="ph"><h2>Service trivia</h2><span class="st">Streak ${S.streak}</span></div><h3>${esc(q[0])}</h3>
+ <div class="opts">${q[1].map((o,i)=>`<button data-ans="${i}" ${S.ans!==null?'disabled':''} class="${S.ans!==null?(i===q[2]?'ok':(i===S.ans?'no':'')):''}">${esc(o)}</button>`).join('')}</div>
+ ${S.ans!==null?`<div class="ph"><span>${S.ans===q[2]?'Correct. 5 points.':'Not quite — the right answer is green.'}</span><button class="pri" data-act="nextq">Next</button></div>`:''}
+ <p class="note">Questions come from tonight's record: markers, pause rule, allergen key, runner flow.</p></div>
+ <div class="card"><div class="ph"><h2>Step challenge</h2><span class="st plan">Watch sync planned</span></div>
+ ${PEOPLE.map(p=>p.n).sort((a,b)=>S.steps[b]-S.steps[a]).slice(0,8).map(n=>`<div class="stp"><span>${n}</span><div class="trk"><i style="width:${S.steps[n]/mx*100}%"></i></div><b>${S.steps[n].toLocaleString('en-US')}</b></div>`).join('')}
+ <p class="note">Tonight's shift, sample numbers. Opt-in only, a friendly race, never a performance measure.</p></div>
+ <div class="card"><h2>Leaderboard</h2>${board.slice(0,6).map((n,i)=>`<div class="row"><span>${i+1}. ${n}</span><b>${S.pts[n]||0}</b></div>`).join('')}
+ <div class="chips"><span class="bdg ${st.msgs>=3?'on':''}">Radio voice</span><span class="bdg ${st.tasks>=2?'on':''}">Shipshape</span><span class="bdg ${st.ok>=3?'on':''}">Marker master</span><span class="bdg ${(S.acks['doc-0']||[]).includes(S.me)?'on':''}">Froze on cue</span></div>
+ <p class="note">Points are for fun and recognition. They never rate anyone's work.</p></div>`;
+}
+function watchFace(){
+ const lv=[...S.voice].reverse().find(v=>v.who===S.me);
+ if(lv&&S.clock-lv.at<3&&!paused()){const os2=S.os==='asteroid'?' asteroid':'';return `<div class="watch voice${os2}"><span class="wt">“${esc(lv.q.length>28?lv.q.slice(0,27)+'…':lv.q)}”</span><span class="wb va">${esc(lv.a.length>110?lv.a.slice(0,108)+'… more on phone':lv.a)}</span><button data-act="voice-dismiss">OK</button></div>`}
+ const os=S.os==='asteroid'?' asteroid':'',osl=`<span class="os">${S.os==='asteroid'?'AsteroidOS · Linux':'Wear OS'}</span>`;
+ const c=cues().find(x=>x.id===S.cue),p=paused(),nb=nextBeat(),acked=c&&(S.acks[c.id]||[]).includes(S.me);
+ const recent=c&&S.clock-c.at<8;
+ if(p)return `<div class="watch stop${os}"><span class="wt">${fmt(S.clock)}</span><span class="wh">PAUSE</span><span class="wb">No service.<br>No clearing.</span><span class="wb">Go at ${fmt(beat('doc').t+beat('doc').dur)}</span>${c&&!acked?`<button data-ack="${c.id}">Got it</button>`:'<span class="wb" style="color:#68e0a0">✓ acknowledged</span>'}${osl}</div>`;
+ if(c&&recent)return `<div class="watch ${c.sev}${os}"><span class="wt">${fmt(S.clock)}</span><span class="wh">${c.watch}</span><span class="wb">${esc(c.body.split('. ')[0])}.</span>${acked?'<span class="wb" style="color:#68e0a0">✓ acknowledged</span>':`<button data-ack="${c.id}">Got it</button>`}${osl}</div>`;
+ return `<div class="watch${os}"><span class="wt">${fmt(S.clock)}</span><span class="wh" style="font-size:22px">${nb?'in '+Math.ceil(nb.t-S.clock)+'m':'Done'}</span><span class="wb">${nb?esc(nb.label.split(' —')[0].split(' ·')[0]):'Shift over'}</span><span class="wb" style="color:#d9b45f">cow beef · chix · carrot veg</span><button data-act="mic" aria-label="Ask by voice">🎤 Ask</button>${osl}</div>`;
+}
+function secWatch(){
+ return `<div class="card"><div class="ph"><h2>Smartwatch</h2><span class="st plan">Wear OS &amp; AsteroidOS · coming soon</span></div>
+ <div class="seg" role="group" aria-label="Watch platform" style="align-self:center"><button data-os="wear" aria-pressed="${S.os!=='asteroid'}">Wear OS (Android)</button><button data-os="asteroid" aria-pressed="${S.os==='asteroid'}">AsteroidOS (Linux)</button></div>
+ <div class="watchbox">${watchFace()}</div>
+ <p class="note">Tap a jump button above (7:20 pause, 7:44 go) to feel the cues land on the wrist. "Got it" acknowledges — the planner board sees who has.</p></div>
+ ${secVoice()}<div class="card"><h2>How cues reach the wrist</h2>
+ ${[['Stage 1 · Phone notifications','Showcall on an Android phone sends each cue as a high-priority notification with its own vibration pattern. Wear OS mirrors phone notifications to the watch on its own; AsteroidOS watches get them through the AsteroidOS Sync or Gadgetbridge companion app. No watch app needed.','First'],
+   ['Stage 2 · Native watch app','Full-screen red PAUSE face, one-tap "Got it", next-beat countdown and marker glance. Wear OS build in Kotlin with Compose for Wear OS; AsteroidOS build in Qt/QML.','Next'],
+   ['Stage 3 · Offline cues','The night\'s cue schedule is copied to the watch before doors, so cues still fire if venue signal drops.','Later']].map(r=>`<div class="row" style="align-items:flex-start"><div><h3>${r[0]}</h3><small>${r[1]}</small></div><span class="st plan">${r[2]}</span></div>`).join('')}</div>
+ <div class="card"><h2>What the watch does</h2>
+ ${[['Run-of-show haptics','Taps the wrist 5 min before a pause, at the pause, and at "go"','plan'],
+   ['One-tap acknowledge','Planner sees who got the pause cue — no radios needed','plan'],
+   ['Next-beat glance','Countdown, next beat and meal markers on the face','plan'],
+   ['Step challenge','Opt-in step count from the watch, Wear OS first','plan'],
+   ['Codes','Never on the watch face — the vault stays on the phone behind unlock','work'],
+   ['Location','Only while clocked in, by area (not GPS), opt-in, pausable, wiped after the event','work']].map(r=>`<div class="row"><div><h3>${r[0]}</h3><small>${r[1]}</small></div><span class="st ${r[2]}">${r[2]==='plan'?'Planned':'Rule'}</span></div>`).join('')}
+ <p class="note">Why these two: Wear OS covers most Android watches crews already own (Pixel, Galaxy, TicWatch and others). AsteroidOS is open-source Linux that gives older Wear-era watches a second life — a cheap way to equip a whole crew. Neither needs an iPhone.</p></div>
+ <div class="card"><div class="ph"><h2>Text backup</h2><span class="st plan">Needs integration</span></div>
+ <p class="note">For crew without a watch: SMS needs a provider, carrier registration and each person's written opt-in with STOP. Switches show the design.</p>
+ ${['Service cues','Schedule changes','Tasks'].map(c=>`<div class="row"><span>${c}</span><button class="sm" data-sms="${c}" aria-pressed="${!!(S.sms[S.me]||{})[c]}">${(S.sms[S.me]||{})[c]?'On':'Off'}</button></div>`).join('')}</div>`;
+}
+/* ---------- crew locator (only while clocked in) ---------- */
+const ZONES={
+ stage:{x:220,y:10,w:160,h:40,l:'Stage'},
+ s1:{x:20,y:66,w:125,h:150,l:'Section 1'},s2:{x:150,y:66,w:115,h:150,l:'Section 2'},
+ t1:{x:270,y:66,w:60,h:150,l:'Table 1'},
+ s3:{x:335,y:66,w:115,h:150,l:'Section 3'},s4:{x:455,y:66,w:125,h:150,l:'Section 4'},
+ st1:{x:20,y:226,w:125,h:52,l:'Station 1'},b1:{x:150,y:226,w:115,h:52,l:'Beverage 1'},
+ b2:{x:335,y:226,w:115,h:52,l:'Beverage 2'},st2:{x:455,y:226,w:125,h:52,l:'Station 2'},
+ coat:{x:20,y:296,w:170,h:90,l:'Coat check · south concourse'},
+ door:{x:200,y:296,w:180,h:90,l:'Side entrance · team'},
+ pass:{x:390,y:296,w:190,h:90,l:'Pass · kitchen (BOH)'}};
+const ZNAME=k=>ZONES[k].l;
+function zoneOf(p){
+ const t=S.clock,i=PEOPLE.indexOf(p),dinner=t>=beat('dinner').t&&t<beat('dinner').t+75,cocktail=t<T(18,45);
+ const lead=p.r.match(/Lead (\d)/),home=lead?'s'+lead[1]:p.r==='Point'?'s1':p.team==='A'?(i%2?'s1':'s2'):(i%2?'s3':'s4');
+ if(p.r==='Event manager')return ['t1','pass','s3','s2','door'][Math.floor(t/7)%5];
+ if(p.r==='Expeditor')return t>=T(18,45)?'pass':(p.team==='A'?'st1':'st2');
+ if(/Point|Lead|Watering/.test(p.r))return cocktail?(p.team==='A'?'b1':'b2'):home;
+ if(p.r==='Runner'){if(paused())return home;if(dinner)return (Math.floor(t/3)+i)%2?'pass':home;return cocktail?(i%2?'st2':'b2'):home}
+ return home;
+}
+const isPaused=n=>S.pauseUntil[n]&&S.clock<S.pauseUntil[n];
+const visible=p=>S.onClock[p.n]&&S.sharing[p.n]&&!isPaused(p);
+function mapSvg(){
+ const shown=PEOPLE.filter(visible),byZ={};
+ for(const p of shown){const z=zoneOf(p);(byZ[z]=byZ[z]||[]).push(p)}
+ let dots='';
+ for(const [z,ps] of Object.entries(byZ)){const Z=ZONES[z];ps.forEach((p,k)=>{const cols=Math.max(1,Math.floor((Z.w-10)/30)),cx=Z.x+18+(k%cols)*30,cy=Z.y+(Z.h>60?40:30)+Math.floor(k/cols)*28;
+  const fill=p.team==='Mgmt'?'#f1efe8':p.team==='B'?'#d9b45f':'#86b6ff',ring=p.n===S.me?'#5fd394':'#0d0e11';
+  dots+=`<g class="pin" data-who="${p.n}" tabindex="0" role="button" aria-label="${p.n}, ${ZNAME(z)}"><circle cx="${cx}" cy="${cy}" r="12" fill="${fill}" stroke="${ring}" stroke-width="3"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="10" font-weight="600" fill="#111">${p.n.slice(0,2)}</text></g>`})}
+ return `<svg viewBox="0 0 600 396" class="map" role="img" aria-label="Grand Hall map with crew locations">
+ ${Object.entries(ZONES).map(([k,Z])=>`<rect x="${Z.x}" y="${Z.y}" width="${Z.w}" height="${Z.h}" rx="8" fill="${k==='stage'?'#2a2312':k==='pass'?'#1d2230':'#17191e'}" stroke="#2c313a"/><text x="${Z.x+8}" y="${Z.y+16}" font-size="11" fill="#8d939d">${Z.l}</text>`).join('')}
+ ${dots}</svg>`;
+}
+function clockCard(){
+ const on=S.onClock[S.me],sh=S.sharing[S.me],pz=isPaused(me());
+ if(!on)return `<div class="card clockin"><div class="ph"><h2>Not clocked in</h2><span class="st">Locator off</span></div>
+  <p class="muted" style="margin:0">Clock in to see where your crew is and call them. Your own location is never shared before you clock in or after you clock out.</p>
+  ${S.consentOpen?`<div class="preview"><b>Share your location while you're on the clock?</b>
+   <ul class="muted" style="margin:6px 0;padding-left:18px"><li>Crew on this event see which <b>venue zone</b> you're in (e.g. "Section 3", "Pass") — venue zones only, never GPS, and nothing outside the venue</li><li>Starts at clock-in, stops at clock-out, automatically</li><li>Pause it any time (break, restroom)</li><li>Wiped when the event closes; never used to rate anyone</li></ul>
+   <div class="two"><button class="pri" data-act="clockin-share">Share &amp; clock in</button><button data-act="clockin-noshare">Clock in, don't share</button></div>
+   <p class="muted" style="margin:6px 0 0;font-size:12.5px">If you don't share, you can still call crew, but you won't see the map.</p></div>`
+  :`<button class="pri" data-act="clockin">Clock in</button>`}
+  <p class="muted" style="margin:0;font-size:12.5px">Your paid clock-in stays in Nowsta. When connected, Showcall follows it; in this demo it's a button.</p></div>`;
+ return `<div class="card clockin on"><div class="ph"><h2>On the clock</h2><span class="st ${sh&&!pz?'work':''}">${sh?(pz?'Location paused':'Sharing: '+ZNAME(zoneOf(me()))):'Not sharing location'}</span></div>
+ <div class="chips">${sh?(pz?`<button class="sm" data-act="resume">Resume sharing</button>`:`<button class="sm" data-act="pause15">Pause 15 min</button>`)+`<button class="sm" data-act="stopshare">Stop sharing</button>`:`<button class="sm" data-act="startshare">Share my area</button>`}
+ <button class="sm" data-act="clockout">Clock out</button></div></div>`;
+}
+function secTeam(){
+ const on=S.onClock[S.me],mine=S.sharing[S.me]&&!isPaused(me());
+ const others=PEOPLE.filter(p=>p.n!==S.me);
+ const row=p=>{const state=!S.onClock[p.n]?'Off the clock':!S.sharing[p.n]?'On the clock · not sharing':isPaused(p)?'On a break · location paused':ZNAME(zoneOf(p));
+  const canSee=on&&mine&&visible(p);
+  return `<div class="row"><div><h3>${p.n} <small class="muted">${esc(p.r)}${p.team!=='Mgmt'?' · Team '+p.team:''}</small></h3><small>${on?(canSee?'📍 '+state+' · updated just now':(visible(p)?'Share your area to see theirs':state)):'Clock in to see'}</small></div>
+  <span class="chips">${on&&S.onClock[p.n]?`<button class="sm" data-call="${p.n}">Call</button><button class="sm" data-ping="${p.n}">Ping</button>`:''}</span></div>`};
+ return clockCard()+(S.call?callSheet():'')+(S.toast?`<div class="toast">${esc(S.toast)}</div>`:'')+
+ `<div class="card"><div class="ph"><h2>Crew locator</h2><span class="st proto">Only while clocked in</span></div>
+ ${on&&mine?mapSvg()+`<p class="legend"><span><i style="background:#d9b45f"></i>Team B</span><span><i style="background:#86b6ff"></i>Team A</span><span><i style="background:#f1efe8"></i>Manager</span><span><i style="background:#0d0e11;border:3px solid #5fd394"></i>You</span></p>`
+  :`<div class="maplock">${on?'Share your area to see the map.':'Clock in to see the map.'}</div>`}
+ <p class="note">Venue zones only. Zones come from tags placed in the venue (Bluetooth beacons or tap-in tags) — there is no GPS. If someone leaves the venue (parking, a run outside), they show as "Outside the venue" with no location. Sample Grand Hall layout.</p></div>
+ <div class="card"><h2>Crew on this event</h2>${others.sort((a,b)=>(S.onClock[b.n]?1:0)-(S.onClock[a.n]?1:0)).map(row).join('')}
+ <p class="note">Calls go through Showcall, so nobody's personal number is shown. Ping buzzes their watch with "${esc(S.me)} is looking for you".</p></div>`;
+}
+function callSheet(){
+ const p=PEOPLE.find(x=>x.n===S.call);
+ return `<div class="card callsheet" role="dialog" aria-label="Calling ${p.n}"><div class="ph"><h2>Calling ${p.n}…</h2><span class="st proto">Demo</span></div>
+ <p class="muted" style="margin:0">${esc(p.r)} · ${visible(p)?ZNAME(zoneOf(p)):'location not shared'}. In-app call; neither of your phone numbers is shown.</p>
+ <button class="pri" data-act="hangup" style="background:var(--stop);border-color:var(--stop);color:#fff">End call</button></div>`;
+}
+/* ---------- watch voice: answers only from tonight's record ---------- */
+const DUTY={Runner:['Clearing','Runner | clearing','Clearing'],Expeditor:['Stations','Expedite at the pass','Dessert table'],'Point / Lead 3':['Beverage table','Lead section 3','Check beverage station'],'Lead 4':['Stationary apps','Lead section 4','Clearing'],Watering:['Clearing','Watering','Clearing'],Point:['Beverage table','Lead section','Clearing'],'Event manager':['Oversee','Oversee','Oversee']};
+function phase(){return S.clock<beat('seats').t?0:S.clock<beat('close').t?1:2}
+function findPerson(q){return PEOPLE.find(p=>new RegExp('\\b'+p.n+'\\b','i').test(q))}
+function answer(q){
+ const m=me(),Q=q.toLowerCase(),cb=curBeat(),nb=nextBeat(),dep=beat('depart'),pt=m.team==='A'?'Rae':'Kit';
+ const late=[...S.late].reverse().find(x=>S.fired.includes(x.id));
+ if(/code|parking|ice|door|password|pin\b/.test(Q))return {a:'Codes are never spoken or shown on the watch. Open the vault on your phone.'};
+ const who=findPerson(Q);
+ if(who&&/^(call|phone|ring)\b/.test(Q)){if(!S.onClock[S.me])return {a:'Clock in on your phone first, then you can call crew.'};if(!S.onClock[who.n])return {a:`${who.n} is off the clock.`};return {a:`Calling ${who.n} through Showcall.`,act:()=>{S.call=who.n}}}
+ if(who&&/^(ping|buzz|find me)\b/.test(Q)){if(!S.onClock[S.me])return {a:'Clock in first to ping crew.'};return {a:`Pinged ${who.n}. Their watch buzzes: ${S.me} is looking for you.`}}
+ if(who&&/where|find|locate/.test(Q)){
+  if(!S.onClock[S.me])return {a:'Clock in to see where crew are.'};
+  if(!S.sharing[S.me]||isPaused(m))return {a:'Share your venue zone to see where others are.'};
+  if(!S.onClock[who.n])return {a:`${who.n} is off the clock, so their location is hidden.`};
+  if(!visible(who))return {a:`${who.n} is on the clock but not sharing a location right now. Want me to call them?`};
+  return {a:`${who.n} is in ${ZNAME(zoneOf(who))}.`};}
+ if(/clock (me )?(in|out)/.test(Q))return {a:'Clock in or out on your phone, so you can choose whether to share your zone.'};
+ if(/late|delay|behind|chang/.test(Q))return {a:late?(late.undo?'The last delay was undone; we are back on the original times.':`Running ${late.mins} minutes late: ${late.reason}. Dinner is now ${fmt(beat('dinner').t)}.`):'No delays posted. We are on the original times.'};
+ if(/what (should i|do i|now)|doing|right now|my job|duty/.test(Q)){if(paused())return {a:`Hold. No service and no clearing until ${fmt(beat('doc').t+beat('doc').dur)}.`};return {a:`${(DUTY[m.r]||DUTY.Runner)[phase()]}. Now: ${cb?cb.label:'before call time'}.`}}
+ if(/next/.test(Q))return {a:nb?`${nb.label} at ${fmt(nb.t)}, in ${Math.ceil(nb.t-S.clock)} minutes.`:'Nothing left on the run of show.'};
+ if(/documentary|pause|film|movie/.test(Q)){const d=beat('doc');return {a:`Documentary ${fmt(d.t)} to ${fmt(d.t+d.dur)}. All food service and clearing stops.`}}
+ if(/dinner|entr|main course/.test(Q))return {a:`Dinner service starts at ${fmt(beat('dinner').t)}, as soon as the documentary ends.`};
+ if(/dessert|flip|charcuterie/.test(Q))return {a:`Charcuterie flips to dessert at ${fmt(beat('flip').t)}. No backup except crackers and bread.`};
+ if(/over|end|guests (leave|out)|depart|go home|done/.test(Q))return {a:`Guest departure ${fmt(dep.t)}. Crew departure ${fmt(beat('crewout').t)}.`};
+ if(/marker|cow|chix|carrot/.test(Q))return {a:'Markers: cow = beef, chix = chix, carrot = veg.'};
+ if(/special|allerg|dairy|\bdf\b|nut|soy|sesame|gluten|vegetarian|vegan|lactose|tomato|cucumber|egg/.test(Q)){
+  const KW=['nut','dairy','df','soy','sesame','gluten','vegetarian','vegan','lactose','tomato','cucumber','egg','beef','chicken','salad'];const asked=KW.filter(k=>new RegExp('\\b'+k,'i').test(Q));
+  const hit=S.specials.filter(x=>asked.some(k=>new RegExp('\\b'+k,'i').test(x.text)));
+  const list=(hit.length?hit:S.specials).map(x=>`"${x.text}"`).join('; ');
+  return {a:`Word for word from the BEO: ${list}. Anything else about allergens, ask ${pt}.`}}
+ if(/who.*(point|lead)/.test(Q))return {a:`Your point is ${pt}.`};
+ if(/who.*expedit/.test(Q))return {a:`Your expeditor is ${m.team==='A'?'Jules':'Mo'}.`};
+ if(/who.*manager|event manager/.test(Q))return {a:'Event manager tonight: Avery.'};
+ if(/team|section/.test(Q))return {a:m.team==='Mgmt'?'You are management.':`Team ${m.team}, sections ${m.team==='A'?'1 and 2':'3 and 4'}.`};
+ if(/time is it|what time/.test(Q))return {a:`It is ${fmt(S.clock)}.`};
+ return {a:`That's not in tonight's record, so I won't guess. Ask ${pt}.`};
+}
+function ask(q){q=q.trim();if(!q)return;const r=answer(q);S.voice.push({q,a:r.a,at:S.clock,who:S.me});if(S.voice.length>20)S.voice.shift();if(r.act)r.act();
+ if(S.speak&&!paused()){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(r.a);u.rate=1.05;speechSynthesis.speak(u)}catch(e){}}}
+const PHRASES=['What should I be doing?','What\'s next?','What time is dinner?','When is the event over?','Any soy-free specials?','Where is Kit?','Call Mo','Parking code?'];
+function secVoice(){
+ const mine=S.voice.filter(v=>v.who===S.me).slice(-5).reverse();
+ return `<div class="card"><div class="ph"><h2>Voice</h2><span class="st plan">Wear OS first</span></div>
+ <p class="muted" style="margin:0">Raise your wrist, hold the mic, ask. Answers come only from tonight's record and your crew list, spoken back and shown on the face.</p>
+ <form id="vform" class="two"><input id="vq" placeholder="Say or type a question" aria-label="Voice question" autocomplete="off"><button class="pri" type="submit">🎤 Ask</button></form>
+ <div class="chips">${PHRASES.map(p=>`<button class="sm" data-say="${esc(p)}">${esc(p)}</button>`).join('')}</div>
+ <label class="row" style="justify-content:flex-start;gap:10px"><input type="checkbox" id="speak" ${S.speak?'checked':''} style="width:auto"> Speak answers out loud (earpiece or watch speaker)</label>
+ ${mine.map(v=>`<div class="qa"><div class="muted">${fmt(v.at)} · "${esc(v.q)}"</div><div>${esc(v.a)}</div></div>`).join('')}
+ <div class="rules">${[['Never guesses','If it isn\'t in the record, it says so and points you to your point person.'],['No codes out loud','Door, parking and ice codes stay in the phone vault.'],['Allergens word for word','Specials are read exactly as written on the BEO.'],['Quiet during pauses','During the documentary, answers show on the face without sound.']].map(r=>`<div class="row"><div><h3>${r[0]}</h3><small>${r[1]}</small></div><span class="st work">Rule</span></div>`).join('')}</div>
+ <p class="note">In this preview, type or tap a phrase — the microphone isn't available here. On a Wear OS watch, voice uses the watch's built-in speech recognition. AsteroidOS voice is a later step: its open-source stack doesn't have a ready speech engine yet, so AsteroidOS watches get answers by tapping phrases.</p></div>`;
+}
+/* ---------- planner ---------- */
+function plannerMap(){
+ const n=PEOPLE.filter(visible).length,onc=PEOPLE.filter(p=>S.onClock[p.n]).length;
+ return `<div class="card"><div class="ph"><h2>Crew locator</h2><span class="st proto">${onc} clocked in · ${n} sharing</span></div>${S.onClock[S.me]&&S.sharing[S.me]?mapSvg():'<div class="maplock">Clock in and share your area (Crew view) to see the map.</div>'}
+ <p class="note">Managers see the same areas crew see — no history, no trails, no scores. Tap a name in the Crew tab to call.</p></div>`;
+}
+function secLate(){
+ const d=S.lateDraft,P=latePlan(),fut=[...S.beats].filter(b=>b.t>S.clock).sort((a,b)=>a.t-b.t),last=[...S.late].reverse().find(x=>!x.undo&&!x.reverted);
+ const acks=last?(S.acks[last.id]||[]).length:0;
+ return `<div class="card late"><div class="ph"><h2>Running late?</h2><span class="st proto">Shift the night · notify everyone</span></div>
+ <div><small class="muted">How late</small><div class="chips">${[5,10,15,20,30].map(m=>`<button class="sm" data-latemin="${m}" aria-pressed="${+d.mins===m}">+${m} min</button>`).join('')}<input id="lateMins" type="number" min="1" max="120" value="${d.mins}" aria-label="Minutes late" style="width:6em;min-height:34px;padding:4px 8px"></div></div>
+ <div class="two"><label><small class="muted">Why</small><select id="lateReason">${['Program running long','Guests arriving late','Kitchen behind','Venue or AV delay','Other'].map(r=>`<option${d.reason===r?' selected':''}>${r}</option>`).join('')}</select></label>
+ <label><small class="muted">Note to crew (optional)</small><input id="lateNote" value="${esc(d.note)}" placeholder="e.g. speeches added at the top"></label></div>
+ <details><summary class="muted">Keep times fixed (${fut.filter(b=>S.locked[b.id]).length} locked)</summary>${fut.map(b=>`<label class="row" style="justify-content:flex-start;gap:10px;cursor:pointer"><input type="checkbox" data-lock="${b.id}" ${S.locked[b.id]?'checked':''} style="width:auto"> <span>${fmt(b.t)} · ${esc(b.label.split(/ — | · /)[0])}</span></label>`).join('')}</details>
+ ${d.preview?`<div class="preview"><b>Preview: everything after ${fmt(S.clock)} moves +${P.mins} min</b>
+  ${P.changes.length?P.changes.map(c=>`<div class="row"><span>${esc(c.short)}</span><span><s class="muted">${fmt(c.from)}</s> → <b class="cd">${fmt(c.to)}</b></span></div>`).join(''):'<p class="muted">Nothing left to move.</p>'}
+  ${P.warn.map(w=>`<div class="alert" style="margin-top:8px">${esc(w)}</div>`).join('')}
+  <p class="muted" style="margin:8px 0">All ${PEOPLE.length-1} crew get it in chat, as a phone alert and on their watch (LATE +${P.mins}), with a "Got it" button. Cues tied to moved beats re-time.</p>
+  <div class="two"><button class="pri" data-act="late-apply" ${P.changes.length?'':'disabled'}>Notify crew &amp; apply</button><button data-act="late-cancel">Cancel</button></div></div>`
+ :`<button class="pri" data-act="late-preview">Preview changes</button>`}
+ ${last?`<div class="row"><span>Last change: +${last.mins} min at ${fmt(last.at)} · <b>${acks}/${PEOPLE.length-1}</b> acknowledged</span><button class="sm" data-act="late-undo">Undo &amp; notify</button></div>`:''}
+ </div>`;
+}
+function secCues(){
+ return `<div class="card"><div class="ph"><h2>Cue schedule</h2><span class="st proto">Auto from run of show</span></div>
+ ${cues().map(c=>{const a=(S.acks[c.id]||[]).length,f=S.fired.includes(c.id);return `<div class="row"><div><h3><span class="cd">${fmt(c.at)}</span> · ${esc(c.title)}</h3><small>${esc(c.body)}</small></div><div style="text-align:right;white-space:nowrap"><span class="st ${c.sev==='stop'?'stop':f?'work':''}">${f?'sent':'armed'}</span><br><small>${a}/${PEOPLE.length-1} ack</small></div></div>`}).join('')}
+ <p class="note">Move a beat and every cue tied to it re-times. Cues are timeline-driven, never typed by hand.</p></div>`;
+}
+function secStaff(){
+ const doc0=S.acks['doc-0']||[],t=x=>PEOPLE.filter(p=>p.team===x);
+ return `<div class="card"><div class="ph"><h2>Staffing board</h2><span class="st proto">From staffing sheet</span></div>
+ <div class="team">${['A','B'].map(x=>`<div><b>Team ${x}</b> <small class="muted">sections ${x==='A'?'1 &amp; 2':'3 &amp; 4'}</small>${t(x).map(p=>`<div class="person"><span>${p.n} <small class="muted">${p.r}</small></span><span title="Pause cue acknowledged">${doc0.includes(p.n)?'<span class="dot ok"></span>':'<span class="dot"></span>'}</span></div>`).join('')}</div>`).join('')}</div>
+ <p class="note">Green dot = acknowledged the pause cue on watch or phone. Managers also see crew areas while they're clocked in and sharing — no history, no scores.</p>
+ <button data-act="simacks">Simulate crew acknowledging</button></div>`;
+}
+function secStations(){
+ const low=['Low','Out'].includes(S.station.A)||['Low','Out'].includes(S.station.B);
+ return `<div class="card"><div class="ph"><h2>Station watch</h2><span class="st proto">Prototype</span></div>
+ ${['A','B'].map(x=>`<div class="row"><span>Charcuterie ${x==='A'?'1':'2'} <small>no backup</small></span><span class="chips">${['Full','Half','Low','Out'].map(v=>`<button class="sm" data-stn="${x}|${v}" aria-pressed="${S.station[x]===v}">${v}</button>`).join('')}</span></div>`).join('')}
+ ${low?'<div class="alert"><b>Escalated to event manager and points.</b> No backup except crackers and bread — fluff and stretch. Flips to dessert at '+fmt(beat('flip').t)+'.</div>':''}</div>`;
+}
+function secUpdates(){
+ return `<div class="card"><div class="ph"><h2>Huddle &amp; floor updates</h2><span class="st proto">Overrides, timestamped</span></div>
+ <button data-act="upd-depart">Apply: "guests out ~9:00, not 10:00"</button>
+ <button data-act="upd-doc">Apply: "documentary running 10 min late"</button>
+ ${S.updates.map(u=>`<div class="row"><small>${fmt(u.at)}</small><span>${esc(u.text)}</span></div>`).join('')}
+ <p class="note">Each update is stored as an override next to the document value, shown as a one-line delta, and re-times the cues.</p>
+ <form id="bform" class="two"><input id="bT" placeholder="Broadcast to all crew + watches" aria-label="Broadcast"><button class="pri" type="submit">Broadcast</button></form></div>`;
+}
+function planner(){
+ return `<div class="board"><div class="col">${nowCard()}${secLate()}${secTimeline(true)}${secCues()}</div>
+ <div class="col">${secUpdates()}${plannerMap()}${secStaff()}${secStations()}${secSpecials(true)}<div class="card"><div class="ph"><h2>Wrist preview · ${esc(S.me)}</h2></div><div class="watchbox">${watchFace()}</div></div></div></div>`;
+}
+function manager(){
+ const sent=cues().filter(c=>S.fired.includes(c.id)),crew=PEOPLE.length-1;
+ const ackRate=sent.length?Math.round(sent.reduce((n,c)=>n+Math.min(crew,(S.acks[c.id]||[]).length),0)/(sent.length*crew)*100):0;
+ const lateMin=S.late.filter(l=>!l.undo&&!l.reverted).reduce((n,l)=>n+l.mins,0);
+ const onc=PEOPLE.filter(p=>S.onClock[p.n]).length,shr=PEOPLE.filter(visible).length;
+ const conf=S.specials.filter(x=>x.status===4).length;
+ const ap=S.aprons,varc=ap==null?null:44-ap;
+ const Q=[['flags','Document flags','sample gala: 13 flags awaiting confirmation (4 safety)','Review'],
+  ['thanks','Outbound draft','Thank-you + review request to the client','Approve to send'],
+  ['calloff','Staffing','Call-off: 1 runner for Nov 28 — fill in Nowsta','Open in Nowsta'],
+  ...S.ideas.filter(i=>i.st!=='Approved').map(i=>['idea'+i.id,'Crew idea',i.text,'Approve idea'])];
+ return `<div class="board"><div class="col">
+ <div class="card"><div class="ph"><h2>Tonight at a glance</h2><span class="st proto">Live from this event</span></div>
+  <div class="mgrk"><div><b>${onc}/${PEOPLE.length}</b><small>clocked in</small></div><div><b>${shr}</b><small>sharing a zone</small></div><div><b>${sent.length}</b><small>cues sent</small></div><div><b>${ackRate}%</b><small>cue acknowledgement</small></div><div><b>${lateMin?'+'+lateMin+'m':'On time'}</b><small>schedule</small></div><div><b>${conf}/6</b><small>specials confirmed</small></div></div>
+  <p class="note">Team-level numbers only. No individual scores; zone locations aren't stored.</p></div>
+ <div class="card"><div class="ph"><h2>Approvals</h2><span class="st plan">Nothing sends without you</span></div>
+  ${Q.map(x=>{const dec=S.mgrDec[x[0]];return `<div class="row" style="align-items:flex-start"><div><small class="muted">${esc(x[1])}</small><h3>${esc(x[2])}</h3></div><span class="chips" style="flex:none">${dec?`<span class="st ${dec==='yes'?'work':''}">${dec==='yes'?'Approved':'Rejected'}</span>`:`<button class="sm pri" data-mdec="${x[0]}|yes">${esc(x[3])}</button><button class="sm" data-mdec="${x[0]}|no">Reject</button>`}</span></div>`}).join('')}</div>
+ <div class="card"><div class="ph"><h2>Upcoming events</h2><span class="st proto">Intake status</span></div>
+  ${[['Sample Anniversary Gala','Tonight · 510 guests','3/3 docs · 13 flags','real'],['Corporate holiday party','Nov 28 · 220 guests','2/3 docs · pack list missing','sample'],['Wedding reception','Dec 5 · 180 guests','1/3 docs · BEO only','sample']].map(e=>`<div class="row"><div><h3>${e[0]}</h3><small>${e[1]} · ${e[2]}</small></div><span class="st ${e[3]==='real'?'work':'proto'}">${e[3]==='real'?'Real':'Sample'}</span></div>`).join('')}</div>
+ </div><div class="col">
+ <div class="card"><div class="ph"><h2>Close-out</h2><span class="st proto">Before the truck leaves</span></div>
+  <div class="row"><span>Branded aprons issued (pack list)</span><b>44</b></div>
+  <div class="row"><label for="aprons">Aprons returned</label><input id="aprons" type="number" min="0" max="44" value="${ap??''}" style="width:6em"></div>
+  ${varc==null?'':varc>0?`<div class="alert">${varc} apron${varc>1?'s':''} short. Find them before the laundry bag is sealed.</div>`:'<div class="row"><span class="ok-line">✓ All 44 aprons back</span></div>'}
+  <div class="row"><span>Glassware (Glassware vendor)</span><span class="st plan">Same-night pickup 10:00 PM</span></div>
+  <div class="row"><span>Gold flatware (Flatware vendor)</span><span class="st plan">Return to warehouse</span></div>
+  <button class="pri" data-act="close-event" ${varc==null||varc>0?'disabled':''}>Close event</button>
+  ${S.closed?'<p class="ok-line">Event closed. Zone locations wiped. Report sent to the owner portal.</p>':''}</div>
+ <div class="card"><div class="ph"><h2>Post-event report</h2><span class="st proto">Builds itself</span></div>
+  <div class="row"><span>Run of show changes</span><b>${S.late.filter(l=>!l.undo).length} delay${S.late.filter(l=>!l.undo).length===1?'':'s'} · ${S.updates.length} updates</b></div>
+  <div class="row"><span>Cues sent / acknowledged</span><b>${sent.length} · ${ackRate}%</b></div>
+  <div class="row"><span>Specials confirmed served</span><b>${conf} of 6</b></div>
+  <div class="row"><span>Crew ideas</span><b>${S.ideas.length} submitted</b></div>
+  <div class="row"><span>Aprons</span><b>${ap==null?'not counted':ap+' / 44'}</b></div>
+  <p class="note">Feeds the owner portal and the venue playbook. Hours go back to Nowsta for payroll once connected.</p>
+  <a class="btn" href="owner.html" style="display:inline-flex;align-items:center;justify-content:center;text-decoration:none">Open owner portal</a></div>
+ </div></div>`;
+}
+const TABS=[['shift','Shift',secShift],['team','Crew',secTeam],['chat','Chat',secChat],['tasks','Tasks',secTasks],['games','Games',secGames],['watch','Watch',secWatch]];
+function render(){
+ const fl=S.lay==='floor';document.body.classList.toggle('tabs-on',fl);
+ const app=$('#app');app.className='lay-'+S.lay;
+ const banner=`<details class="about"><summary>About this demo</summary><p>A live walk-through of Showcall on a real 510-guest gala timeline (Sample Anniversary Gala, Downtown Venue). Crew names are samples, and no codes or phone numbers are in this page. Everything runs in your browser — press ▶ Play or jump to a cue to see the run of show call itself on phones and wrists. Switch to Planner to move a beat and watch every cue re-time.</p></details>`;
+ const unread=S.msgs.filter(m=>m.cue&&m.t>S.clock-3).length;
+ if(!S.started){app.className='lay-start';app.innerHTML=`<div class="start"><div class="sin">${LOGO}<h1 style="font-size:clamp(30px,5vw,46px)">Try Showcall as…</h1>
+  <p class="muted" style="font-size:17px;max-width:34em">A live demo on a real 510-guest gala timeline. Pick a seat — you can switch any time from the top bar.</p>
+  <div class="pick">${[['crew','Crew member','Dana · runner, Team B','Your shift, cues, chat, find crew, watch & voice'],['planner','Event planner','Avery · event manager','Run of show, running late, flags, specials, stations'],['manager','Manager','Avery · event manager','Tonight at a glance, approvals, close-out, report'],['owner','Owner','Company owner','Every department, profit, integrations, pilots']].map(r=>`<button class="pc" data-start="${r[0]}"><b>${r[1]}</b><small>${r[2]}</small><span>${r[3]}</span></button>`).join('')}</div>
+  <a href="index.html" class="muted">← Back to the website</a></div></div>`;return}
+ const tip={floor:{shift:'Tip: tap "7:20 pause" in the bar above, then open the Watch tab.',team:'Tip: clock in to unlock the crew map, then tap a teammate to call.',watch:'Tip: tap a question under Voice — the answer lands on the watch face.'},planner:'Tip: try "Running late?" +10 min, then switch to Crew to see what everyone got.',manager:'Tip: enter 44 aprons returned to unlock "Close event".'};
+ const tp=S.lay==='floor'?(tip.floor[S.tab]||''):tip[S.lay]||'';
+ if(fl){const t=TABS.find(x=>x[0]===S.tab)||TABS[0];
+  app.innerHTML=topbar()+`<div class="wrap">${tp?`<p class="tip">${tp}</p>`:''}${banner}${t[2]()}</div><nav class="tabs"><div class="in">${TABS.map(x=>`<button data-tab="${x[0]}"${S.tab===x[0]?' aria-current="page"':''}>${x[1]}${x[0]==='watch'&&paused()&&S.tab!=='watch'?'<span class="pip"></span>':''}${x[0]==='chat'&&unread&&S.tab!=='chat'?'<span class="pip"></span>':''}</button>`).join('')}</div></nav>`;}
+ else app.innerHTML=topbar()+`<div class="wrap">${tp?`<p class="tip">${tp}</p>`:''}${banner}${S.lay==='manager'?manager():planner()}</div>`;
+ const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight;
+}
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+ const pin=e.target.closest('.pin');if(pin){S.call=pin.dataset.who===S.me?null:pin.dataset.who;save();render();scrollTo(0,0);return}
+ const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(d.lay){S.lay=d.lay;if((d.lay==='planner'||d.lay==='manager')&&!manage())S.me='Avery';save();render();return}
+ if(d.tab){S.tab=d.tab;save();render();scrollTo(0,0);return}
+ if(d.speed){S.speed=+d.speed;save();render();return}
+ if(d.say){ask(d.say);save();render();return}
+ if(d.act==='voice-dismiss'){const lv=[...S.voice].reverse().find(v=>v.who===S.me);if(lv)lv.at=-999;save();render();return}
+ if(d.act==='mic'){if(S.tab!=='watch'||S.lay!=='floor'){S.lay='floor';S.tab='watch'}save();render();const v=document.getElementById('vq');if(v)v.focus();return}
+ if(d.start){if(d.start==='owner'){S.started=true;save();location.href='owner.html';return}S.started=true;S.lay=d.start==='crew'?'floor':d.start;S.me=d.start==='crew'?'Dana':'Avery';S.tab='shift';save();render();scrollTo(0,0);return}
+ if(d.mdec){const [id,v]=d.mdec.split('|');S.mgrDec[id]=v;if(id.startsWith('idea')&&v==='yes'){const i=S.ideas.find(x=>'idea'+x.id===id);if(i){i.st='Approved';add(i.by,20)}}save();render();return}
+ if(d.act==='close-event'){S.closed=true;for(const n in S.onClock)S.onClock[n]=false;S.updates.push({at:S.clock,text:'Event closed: all crew clocked out, zone locations wiped.'});save();render();return}
+ if(d.act==='clockin'){S.consentOpen=true;save();render();return}
+ if(d.act==='clockin-share'||d.act==='clockin-noshare'){S.onClock[S.me]=true;S.sharing[S.me]=d.act==='clockin-share';S.consentOpen=false;S.updates.push({at:S.clock,text:`${S.me} clocked in${S.sharing[S.me]?' · sharing area':''}.`});save();render();return}
+ if(d.act==='clockout'){S.onClock[S.me]=false;S.sharing[S.me]=null;delete S.pauseUntil[S.me];S.call=null;S.updates.push({at:S.clock,text:`${S.me} clocked out · location sharing stopped.`});save();render();return}
+ if(d.act==='pause15'){S.pauseUntil[S.me]=S.clock+15;save();render();return}
+ if(d.act==='resume'){delete S.pauseUntil[S.me];save();render();return}
+ if(d.act==='stopshare'){S.sharing[S.me]=false;save();render();return}
+ if(d.act==='startshare'){S.sharing[S.me]=true;save();render();return}
+ if(d.call){S.call=d.call;save();render();scrollTo(0,0);return}
+ if(d.act==='hangup'){S.call=null;save();render();return}
+ if(d.ping){const p=PEOPLE.find(x=>x.n===d.ping);S.toast=`Ping sent. ${p.n}'s watch buzzes: "${S.me} is looking for you${visible(me())?' at '+ZNAME(zoneOf(me())):''}".`;save();render();setTimeout(()=>{S.toast=null;render()},4000);return}
+ if(d.latemin){S.lateDraft.mins=+d.latemin;S.lateDraft.preview=false;save();render();return}
+ if(d.act==='late-preview'){S.lateDraft.preview=true;save();render();return}
+ if(d.act==='late-cancel'){S.lateDraft.preview=false;save();render();return}
+ if(d.act==='late-apply'){const P=latePlan();if(!P.changes.length)return;
+  for(const c of P.changes){const b=beat(c.id);b.t=c.to;b.moved=(b.moved||0)+P.mins}
+  const id='late-'+(++S.nid);S.late.push({id,at:S.clock,mins:P.mins,reason:S.lateDraft.reason,note:S.lateDraft.note.trim(),by:S.me,changes:P.changes});
+  S.updates.push({at:S.clock,text:`Running ${P.mins} min late (${S.lateDraft.reason}). ${P.changes.length} beats moved; crew notified.`});
+  S.lateDraft={mins:P.mins,reason:S.lateDraft.reason,note:'',preview:false};retime();tick();S.cue=id;save();render();buzz();return}
+ if(d.act==='late-undo'){const L=[...S.late].reverse().find(x=>!x.undo&&!x.reverted);if(!L)return;
+  for(const c of L.changes){const b=beat(c.id);if(b){b.t-=L.mins;b.moved=(b.moved||0)-L.mins}}L.reverted=true;
+  const id='late-'+(++S.nid);S.late.push({id,at:S.clock,mins:L.mins,undo:true,reason:'',note:'',by:S.me,changes:L.changes.map(c=>({...c,from:c.to,to:c.from}))});
+  S.updates.push({at:S.clock,text:`Undid the +${L.mins} min delay; crew notified.`});retime();tick();S.cue=id;save();render();buzz();return}
+ if(d.os){S.os=d.os;save();render();return}
+ if(d.jump){S.clock=+d.jump;retime();tick();save();render();return}
+ if(d.ch){S.ch=d.ch;save();render();return}
+ if(d.act==='play'){S.play=!S.play;save();render();return}
+ if(d.act==='reset'){const lay=S.lay,me_=S.me;S=JSON.parse(JSON.stringify(DEF));S.lay=lay;S.me=me_;S.started=true;S.clock=T(19,10);save();render();return}
+ if(d.act==='nextq'){S.qi++;S.ans=null;save();render();return}
+ if(d.act==='simacks'){for(const c of cues())if(S.fired.includes(c.id))S.acks[c.id]=[...new Set([...(S.acks[c.id]||[]),...PEOPLE.filter((p,i)=>i%4!==3).map(p=>p.n)])];save();render();return}
+ if(d.act==='upd-depart'){const dp=beat('depart');if(dp.t!==T(21,0)){S.updates.push({at:S.clock,text:`Guest departure ${fmt(dp.t)} → 9:00 PM (floor lead, huddle). Home-stretch cue now 8:55 PM.`});dp.moved=(dp.moved||0)+(T(21,0)-dp.t);dp.t=T(21,0);retime();tick()}save();render();return}
+ if(d.act==='upd-doc'){const dc=beat('doc');S.updates.push({at:S.clock,text:`Documentary ${fmt(dc.t)} → ${fmt(dc.t+10)}. Pause and go cues moved 10 min.`});moveBeat('doc',10);save();render();return}
+ if(d.move){const [id,v]=d.move.split('|');moveBeat(id,+v);save();render();return}
+ if(d.spec){const s=S.specials.find(x=>x.id==d.spec);if(s.status<4)s.status++;save();render();return}
+ if(d.stn){const [x,v]=d.stn.split('|');S.station[x]=v;if(['Low','Out'].includes(v))S.msgs.push({id:++S.nid,ch:'mgr',who:'Station watch',role:'Alert',cue:'warn',text:`Charcuterie ${x==='A'?1:2} is ${v}. No backup except crackers and bread.`,t:S.clock,re:{}});save();render();return}
+ if(d.ack){S.acks[d.ack]=[...new Set([...(S.acks[d.ack]||[]),S.me])];add(S.me,2);save();render();return}
+ if(d.re){const [id,r]=d.re.split('|'),m=S.msgs.find(x=>x.id==id);m.re=m.re||{};const v=m.re[r]=m.re[r]||[],i=v.indexOf(S.me);if(i>=0)v.splice(i,1);else v.push(S.me);save();render();return}
+ if(d.done){const t=S.tasks.find(x=>x.id==d.done);if(!t.done){t.done=true;add(S.me,10);stat(S.me).tasks++}save();render();return}
+ if(d.vote){const i=S.ideas.find(x=>x.id==d.vote);if(!i.votes.includes(S.me)&&i.by!==S.me)i.votes.push(S.me);save();render();return}
+ if(d.ans!==undefined){const q=QS[S.qi%QS.length];S.ans=+d.ans;if(S.ans===q[2]){add(S.me,5);stat(S.me).ok++;S.streak++}else S.streak=0;save();render();return}
+ if(d.sms){S.sms[S.me]=S.sms[S.me]||{};S.sms[S.me][d.sms]=!S.sms[S.me][d.sms];save();render();return}
+});
+function moveBeat(id,v){const b=beat(id);b.t+=v;b.moved=(b.moved||0)+v;
+ if(id==='doc'){const dn=beat('dinner');dn.t+=v;dn.moved=(dn.moved||0)+v}/* dinner follows the documentary */
+ retime();tick();}
+function buzz(){const w=document.querySelector('.watch');if(w){w.classList.remove('buzz');void w.offsetWidth;w.classList.add('buzz')}}
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.dataset&&t.dataset.lock){S.locked[t.dataset.lock]=t.checked;save();render();return}
+ if(t.id==='aprons'){S.aprons=t.value===''?null:Math.max(0,Math.min(44,+t.value));save();render();return}
+ if(t.id==='speak'){S.speak=t.checked;save();return}
+ if(t.id==='lateReason'){S.lateDraft.reason=t.value;save();return}
+ if(t.id==='lateMins'){S.lateDraft.mins=+t.value;save();render();return}if(t.id==='me'){S.me=t.value;if(S.ch==='mgr'&&!manage())S.ch='all';save();render()}});
+document.addEventListener('input',e=>{if(e.target.id==='draft')S.draft=e.target.value;if(e.target.id==='lateNote')S.lateDraft.note=e.target.value});
+document.addEventListener('submit',e=>{e.preventDefault();const f=e.target.id;
+ if(f==='vform'){const v=$('#vq');ask(v.value);v.value=''}
+ if(f==='cform'){const tx=S.draft.trim();if(!tx)return;S.msgs.push({id:++S.nid,ch:S.ch,who:S.me,role:me().r,text:tx,t:S.clock,re:{}});S.draft='';add(S.me,1);stat(S.me).msgs++}
+ if(f==='tform'){S.tasks.push({id:++S.nid,title:$('#tT').value.trim(),to:$('#tW').value,due:$('#tD').value.trim()||'Soon',by:S.me,done:false})}
+ if(f==='iform'){S.ideas.push({id:++S.nid,text:$('#iT').value.trim(),cat:'Floor',by:S.me,votes:[],st:'New'});add(S.me,5)}
+ if(f==='bform'){const tx=$('#bT').value.trim();if(!tx)return;const id='b'+(++S.nid);S.msgs.push({id:S.nid,ch:'all',who:S.me,role:'Broadcast',cue:'warn',text:tx,t:S.clock,re:{}});S.updates.push({at:S.clock,text:'Broadcast: '+tx})}
+ save();render()});
+/* clock: 1 or 5 sim-minutes per real second */
+let last=performance.now();
+setInterval(()=>{const now=performance.now(),dt=(now-last)/1000;last=now;if(!S.play)return;
+ const before=S.clock;S.clock=Math.min(T(23,30),S.clock+dt*S.speed);if(S.clock>=T(23,30))S.play=false;
+ const firedBefore=S.fired.length;tick();
+ if(Math.floor(before)!==Math.floor(S.clock)||S.fired.length!==firedBefore){const a=document.activeElement;if(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){const tm=$('.time');if(tm)tm.textContent=fmt(S.clock);return}render();save()}},250);
+for(const c of cues())if(c.at<=S.clock&&!S.fired.includes(c.id))fire(c,true);
+render();
+}
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>

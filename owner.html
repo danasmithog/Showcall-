@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Showcall — Owner portal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Rubik:wght@400;500;600&display=swap">
+<style>
+/* VOICE: plain and exact — this is money, people and contracts, so no jokes and every number says where it came from.
+   IDEA: the owner's ledger behind the show — every event, every person-hour, every tool, one book.
+   PICTURE: the KPI row and the source meter ("1 of 47 sources connected") that tells the owner how much of this is real yet.
+   COLOUR and TYPE: same black & gold as Showcall; green = measured, blue = sample, amber = needs integration.
+   LAYOUT: left rail of sections on desktop, top scroller on phones; each section is one ruled page. */
+:root{color-scheme:dark;--bg:#0b0c0f;--panel:#15171c;--soft:#1d2027;--line:#2a2f38;--ink:#f3f1ea;--dim:#a6abb4;
+ --gold:#d9b45f;--on:#1a1408;--stop:#ff5d4d;--stopbg:#3a120e;--go:#5fd394;--gobg:#0f2e1e;--warn:#f3b843;--warnbg:#33270e;--info:#8bb8ff;--infobg:#16233a;
+ --fd:"Fredoka",system-ui,sans-serif;--fb:"Rubik",system-ui,sans-serif}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 var(--fb);overflow-x:clip}
+a{color:var(--gold)}
+h1,h2,h3{font-family:var(--fd);font-weight:600;margin:0;text-wrap:balance}
+h1{font-size:clamp(28px,3.4vw,40px);line-height:1.05}h2{font-size:22px}h3{font-size:16.5px;font-family:var(--fb);font-weight:500}
+header.top{position:sticky;top:0;z-index:5;background:#0b0c0fea;backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+header.top .in{max-width:1320px;margin:0 auto;padding:10px max(16px,3vw);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font:600 23px var(--fd);margin-right:auto}.brand b{color:var(--gold);font-weight:600}.brand svg{width:30px;height:30px}
+.role{font:600 11px var(--fb);letter-spacing:.06em;text-transform:uppercase;background:var(--gold);color:var(--on);border-radius:99px;padding:3px 10px}
+.toplinks{display:flex;gap:14px;flex-wrap:wrap}.toplinks a{color:var(--dim);text-decoration:none;font-size:15px}.toplinks a:hover{color:var(--ink)}
+.shell{max-width:1320px;margin:0 auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;padding:18px max(16px,3vw) 60px}
+nav.rail{position:sticky;top:76px;align-self:start;display:flex;flex-direction:column;gap:2px}
+nav.rail a{display:block;padding:10px 12px;border-radius:10px;color:var(--dim);text-decoration:none;font-weight:500}
+nav.rail a.on{background:var(--soft);color:var(--ink);box-shadow:inset 3px 0 0 var(--gold)}
+nav.rail a:hover{color:var(--ink)}
+.meter{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:13.5px;color:var(--dim)}
+.meter b{display:block;font:600 24px var(--fd);color:var(--ink)}
+.bar{height:8px;border-radius:4px;background:var(--soft);overflow:hidden;margin-top:6px}.bar i{display:block;height:100%;background:var(--go)}
+main section{display:none;flex-direction:column;gap:14px}main section.on{display:flex}
+.lede{color:var(--dim);margin:6px 0 4px;max-width:60em}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
+.kpi .n{font:600 clamp(26px,3vw,34px)/1.05 var(--fd);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi small{display:block;color:var(--dim);font-size:13.5px;margin-top:2px}
+.src{display:inline-block;font:600 11px var(--fb);letter-spacing:.04em;text-transform:uppercase;border-radius:5px;padding:1px 7px;margin-top:8px;white-space:nowrap}
+.src.real{background:var(--gobg);color:var(--go)}.src.sample{background:var(--infobg);color:var(--info)}.src.need{background:var(--warnbg);color:var(--warn)}.src.stop{background:var(--stopbg);color:var(--stop)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--dim);font-weight:500;font-size:12.5px}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.scroll{overflow-x:auto}
+.hrow{display:grid;grid-template-columns:9em minmax(0,1fr) 5.5em;gap:10px;align-items:center;font-size:14.5px;padding:4px 0}
+.hrow .t{height:14px;border-radius:4px;background:var(--soft);overflow:hidden}.hrow .t i{display:block;height:100%}
+.hrow b{text-align:right;font-weight:500;font-variant-numeric:tabular-nums}
+.note{margin:0;padding:9px 12px;border:1px dashed var(--line);border-radius:9px;color:var(--dim);font-size:13.5px}
+button{font:500 14.5px var(--fb);min-height:40px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
+button.pri{background:var(--gold);color:var(--on);border-color:var(--gold)}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button[disabled]{opacity:.5;cursor:not-allowed}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{min-height:34px;border-radius:99px;font-size:13.5px}
+.chips button[aria-pressed=true]{background:var(--gold);color:var(--on);border-color:var(--gold)}
+input,select{font:400 16px var(--fb);color:var(--ink);background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 11px}
+.tools{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.tool{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.tool.pilot{border-color:#5b4516;background:linear-gradient(180deg,#221c0d,var(--panel) 60%)}
+.tool .fn{font-size:12.5px;color:var(--gold)}
+.tool p{margin:0;font-size:14px;color:#cfd1d6}
+.tool .price{font-size:13.5px}
+.tool .feeds{font-size:13px;color:var(--dim)}
+.st{display:inline-block;font:600 11px var(--fb);letter-spacing:.03em;text-transform:uppercase;border-radius:5px;padding:1px 7px;white-space:nowrap}
+.st.nc{background:var(--soft);color:var(--dim)}.st.req{background:var(--warnbg);color:var(--warn)}.st.on{background:var(--gobg);color:var(--go)}.st.pil{background:var(--gold);color:var(--on)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)}.row:first-child{border-top:0}
+.row small,.muted{color:var(--dim);font-size:13.5px}
+.lock{display:grid;place-items:center;text-align:center;gap:4px;min-height:120px;border:1px dashed #5b4516;border-radius:12px;background:#17140c;color:#e8d7aa;padding:14px}
+.lock b{font:600 30px var(--fd);color:var(--ink)}
+.matrix td,.matrix th{text-align:center}.matrix td:first-child,.matrix th:first-child{text-align:left}
+.y{color:var(--go)}.n{color:var(--dim)}
+@media (max-width:1000px){.shell{grid-template-columns:minmax(0,1fr)}nav.rail{position:sticky;top:60px;z-index:4;flex-direction:row;overflow-x:auto;background:var(--bg);padding:6px 0;border-bottom:1px solid var(--line)}nav.rail a{flex:none;white-space:nowrap}.meter{display:none}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.grid3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){.grid2{grid-template-columns:minmax(0,1fr)}.toplinks{display:none}.hrow{grid-template-columns:7em minmax(0,1fr) 4.5em}table{font-size:13.5px}}
+</style>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0c0f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Showcall">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+</head>
+<body>
+<header class="top"><div class="in">
+ <a class="brand" href="index.html"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f3f1ea" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg><span>Show<b>call</b></span></a>
+ <span class="role">Owner portal</span>
+ <div class="toplinks"><a href="app.html">Crew &amp; planner app</a><a href="index.html">Website</a></div>
+</div></header>
+
+<div class="shell">
+ <nav class="rail" aria-label="Portal sections">
+  <a href="#overview">Overview</a><a href="#profit">Profit &amp; suggestions</a><a href="#events">Events</a><a href="#sales">Sales</a><a href="#marketing">Marketing</a><a href="#service">Customer service</a><a href="#people">HR &amp; people</a><a href="#finance">Accounting</a><a href="#inventory">Inventory</a><a href="#ops">Ops &amp; logistics</a><a href="#security">Security</a>
+  <a href="#integrations">Integrations</a><a href="#pilots">Pilots</a><a href="#ai">AI tool scout</a><a href="#approvals">Approvals</a><a href="#governance">Governance</a>
+  <div class="meter"><b id="mtr">1 of 47</b>data sources connected<div class="bar"><i id="mtrbar" style="width:2%"></i></div><span style="display:block;margin-top:8px">Everything else is labeled <span class="src sample" style="margin:0">Sample</span> or <span class="src need" style="margin:0">Needs integration</span>.</span></div>
+ </nav>
+ <main>
+
+ <!-- OVERVIEW -->
+ <section id="s-overview">
+  <h1>The whole business, one book.</h1>
+  <p class="lede">Every event, crew hour, flag, cue and tool in one place. Green numbers are measured from real documents. Blue numbers are sample figures to show the layout until a source is connected.</p>
+  <div class="kpis">
+   <div class="kpi"><div class="n">510</div><small>guests · sample gala (last event)</small><span class="src real">From BEO</span></div>
+   <div class="kpi"><div class="n">13</div><small>document conflicts caught</small><span class="src real">From gala PDFs</span></div>
+   <div class="kpi"><div class="n">4</div><small>allergen &amp; safety catches</small><span class="src real">From gala PDFs</span></div>
+   <div class="kpi"><div class="n">$0</div><small>claimed savings so far</small><span class="src stop">Locked until measured</span></div>
+   <div class="kpi"><div class="n">18</div><small>events this month</small><span class="src sample">Sample</span></div>
+   <div class="kpi"><div class="n">5,940</div><small>guests served this month</small><span class="src sample">Sample</span></div>
+   <div class="kpi"><div class="n">94%</div><small>pause cues acknowledged in 60 s</small><span class="src sample">Sample · needs watch app</span></div>
+   <div class="kpi"><div class="n">31.4%</div><small>labor as % of event revenue</small><span class="src need">Needs Nowsta + accounting</span></div>
+  </div>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Flags caught by type</h2><span class="src real" style="margin:0">sample gala · real</span></div><div id="flagbars"></div>
+    <p class="note">Every flag waited for a human. None was resolved by the software.</p></div>
+   <div class="card"><div class="ph"><h2>Events by week</h2><span class="src sample" style="margin:0">Sample</span></div><div id="weekbars"></div>
+    <p class="note">Fills from Nowsta shifts and uploaded BEOs once connected.</p></div>
+  </div>
+  <div class="card"><div class="ph"><h2>What needs you</h2><a href="#approvals">Open approvals →</a></div><div id="needs"></div></div>
+ </section>
+
+ <!-- EVENTS -->
+ <section id="s-events">
+  <h1>Events</h1><p class="lede">Every event's intake, flags, cue performance and close-out. The gala row is real; the rest are sample rows for layout.</p>
+  <div class="card scroll"><table><thead><tr><th>Event</th><th>Date</th><th class="r">Guests</th><th>Docs</th><th class="r">Flags open</th><th class="r">Safety</th><th class="r">Cue ack</th><th class="r">Ran late</th><th>Source</th></tr></thead><tbody id="evrows"></tbody></table></div>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>sample gala · post-event report</h2><span class="src real" style="margin:0">Real + demo run</span></div>
+    <div class="row"><span>Documents received</span><b>BEO · pack list · staffing</b></div>
+    <div class="row"><span>Entrée covers (line items)</span><b>209 beef · 305 chix · 23 veg</b></div>
+    <div class="row"><span>Covers awaiting confirmation</span><b>header vs line items</b></div>
+    <div class="row"><span>Dietary specials on BEO</span><b>6 (3 salad, 3 entrée)</b></div>
+    <div class="row"><span>Aprons packed</span><b>44</b></div>
+    <div class="row"><span>Timeline: BEO vs floor</span><b>Guests out 10:00 PM vs ~9:00 PM</b></div>
+    <p class="note">As-run times, aprons returned and specials confirmed fill in from the planner board's close-out taps.</p></div>
+   <div class="card"><div class="ph"><h2>Venues &amp; clients</h2><span class="src sample" style="margin:0">Playbooks · sample</span></div>
+    <div class="row"><div><h3>Downtown Venue · Grand Hall</h3><small>Team entrance: side. Loading dock load-in. Trash by venue. Parking validation in vault.</small></div><span class="src real" style="margin:0">From BEO</span></div>
+    <div class="row"><div><h3>Sample Client</h3><small>First-time client. "Respectful, quiet, efficient" — presentations during dinner.</small></div><span class="src real" style="margin:0">From BEO</span></div>
+    <div class="row"><div><h3>Venue playbook entries</h3><small>Built from post-shift debriefs (Phase 5)</small></div><span class="src need" style="margin:0">Coming</span></div></div>
+  </div>
+ </section>
+
+ <!-- PEOPLE -->
+ <section id="s-people">
+  <h1>HR &amp; people</h1><p class="lede">Staffing coverage, hiring, training and crew engagement — all at team and event level. Showcall never scores individual employees, and location data never reaches this portal.</p>
+  <div class="kpis">
+   <div class="kpi"><div class="n">37</div><small>people across the two gala staffing sheets (shared roles counted once)</small><span class="src real">From staffing PDF</span></div>
+   <div class="kpi"><div class="n">2</div><small>teams · 4 sections</small><span class="src real">From staffing PDF</span></div>
+   <div class="kpi"><div class="n">6</div><small>open shifts next 7 days</small><span class="src need">Needs Nowsta</span></div>
+   <div class="kpi"><div class="n">72%</div><small>pre-shift briefs opened before doors</small><span class="src sample">Sample</span></div>
+  </div>
+  <div class="grid3">
+   <div class="card"><h2>Hiring pipeline</h2><div id="hire"></div><span class="src need" style="margin:0">Needs Workstream + Checkr</span></div>
+   <div class="card"><h2>Training</h2><div id="train"></div><span class="src need" style="margin:0">Needs Opus Training</span></div>
+   <div class="card"><h2>Crew engagement</h2><div id="engage"></div><span class="src sample" style="margin:0">Sample · team-level only</span></div>
+  </div>
+  <p class="note">Rosters, availability, shift offers and payroll stay in Nowsta. Showcall reads staffing in and hands confirmed hours back — it never accepts, declines or offers a shift by itself.</p>
+ </section>
+
+ <!-- FINANCE -->
+ <section id="s-finance">
+  <h1>Accounting &amp; finance</h1><p class="lede">Revenue, labor, food cost, bar variance and waste per event — wired from the accounting, invoice and waste tools once connected. Savings stay at $0 until they're measured.</p>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Cost per guest by event type</h2><span class="src sample" style="margin:0">Sample</span></div><div id="cpg"></div><p class="note">Labor from Nowsta hours; food from MarginEdge or Restaurant365 invoices; waste from Winnow or Leanpath.</p></div>
+   <div class="card"><div class="ph"><h2>Savings tracker</h2><span class="src stop" style="margin:0">Locked</span></div>
+    <div class="lock"><b>$0 claimed</b><span>Savings unlock only after 8+ weeks of baseline, a pilot that beats normal variation, and sign-off from whoever owns the data. Cash and freed-up capacity are counted separately.</span></div>
+    <div class="row"><span>Baseline weeks collected</span><b>0 / 8</b></div><div class="row"><span>Pilots running</span><b>0 / 5</b></div></div>
+  </div>
+  <div class="card scroll"><div class="ph"><h2>Where each number will come from</h2></div><table><thead><tr><th>Metric</th><th>Source tool</th><th>Status</th></tr></thead><tbody>
+   <tr><td>Event revenue, deposits, invoices</td><td>Tripleseat or Perfect Venue (sales/BEO), Restaurant365 (accounting)</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Labor hours and cost per event</td><td>Nowsta (hours) → payroll</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Food cost and price changes</td><td>MarginEdge (invoice photos) or Restaurant365 AI</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Food waste by site and event</td><td>Winnow or Leanpath (Snap AI for off-site events)</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Bar pour-cost variance</td><td>WISK</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Accounts payable automation</td><td>Vic.ai (only if AP volume outgrows R365/MarginEdge)</td><td><span class="st nc">Not connected</span></td></tr>
+   <tr><td>Tail-spend sourcing (rentals, disposables)</td><td>Fairmarkit</td><td><span class="st nc">Not connected</span></td></tr>
+  </tbody></table></div>
+ </section>
+
+ <div id="depts"></div>
+ <section id="s-profit">
+  <h1>Projected profit &amp; suggested changes</h1>
+  <p class="lede">Project one event's profit from your own numbers, then try the suggested changes. Each suggestion comes from what the documents actually showed on the sample gala. Nothing changes an event until you approve it.</p>
+  <div class="grid2">
+   <div class="card"><div class="ph"><h2>Inputs</h2><span class="src sample" style="margin:0">Sample inputs — replace with yours</span></div><div id="pinputs" class="pin"></div>
+    <p class="note">Guest count, entrée and salad counts, crew size and event times are from the gala documents. Price, wages and unit costs aren't in any document, so they're sample values.</p></div>
+   <div class="card"><div class="ph"><h2>Projection</h2><span class="src need" style="margin:0">Estimate</span></div><div id="pout"></div></div>
+  </div>
+  <div class="card"><div class="ph"><h2>Suggested changes</h2><span class="src real" style="margin:0">From the gala documents</span></div><div id="sugg"></div>
+   <p class="note">Toggle a suggestion to see it in the projection. "Send for approval" adds it to Approvals; it doesn't change the event. Estimated savings never count toward the savings tracker until measured.</p></div>
+ </section>
+
+ <!-- INTEGRATIONS -->
+ <section id="s-integrations">
+  <h1>Integrations</h1><p class="lede">All 46 tools from the November 21, 2026 research report, mapped to what they'd feed into Showcall. Prices are exactly as the report labels them. Requesting a setup adds an item to Approvals — Showcall never signs up, buys or starts a trial on its own.</p>
+  <div class="card" style="gap:8px"><div class="chips" id="fnchips"></div>
+   <div class="chips"><button data-st="all" aria-pressed="true">All</button><button data-st="pilot" aria-pressed="false">Pilot candidates</button><button data-st="pub" aria-pressed="false">Published pricing</button><button data-st="req" aria-pressed="false">Requested</button></div>
+   <input id="q" type="search" placeholder="Search tools" aria-label="Search tools"></div>
+  <div class="tools" id="tools"></div>
+ </section>
+
+ <!-- PILOTS -->
+ <section id="s-pilots">
+  <h1>Pilots</h1><p class="lede">The report's five first pilots, in priority order. Each is small, measurable and reversible. Every one starts with a baseline.</p>
+  <div class="card scroll"><table><thead><tr><th>#</th><th>Pilot</th><th>Scope</th><th>Success metric</th><th>Pricing (report)</th><th>Status</th></tr></thead><tbody id="pilots"></tbody></table></div>
+  <p class="note">Deliberately not pilots: Legion, Medallia, Ironclad, Fairmarkit and Metropolis are enterprise negotiations or partner decisions; Evolv is a venue-side capital decision.</p>
+ </section>
+
+ <!-- AI SCOUT -->
+ <section id="s-ai">
+  <h1>AI tool scout</h1><p class="lede">Once connected, a daily scan looks for new event-industry AI tools and for changes to the 46 already tracked. It's read-only: it never posts, signs up or buys. Finds wait here for you.</p>
+  <div class="grid2">
+   <div class="card"><h2>Daily cycle · 6:00 AM</h2>
+    <div class="row"><span>Web search per business function</span><span class="st nc">Not running</span></div>
+    <div class="row"><span>Social listening (LinkedIn, Reddit, YouTube, Product Hunt, vendor blogs)</span><span class="st nc">Not running</span></div>
+    <div class="row"><span>Price and feature change checks on tracked tools</span><span class="st nc">Not running</span></div>
+    <div class="row"><span>Duplicate check against the catalog</span><span class="st nc">Not running</span></div>
+    <p class="note">Social posts are leads, not evidence — anything found only on social media stays UNVERIFIED until a vendor page or independent source confirms it.</p></div>
+   <div class="card"><h2>Review queue</h2>
+    <div class="lock" style="border-color:var(--line);background:var(--soft);color:var(--dim)"><b>0</b><span>No finds yet. The scan starts when the scout is connected.</span></div>
+    <h3 style="margin-top:6px">Gaps the scout keeps hunting</h3>
+    <div class="chips" id="gaps"></div></div>
+  </div>
+  <div class="card"><h2>How a find is scored (0–25)</h2><table><thead><tr><th>Dimension</th><th>0</th><th>3</th><th>5</th></tr></thead><tbody>
+   <tr><td>Fit</td><td>No clear function</td><td>Adjacent function</td><td>Fills a function or named gap</td></tr>
+   <tr><td>Evidence</td><td>Marketing copy only</td><td>Vendor case studies, named customers</td><td>Independent or trade-press corroboration</td></tr>
+   <tr><td>Pricing transparency</td><td>Quote only</td><td>Third-party figures</td><td>Vendor publishes pricing</td></tr>
+   <tr><td>Size match</td><td>Venue-side only</td><td>One of our two lenses</td><td>Continental-scale and small companies</td></tr>
+   <tr><td>Practitioner buzz</td><td>None</td><td>Vendor-amplified</td><td>Multiple independent reports</td></tr></tbody></table>
+   <p class="note">The five sub-scores are always shown — a 20 with no evidence must look different from a 20 with strong evidence.</p></div>
+ </section>
+
+ <!-- APPROVALS -->
+ <section id="s-approvals">
+  <h1>Approvals</h1><p class="lede">One queue for everything that needs an owner's or manager's yes. Nothing leaves Showcall — no email, text, post, purchase or sign-up — without an approval here.</p>
+  <div class="card" id="approvals"></div>
+ </section>
+
+ <!-- GOVERNANCE -->
+ <section id="s-governance">
+  <h1>Governance</h1><p class="lede">Who can see what, what's kept, and what's logged.</p>
+  <div class="card scroll"><h2>Access by role</h2><table class="matrix"><thead><tr><th>Information</th><th>Crew</th><th>Manager</th><th>Owner</th></tr></thead><tbody id="matrix"></tbody></table></div>
+  <div class="grid2">
+   <div class="card"><h2>Data kept</h2>
+    <div class="row"><span>Event records, flags, decisions</span><b>Kept</b></div>
+    <div class="row"><span>Audit log</span><b>Kept</b></div>
+    <div class="row"><span>Crew venue-zone locations</span><b>Wiped at event close</b></div>
+    <div class="row"><span>Codes &amp; phone numbers</span><b>Encrypted vault, never exported</b></div>
+    <div class="row"><span>Guest identities</span><b>Not stored (table/seat only)</b></div>
+    <p class="note">Location consent wording and retention should be reviewed by an employment attorney before real use.</p></div>
+   <div class="card"><h2>Hard rules</h2>
+    <div class="row"><span>Allergen text verbatim, no edits</span><span class="st on">Enforced</span></div>
+    <div class="row"><span>No auto-send, auto-accept or auto-buy</span><span class="st on">Enforced</span></div>
+    <div class="row"><span>No invented facts — UNKNOWN instead</span><span class="st on">Enforced</span></div>
+    <div class="row"><span>No per-employee productivity scores</span><span class="st on">Enforced</span></div>
+    <div class="row"><span>Location only while clocked in, venue zones only</span><span class="st on">Enforced</span></div>
+    <div class="row"><span>Savings locked until measured</span><span class="st on">Enforced</span></div></div>
+  </div>
+ </section>
+ </main>
+</div>
+
+<script>
+{
+const $=s=>document.querySelector(s),esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const KEY='showcall-owner';let S={req:[],dec:{}};try{S=Object.assign(S,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const FN=['','Scheduling & labor','Planning & BEO','Sales & CRM','Food cost & waste','Inventory & purchasing','Recruiting & training','Guest experience','Marketing & reviews','Finance','Guest inquiries & data','Event-day content','Safety & facilities','Contracts'];
+// [name, functions, sized, pricing, pub?, what it does (report), feeds Showcall]
+const TOOLS=[
+['Nowsta',[1,5],'Continental-scale','Not published (demo/quote)',0,'Incumbent: AI scheduling, demand forecasting, talent ranking, open-shift broadcast, payroll flow.','Rosters in, confirmed hours out; open-shift alerts to the Inbox'],
+['Legion',[1],'Continental-scale','Not published',0,'Deepest forecasting AI; benchmark to measure Nowsta against at renewal.','Forecast comparison only'],
+['Workforce.com',[1],'Both','Not published (US pricing UNVERIFIED)',0,'Scheduling with a plain-language AI Scheduling Agent. Watch-list.','—'],
+['Fourth (HotSchedules)',[1],'Continental-scale','Not published',0,'POS-driven 15-minute labor forecasting for fixed-site F&B.','Labor forecasts for venue/café outlets'],
+['Deputy',[1],'Small company','Published: Lite $5, Core $6.50, Pro $9 per user/month',1,'Small-company scheduler with transparent pricing and free trial.','Small-company alternative to Nowsta'],
+['7shifts',[1,6],'Small company','Published: free Comp plan; $39.99 / $79.99 / $134.99 per location/month',1,'Restaurant scheduling with a free tier; training module.','Small-company scheduling + training'],
+['Tripleseat',[2,3],'Continental-scale','Not published (~$375/venue/month third-party — UNVERIFIED)',0,'Lead → proposal → contract → BEO with AI layer.','BEOs straight into Showcall intake'],
+['Perfect Venue',[2,3],'Both','Published: $199 / $299 per location/month; Floor Plans add-on $199',1,'AI inquiry replies; BEO auto-generates from the proposal.','Self-updating BEOs into intake'],
+['Caterease',[2,4],'Both','Published: $99 / $149 / $199 per month',1,'Kitchen-first catering ops, auto packing lists, AI assistant "Cai".','Pack lists and menus into intake'],
+['Curate',[2],'Small company','Not published (G2 $275/$500 — third-party, UNVERIFIED)',0,'Proposal-to-production for caterers, florists, rentals.','Proposals/BEOs into intake'],
+['Prismm',[2],'Both','Published: Free; $49 / $150 / $320 per month',1,'To-scale floor plans, seating charts, 3D venue twins.','Real floor plans for the crew locator map'],
+['Event Temple',[2,3],'Continental-scale','Not published (vendor detail UNVERIFIED)',0,'Hotel/venue sales platform with AI Sales Coordinator.','—'],
+['Momentus',[2,3],'Continental-scale','Not published (vendor detail UNVERIFIED)',0,'Venue management for convention centers, stadiums, universities.','—'],
+['Zanus AI',[3],'Small company','Not published (7-day trial; amounts UNVERIFIED)',0,'AI answering service; drafts quotes for a manager\'s approval.','Approval-gated quote drafts'],
+['Winnow',[4],'Continental-scale','Not published (~$8,000/site/year estimate — UNVERIFIED)',0,'Camera/scale food-waste tracking with production forecasting.','Waste per event into Finance'],
+['Leanpath',[4],'Continental-scale','Not published (~$7,000/site/year estimate — UNVERIFIED)',0,'Waste tracking; Snap AI tablet tracker for off-site events.','Off-site event waste into Finance'],
+['Apicbase',[4,5],'Continental-scale','Not published',0,'Recipe costing, menu engineering, allergen/nutrition data.','Costed recipes and allergen data'],
+['MarginEdge',[5,9],'Both','Published: $350/location/month',1,'Photo invoices → line-item coding, plate costs, daily P&L.','Food cost per event into Finance'],
+['WISK',[5],'Both','Published: $249/month per location; $399 F&B bundle',1,'Bar inventory with bottle weighing and variance reporting.','Bar variance into Finance'],
+['Restaurant365 (R365 AI)',[9,4,5,1],'Continental-scale','Not published (~$469/location/month estimate — UNVERIFIED)',0,'Accounting + ops; AI AP matching, variance alerts, labor forecasting.','Revenue, P&L, labor into Finance'],
+['Vic.ai',[9],'Continental-scale','Not published',0,'Autonomous accounts payable on the existing ERP.','AP automation (only at high volume)'],
+['Fairmarkit',[5,9],'Continental-scale','Not published',0,'AI sourcing for tail spend: rentals, disposables, specialty items.','Rental/disposable quotes'],
+['Workstream',[6],'Continental-scale','Not published (vendor blog ~$109/$199/$399 per location/month — confirm)',0,'Hourly hiring: text-to-apply, AI voice screening, onboarding.','Hiring pipeline into People'],
+['Fountain',[6],'Continental-scale','Not published',0,'Frontline hiring + onboarding; LSG Sky Chefs customer story.','Hiring pipeline into People'],
+['Paradox (Olivia)',[6],'Continental-scale','Not published',0,'Conversational AI recruiting assistant over an existing ATS.','—'],
+['Opus Training',[6],'Continental-scale','Not published',0,'Mobile micro-training, QR login, 130+ languages.','Pre-shift micro-lessons + completion'],
+['Checkr',[6],'Both','Published: $29.99 / $59.99 / $94.99 per report',1,'Background screening with 100+ integrations.','Screening status (manager-only, cleared/pending)'],
+['Satisfi Labs',[7],'Continental-scale (venue-side)','Not published',0,'Guest-facing AI answers for parking, F&B, policies.','Guest FAQ from the event record'],
+['Whova',[7,11],'Continental-scale','Not published (ticketing 3.0% + $0.99)',0,'Conference event app with AI matchmaking.','—'],
+['Birdeye',[8,3],'Continental-scale','Not published (~$299/location/month third-party — UNVERIFIED)',0,'Review monitoring and AI replies across 200+ sites.','Post-event review requests (approved first)'],
+['Slang.ai',[10,3],'Both','Published: Core from $399, Premium from $599 per location/month',1,'AI phone agent; routes private-event leads to Tripleseat/Perfect Venue.','After-hours leads'],
+['SevenRooms',[10],'Continental-scale','Not published (~$499/venue/month — UNVERIFIED)',0,'Guest CRM with dietary needs and VIP flags.','Repeat-client dietary history'],
+['TrustYou',[8,10],'Both','Not published (~$75/property/month — UNVERIFIED)',0,'Review aggregation, AI replies, weekly pain-point recaps.','Feedback themes into Events'],
+['Medallia',[10,8],'Continental-scale','Not published',0,'Enterprise experience analytics.','—'],
+['Wordly',[11],'Both','Published: from ~$1,500 per 10-hour package',1,'Live AI captions and translation via QR code.','Stage-program add-on per event'],
+['Snapsight',[11],'Both','Published: free translation tier; Engage $299/event; Pro $249/session',1,'Live captions, translation, session summaries.','Stage-program add-on per event'],
+['FotoOwl',[11],'Small company','Published: free tier; $16–$31/month (tier figures inconsistent — confirm)',1,'Face-search photo delivery for guests.','Same-night photo add-on'],
+['fielddrive',[11],'Continental-scale','Not published (per event)',0,'Check-in kiosks and badge printing.','—'],
+['Brella',[11],'Continental-scale','Not published (conflicting third-party figures — UNVERIFIED)',0,'B2B meeting matchmaking.','—'],
+['Eventbrite',[11,8],'Small company','Published: 3.7% + $1.79 per ticket + 2.9% processing; Pro from $15/month',1,'Ticketing and AI event pages for public events.','Ticketed-event guest counts'],
+['SafetyCulture',[12],'Both','Published: Free (10 users); Premium $24/user/month annually',1,'Mobile checklists and incident reports with photos.','Close-out and safety checklists'],
+['Evolv Technology',[12],'Venue-side only','Not published ($2,500–$3,000/lane/month dealer — UNVERIFIED)',0,'AI weapons screening. FTC 2024 action on accuracy claims.','—'],
+['Perry Weather',[12],'Both','Not published',0,'Hyperlocal lightning, heat and wind alerts for outdoor events.','Weather holds as run-of-show cues'],
+['BrainBox AI',[12],'Venue-side only','Not published',0,'Autonomous HVAC optimization.','—'],
+['Metropolis',[12],'Venue-side only','Not published (operator model)',0,'Computer-vision parking (operator, not SaaS).','Partner knowledge only'],
+['Ironclad (Jurist AI)',[13],'Continental-scale','Not published (~$40K/year median — UNVERIFIED)',0,'Contract lifecycle management with AI redlines.','Client/venue contract terms'],
+];
+const PILOT={'Winnow':1,'Slang.ai':2,'WISK':3,'SafetyCulture':4,'Wordly':5};
+let fn=0,stf='all',q='';
+function renderTools(){
+ $('#fnchips').innerHTML=FN.map((f,i)=>`<button data-fn="${i}" aria-pressed="${fn===i}">${i?f:'All functions'}</button>`).join('');
+ const list=TOOLS.filter(t=>(!fn||t[1].includes(fn))&&(stf==='all'||(stf==='pilot'&&PILOT[t[0]])||(stf==='pub'&&t[4])||(stf==='req'&&S.req.includes(t[0])))&&(!q||(t[0]+' '+t[5]).toLowerCase().includes(q)));
+ $('#tools').innerHTML=list.map(t=>{const p=PILOT[t[0]],r=S.req.includes(t[0]);return `<div class="tool ${p?'pilot':''}">
+  <div class="ph"><h3>${esc(t[0])}</h3>${p?`<span class="st pil">Pilot #${p}</span>`:r?'<span class="st req">Requested</span>':'<span class="st nc">Not connected</span>'}</div>
+  <div class="fn">${t[1].map(i=>FN[i]).join(' · ')} · ${esc(t[2])}</div>
+  <p>${esc(t[5])}</p>
+  <div class="price"><span class="src ${t[4]?'real':'need'}" style="margin:0 6px 0 0">${t[4]?'Published':'Not published'}</span>${esc(t[3])}</div>
+  <div class="feeds">Feeds Showcall: ${esc(t[6])}</div>
+  <button data-req="${esc(t[0])}" ${r?'disabled':''}>${r?'Setup requested':'Request setup'}</button></div>`}).join('')||'<p class="note">No tools match.</p>';
+}
+const hrows=(rows,max,col,fmt=v=>v)=>rows.map(r=>`<div class="hrow"><span>${esc(r[0])}</span><div class="t"><i style="width:${Math.max(2,r[1]/max*100)}%;background:${col}"></i></div><b>${fmt(r[1])}</b></div>`).join('');
+$('#flagbars').innerHTML=hrows([['Allergen / safety',4],['Counts',5],['Cross-checks',4]],5,'var(--go)');
+$('#weekbars').innerHTML=hrows([['Oct 26',3],['Nov 2',4],['Nov 9',5],['Nov 16',6],['Nov 23',3]],6,'var(--info)');
+$('#cpg').innerHTML=hrows([['Plated gala',68],['Corporate buffet',41],['Wedding',74],['Stations reception',52]],80,'var(--info)',v=>'$'+v);
+$('#hire').innerHTML=hrows([['Applied',48],['Screened',22],['Interviewed',14],['Hired',9]],48,'var(--warn)');
+$('#train').innerHTML=hrows([['Plated service',81],['Allergen basics',74],['Runner flow',66],['Pause etiquette',90]],100,'var(--warn)',v=>v+'%');
+$('#engage').innerHTML=hrows([['Ideas submitted',23],['Ideas approved',7],['Trivia played',140],['Cues acknowledged',94]],140,'var(--info)',v=>v);
+const EV=[['Sample Anniversary Gala','Nov 21',510,'3 / 3',13,4,'—','—','real'],
+ ['Corporate holiday party','Nov 28',220,'2 / 3',3,0,'—','—','sample'],['Wedding reception','Dec 5',180,'1 / 3',1,1,'—','—','sample'],
+ ['Association dinner','Dec 6',340,'0 / 3',0,0,'—','—','sample'],['Stations reception','Nov 14',260,'3 / 3',0,0,'97%','+10 min','sample'],['Plated fundraiser','Nov 7',400,'3 / 3',0,0,'92%','—','sample']];
+$('#evrows').innerHTML=EV.map(e=>`<tr><td>${esc(e[0])}</td><td>${e[1]}</td><td class="r">${e[2]}</td><td>${e[3]}</td><td class="r">${e[4]}</td><td class="r" style="${e[5]?'color:var(--stop)':''}">${e[5]}</td><td class="r">${e[6]}</td><td class="r">${e[7]}</td><td><span class="src ${e[8]}" style="margin:0">${e[8]==='real'?'Real':'Sample'}</span></td></tr>`).join('');
+$('#pilots').innerHTML=[['Winnow','One commissary or high-volume kitchen, 90 days','Food waste $ per week vs baseline','Not published (~$8K/site/yr est. — UNVERIFIED)'],
+ ['Slang.ai','One venue phone line, 30 days','After-hours inquiries that became booked leads','Published: Core from $399/location/month'],
+ ['WISK','One bar program, one quarter','Weekly pour-cost variance','Published: $249/month per location'],
+ ['SafetyCulture','One recurring event series, free tier first','Checklist completion and incidents logged','Published: Free up to 10 users'],
+ ['Wordly','One event with a stage program','Client feedback on captions/translation (run Snapsight free tier alongside)','Published: from ~$1,500 / 10 hours']]
+ .map((p,i)=>`<tr><td>${i+1}</td><td><b>${p[0]}</b></td><td>${p[1]}</td><td>${p[2]}</td><td class="muted">${p[3]}</td><td>${S.req.includes(p[0])?'<span class="st req">Requested</span>':`<button data-req="${p[0]}">Request</button>`}</td></tr>`).join('');
+$('#gaps').innerHTML=['Events-specific AI content','Standalone AI payroll','Generative floor plans','AI talent booking','AI uniform / laundry','AI equipment rental','AI valet'].map(g=>`<span class="src need" style="margin:0">${g}</span>`).join('');
+$('#matrix').innerHTML=[['Own shift, brief, run of show',1,1,1],['Other crew\'s venue zone (while both clocked in)',1,1,0],['Codes (vault)','On their event',1,'Reveal log only'],['Dietary specials (verbatim)',1,1,1],['Staffing board & cue acknowledgements',0,1,1],['Screening status (cleared/pending)',0,1,1],['Finance, integrations, pilots',0,0,1],['Audit log',0,'Own events',1]]
+ .map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td class="${v===1?'y':v===0?'n':''}">${v===1?'✓':v===0?'—':v}</td>`).join('')}</tr>`).join('');
+function renderApprovals(){
+ const base=[{id:'flags',k:'Document flags',t:'sample gala: 13 flags awaiting confirmation (4 safety)',d:'Opened in the planner record. Each needs a human choice.',a:'Review'},
+  {id:'thanks',k:'Outbound draft',t:'Thank-you + review request to Sample Client',d:'Drafted for you. It sends only if approved, through your own email.',a:'Approve to send'},
+  {id:'calloff',k:'Staffing',t:'Call-off: 1 runner, Corporate holiday party (Nov 28)',d:'Fill through Nowsta — Showcall only flags it.',a:'Open in Nowsta'},
+  {id:'idea',k:'Crew idea',t:'"Laminated meal-marker card clipped to every tray stand"',d:'Submitted from the floor, 2 seconds.',a:'Approve idea'},
+  ...S.req.filter(r=>r.startsWith('sug:')).map(r=>({id:'sug-'+r.slice(4),k:'Suggested event change',t:(typeof SUG!=='undefined'?(SUG.find(g=>g.id===r.slice(4))||{}).t:r),d:'Applies to the next event only after you approve it and the manager confirms with the kitchen or client.',a:'Approve change'})),
+  ...S.req.filter(r=>!r.startsWith('sug:')).map(r=>({id:'req-'+r,k:'Integration request',t:`Set up ${r}`,d:'A person signs up and connects it. Showcall never creates vendor accounts or pays.',a:'Approve request'}))];
+ $('#approvals').innerHTML=base.map(x=>{const dec=S.dec[x.id];return `<div class="row" style="align-items:flex-start"><div><span class="muted">${esc(x.k)}</span><h3>${esc(x.t)}</h3><small>${esc(x.d)}</small></div>
+  <div class="chips" style="flex:none">${dec?`<span class="st ${dec==='yes'?'on':'nc'}">${dec==='yes'?'Approved':'Rejected'}</span>`:`<button class="pri" data-dec="${x.id}|yes">${esc(x.a)}</button><button data-dec="${x.id}|no">Reject</button>`}</div></div>`}).join('');
+ const open=base.filter(x=>!S.dec[x.id]);
+ $('#needs').innerHTML=open.slice(0,4).map(x=>`<div class="row"><div><span class="muted">${esc(x.k)}</span><h3>${esc(x.t)}</h3></div><a href="#approvals">Review</a></div>`).join('')||'<p class="muted">Nothing waiting.</p>';
+ $('#mtr').textContent=`${1+S.req.filter(r=>S.dec['req-'+r]==='yes').length} of 47`;
+ $('#mtrbar').style.width=Math.max(2,(1+S.req.filter(r=>S.dec['req-'+r]==='yes').length)/47*100)+'%';
+}
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const d=b.dataset;
+ if(d.fn!==undefined){fn=+d.fn;renderTools();return}
+ if(d.st){stf=d.st;document.querySelectorAll('[data-st]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.st===stf));renderTools();return}
+ if(d.req){if(!S.req.includes(d.req))S.req.push(d.req);save();renderTools();renderApprovals();document.querySelectorAll(`[data-req="${d.req}"]`).forEach(x=>{x.disabled=true;x.textContent='Requested'});return}
+ if(d.dec){const [id,v]=d.dec.split('|');S.dec[id]=v;save();renderApprovals();return}});
+$('#q').addEventListener('input',e=>{q=e.target.value.toLowerCase().trim();renderTools()});
+const SECTIONS=['overview','profit','events','sales','marketing','service','people','finance','inventory','ops','security','integrations','pilots','ai','approvals','governance'];
+function route(){const h=(location.hash||'#overview').slice(1),id=SECTIONS.includes(h)?h:'overview';
+ SECTIONS.forEach(s=>{document.getElementById('s-'+s).classList.toggle('on',s===id)});
+ document.querySelectorAll('nav.rail a').forEach(a=>a.classList.toggle('on',a.getAttribute('href')==='#'+id));}
+addEventListener('hashchange',()=>{route();scrollTo(0,0)});
+const DEPTS=[
+ {id:'sales',t:'Sales',l:'Inquiry to signed contract to BEO, with AI drafting the first reply and a person sending it.',
+  k:[['4 min','target first reply to a new inquiry','need'],['38','open inquiries','sample'],['41%','proposal → contract','sample'],['$186K','contracted next 90 days','sample']],
+  flow:[['Inquiry arrives (web, email, phone)','Slang.ai answers calls 24/7; Zanus AI or Perfect Venue AI Reply drafts a response','need'],['Proposal','Tripleseat or Perfect Venue builds multi-option proposals','need'],['Contract & deposit','E-sign inside the sales platform; deposit recorded in accounting','need'],['BEO','Generated from the proposal, then flows into Showcall intake and cross-checks','need'],['Final counts','BEO says entrée counts are due 10 days before; Showcall reminds the client contact (approved send)','real']],
+  tools:['Tripleseat','Perfect Venue','Slang.ai','Zanus AI','Caterease','Curate'],
+  note:'AI drafts replies and quotes from your own price list. A person approves every reply, price and contract.'},
+ {id:'marketing',t:'Marketing',l:'Reviews, photos and posts built from events you actually ran — with permission first.',
+  k:[['0','review requests sent without approval','real'],['4.7','average review rating','sample'],['12','approved crew photo ideas','sample'],['3','posts scheduled this week','sample']],
+  flow:[['Post-event review request','Drafted the morning after; you approve; Birdeye or TrustYou sends and tracks it','need'],['Review replies','AI drafts in your voice; you approve before posting','need'],['Event photos','FotoOwl same-night guest galleries (client opt-in); crew photos need written permission','need'],['Ticketed events','Eventbrite pages and AI event descriptions','need'],['AI search visibility','Birdeye tracks how often you show up in AI assistant answers','need']],
+  tools:['Birdeye','TrustYou','FotoOwl','Eventbrite','Wordly','Snapsight'],
+  note:'Research gap: no credible events-specific AI content tool with verifiable traction exists yet. Nothing posts automatically, and no guest or crew face is used without permission.'},
+ {id:'service',t:'Customer service',l:'One thread per client from inquiry to thank-you, and a guest-needs portal that routes dietary requests to the kitchen.',
+  k:[['6','dietary specials on the last BEO','real'],['3','open client questions','sample'],['2 h','median response time','sample'],['96%','post-event satisfaction','sample']],
+  flow:[['Guest needs portal','Client submits allergies, vegetarian/vegan and accessibility needs; routed to the kitchen and into the specials tracker verbatim','need'],['Repeat-client history','SevenRooms keeps dietary and VIP notes across events','need'],['Day-of questions','Satisfi Labs-style guest FAQ answered from the event record','need'],['After the event','Thank-you, feedback survey and issue follow-up — drafted, approved, then sent','need']],
+  tools:['SevenRooms','Satisfi Labs','Slang.ai','Medallia','TrustYou'],
+  note:'The portal never promises an allergen-free environment. Allergen questions it can\'t answer from the record go to a person.'},
+ {id:'inventory',t:'Inventory',l:'What goes on the truck, what comes back, and what it costs — starting from the pack list.',
+  k:[['126','pack-list lines on the gala','real'],['44','branded aprons issued','real'],['561','10" plates packed for 510 guests','real'],['2','rental vendors on the BEO','real']],
+  flow:[['Pack list in','Parsed line by line; high-risk items (radios, trays, aprons) checked off by count','real'],['Rentals','Glassware vendor glassware (same-night pickup) and Flatware vendor flatware (return to warehouse), from the BEO','real'],['Return count','Aprons 44 issued → returned; shortages flagged before the truck leaves','real'],['Bar stock','WISK bottle weighing and variance','need'],['Food purchasing','MarginEdge invoices and Apicbase recipe-based ordering','need'],['Tail-spend sourcing','Fairmarkit for rentals and disposables','need']],
+  tools:['WISK','Apicbase','MarginEdge','Caterease','Fairmarkit'],
+  note:'Showcall tracks counts; your inventory tool stays the system of record for stock and cost.'},
+ {id:'ops',t:'Operations & logistics',l:'Truck times, load-in, rentals, weather, checklists and the run of show — one timeline for the whole crew.',
+  k:[['1:15 PM','truck cold leave (gala)','real'],['2:45 PM','crew on site (gala)','real'],['10:00 PM','glassware pickup (gala)','real'],['21','run-of-show beats','real']],
+  flow:[['Load-out & load-in','Truck time and loading-dock details from the BEO','real'],['Safety rules','Gel sterno only; ABC extinguisher in any sterno room — on every relevant brief','real'],['Checklists','SafetyCulture event-day checklists with photos and incident reports','need'],['Outdoor events','Perry Weather lightning and heat alerts become run-of-show holds','need'],['Floor plans','Prismm to-scale layouts feed the crew locator map','need'],['Run of show','Cues, delays, station flips and close-out in Showcall','real']],
+  tools:['SafetyCulture','Perry Weather','Prismm','Caterease'],
+  note:'Weather and safety tools are advisory. A person decides holds and evacuations.'},
+ {id:'security',t:'Security',l:'Protecting company data, crew data and the event itself.',
+  k:[['AES-256','vault encryption for codes and phones','real'],['0','codes in any export','real'],['100%','approvals and reveals logged','real'],['MFA','required for managers and owners','need']],
+  flow:[['Accounts & roles','Crew, manager, owner; magic-link sign-in with multi-factor for managers and owners','need'],['Private vault','Door, parking and ice codes and phone numbers encrypted; every reveal logged','real'],['Data retention','Zone locations wiped at event close; guest identities never stored','real'],['Devices','Lost-phone sign-out; codes never shown on watches','need'],['Event security','Incident reports via SafetyCulture; venue screening (e.g. Evolv) is the venue\'s decision','need'],['Vendor review','Each integration reviewed for data access before it\'s connected','need']],
+  tools:['SafetyCulture','Evolv Technology','Ironclad (Jurist AI)'],
+  note:'A cybersecurity review and an employment-law review of location sharing come before real crew use.'}];
+$('#depts').outerHTML=DEPTS.map(d=>`<section id="s-${d.id}"><h1>${d.t}</h1><p class="lede">${d.l}</p>
+ <div class="kpis">${d.k.map(k=>`<div class="kpi"><div class="n">${k[0]}</div><small>${k[1]}</small><span class="src ${k[2]}">${k[2]==='real'?'From documents':k[2]==='sample'?'Sample':'Needs integration'}</span></div>`).join('')}</div>
+ <div class="card"><h2>How it runs</h2>${d.flow.map(f=>`<div class="row" style="align-items:flex-start"><div><h3>${f[0]}</h3><small>${f[1]}</small></div><span class="src ${f[2]}" style="margin:0">${f[2]==='real'?'Working':'Needs integration'}</span></div>`).join('')}</div>
+ <div class="card"><div class="ph"><h2>Tools for this department</h2><a href="#integrations">All integrations →</a></div><div class="chips">${d.tools.map(t=>`<button data-req="${t}" ${S.req.includes(t)?'disabled':''}>${S.req.includes(t)?t+' · requested':'Request '+t}</button>`).join('')}</div><p class="note">${d.note}</p></div></section>`).join('');
+
+/* ---- projected profit ---- */
+const IN=[['guests','Guests',510,'real'],['price','Price per guest ($)',95,'sample'],['crew','Crew on shift',37,'real'],['hours','Average hours per person',6.5,'sample'],['wage','Loaded hourly labor cost ($)',24,'sample'],
+ ['entrees','Entrées ordered (line items)',539,'real'],['entreeCost','Food cost per entrée ($)',14,'sample'],['salads','Salads ordered',535.5,'real'],['saladCost','Cost per salad ($)',3.5,'sample'],
+ ['stations','Stations & dessert food cost ($)',4200,'sample'],['rentals','Rentals ($)',3800,'sample'],['other','Other costs ($)',1500,'sample'],['ccfee','Card processing fee (%)',3.8,'real']];
+S.pin=S.pin||Object.fromEntries(IN.map(i=>[i[0],i[2]]));S.sug=S.sug||{};
+const SUG=[
+ {id:'salads',t:'Order salads to guest count, not 535.5',why:'Salads were ordered at 535.5 for 510 guests (+5%). If the kitchen doesn\'t need that buffer, order 510.',calc:v=>({salads:510}),risk:'Lower buffer for drops or late adds — confirm with the chef.'},
+ {id:'entrees',t:'Lock final entrée counts by the 10-day deadline',why:'Line items total 539 entrées for 510 guests; section headers total 510. Ordering to the confirmed headers removes 29 extra plates.',calc:v=>({entrees:510}),risk:'Only after the client confirms counts by table and menu code.'},
+ {id:'early',t:'Plan crew release to the real guest-out time',why:'The BEO says guests leave at 10:00 PM; the floor lead expected ~9:00 PM. If 9:00 is confirmed, staged releases could trim about half an hour per person.',calc:v=>({hours:Math.max(0,v.hours-0.5)}),risk:'Never cut breakdown or close-out; release decisions are the manager\'s.'},
+ {id:'restock',t:'Stage one charcuterie restock pan per station',why:'Charcuterie had no backup except crackers and bread. A staged pan prevents an empty station before the 8:00 dessert flip (crew idea).',calc:v=>({stations:v.stations+180}),risk:'Adds cost; worth it if stations ran out (record it at close-out).'},
+ {id:'price',t:'Price the 20-minute program pause into the quote',why:'Service stopped 7:25–7:45 for the documentary, stretching dinner service for a full crew. Quote program pauses as a line item.',calc:v=>({price:v.price+1.5}),risk:'A sales decision for the next contract, not this one.'}];
+function proj(v){const rev=v.guests*v.price,fee=rev*v.ccfee/100,labor=v.crew*v.hours*v.wage,food=v.entrees*v.entreeCost+v.salads*v.saladCost+v.stations;
+ const cost=labor+food+v.rentals+v.other+fee;return {rev,labor,food,rentals:v.rentals,other:v.other+fee,cost,profit:rev-cost,margin:rev?(rev-cost)/rev*100:0}}
+const money=n=>(n<0?'−$':'$')+Math.abs(Math.round(n)).toLocaleString('en-US');
+function renderProfit(){
+ $('#pinputs').innerHTML=IN.map(i=>`<label class="row"><span>${i[1]} <span class="src ${i[3]==='real'?'real':'sample'}" style="margin:0 0 0 6px">${i[3]==='real'?'Doc':'Sample'}</span></span><input type="number" step="any" data-pin="${i[0]}" value="${S.pin[i[0]]}" style="width:7.5em;text-align:right"></label>`).join('');
+ const base=proj(S.pin);let v={...S.pin};for(const g of SUG)if(S.sug[g.id])v={...v,...g.calc(v)};const adj=proj(v),on=SUG.some(g=>S.sug[g.id]);
+ const line=(l,a,b)=>`<div class="row"><span>${l}</span><span><b>${money(a)}</b>${on&&Math.round(a)!==Math.round(b)?` <span class="muted">→</span> <b style="color:var(--gold)">${money(b)}</b>`:''}</span></div>`;
+ $('#pout').innerHTML=line('Revenue',base.rev,adj.rev)+line('Labor',base.labor,adj.labor)+line('Food',base.food,adj.food)+line('Rentals',base.rentals,adj.rentals)+line('Other + card fees',base.other,adj.other)+
+  `<div class="row" style="border-top:2px solid var(--line)"><span><b>Projected profit</b></span><span><b style="font:600 24px var(--fd)">${money(base.profit)}</b>${on?` <span class="muted">→</span> <b style="font:600 24px var(--fd);color:var(--go)">${money(adj.profit)}</b>`:''}</span></div>
+  <div class="row"><span>Margin</span><span><b>${base.margin.toFixed(1)}%</b>${on?` → <b style="color:var(--go)">${adj.margin.toFixed(1)}%</b>`:''}</span></div>
+  ${on?`<p class="note">Selected changes: ${money(adj.profit-base.profit)} estimated difference. Estimates only — they don't count as savings until measured.</p>`:''}`;
+ $('#sugg').innerHTML=SUG.map(g=>{const one=proj({...S.pin,...g.calc(S.pin)}).profit-base.profit,sent=S.dec['sug-'+g.id]||S.req.includes('sug:'+g.id);
+  return `<div class="row" style="align-items:flex-start"><div><h3>${g.t}</h3><small>${g.why}</small><br><small style="color:var(--warn)">${g.risk}</small></div>
+  <div style="text-align:right;flex:none;display:grid;gap:6px;justify-items:end"><b style="color:${one>=0?'var(--go)':'var(--stop)'}">${one>=0?'+':''}${money(one)}</b>
+  <button data-sug="${g.id}" aria-pressed="${!!S.sug[g.id]}" class="${S.sug[g.id]?'pri':''}">${S.sug[g.id]?'In projection':'Try it'}</button>
+  <button data-sugsend="${g.id}" ${sent?'disabled':''}>${sent?'Sent for approval':'Send for approval'}</button></div></div>`}).join('');
+}
+document.addEventListener('input',e=>{const k=e.target.dataset&&e.target.dataset.pin;if(!k)return;S.pin[k]=+e.target.value||0;save();const a=document.activeElement;renderProfit();const n=document.querySelector(`[data-pin="${k}"]`);if(n&&a&&a.dataset.pin===k){n.focus();const L=n.value.length;try{n.setSelectionRange(L,L)}catch(_){}}});
+document.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.dataset.sug){S.sug[b.dataset.sug]=!S.sug[b.dataset.sug];save();renderProfit()}
+ if(b.dataset.sugsend){const g=SUG.find(x=>x.id===b.dataset.sugsend);S.req.push('sug:'+g.id);save();renderProfit();renderApprovals()}});
+renderProfit();
+renderTools();renderApprovals();route();
+}
+</script>
+<script>if('serviceWorker' in navigator&&location.protocol!=='file:'){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}</script>
+</body>
+</html>
