@@ -56,7 +56,7 @@ textarea{min-height:60px;resize:vertical}
 .tl li{display:grid;grid-template-columns:5.4em minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
 .tl li:first-child{border-top:0}
 .tl .t{font-weight:600;color:var(--gold);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tl li.past{opacity:.5}.tl li.cur{background:#211d12;margin:0 -8px;padding:8px;border-radius:8px}
+.tl li.past{opacity:.72}.tl li.cur{background:#211d12;margin:0 -8px;padding:8px;border-radius:8px}
 .tl li.pause .t{color:var(--stop)}
 /* chat */
 .msgs{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto}
@@ -69,7 +69,7 @@ textarea{min-height:60px;resize:vertical}
 .watch{width:250px;height:250px;border-radius:50%;background:#050608;border:10px solid #2a2e35;box-shadow:0 0 0 2px #444a54,0 0 0 9px #1b1e23,0 18px 40px #0008;padding:30px 34px;display:flex;flex-direction:column;justify-content:center;gap:6px;text-align:center;position:relative;color:#f4f4f4;transition:background .3s}
 .watch:after{content:"";position:absolute;right:-22px;top:calc(50% - 16px);width:9px;height:32px;border-radius:4px;background:#3b4049}
 .watch.asteroid{border-color:#3a3f47;box-shadow:0 0 0 2px #59606b,0 0 0 9px #22262c,0 18px 40px #0008}
-.watch .os{position:absolute;bottom:22px;left:0;right:0;font-size:10px;letter-spacing:.08em;color:#6c7480;text-transform:uppercase}
+.watch .os{position:absolute;bottom:22px;left:0;right:0;font-size:10px;letter-spacing:.08em;color:#8a929e;text-transform:uppercase}
 .watch .wt{font:600 15px var(--fd);color:#9aa2ad}
 .watch .wh{font:600 30px/1 var(--fd)}
 .watch .wb{max-width:170px;margin:0 auto}
@@ -160,6 +160,21 @@ s.muted{text-decoration:line-through}
 .live .lsp .verb{font-size:15.5px}
 .live .lsp button{min-width:8.5em}
 @media (max-width:520px){.live .lsp .it{grid-template-columns:minmax(0,1fr)}.live .lsp button{width:100%}}
+.sr{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--gold);color:var(--on);padding:10px 16px;border-radius:10px;font-weight:600;text-decoration:none}.skip:focus{top:12px}
+#main:focus{outline:none}a:focus-visible,summary:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.pin:focus-visible circle{stroke:#d9b45f;stroke-width:5}
+.live .lcol{display:grid;gap:14px;align-content:start}
+.live .lrdy{border-radius:14px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);display:grid;gap:10px}
+.live .lrdy.yes{border-color:#22603f;background:var(--gobg)}
+.live .lrdy .bar{height:10px;border-radius:6px;background:var(--line);overflow:hidden}.live .lrdy .bar i{display:block;height:100%;background:var(--go)}
+.live .lrdy .names{font-size:15px;color:var(--dim)}
+@media (min-width:960px) and (orientation:landscape){
+ .live{max-width:1400px;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);align-items:start;column-gap:18px}
+ .live .lbar{grid-column:1/-1}
+ .live .lspc{margin:0}
+ .live .lnow .big{font-size:clamp(34px,4.6vw,64px)}
+ .live .lcd{font-size:clamp(64px,9vw,128px)}}
 .codebig{font:600 clamp(30px,7vw,40px) var(--fd);letter-spacing:.16em;color:var(--gold);font-variant-numeric:tabular-nums}
 .jform{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .jform input{text-transform:uppercase;letter-spacing:.14em;font-size:18px}
@@ -351,7 +366,7 @@ function retime(){/* a moved beat re-arms any of its cues that are now in the fu
 const LOGO=`<svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f1efe8" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg>`;
 function topbar(){
  const jumps=[[T(19,20),'7:20 pause'],[T(19,44),'7:44 go'],[T(20,30),'8:30 check'],[T(21,55),'9:55 home']];
- return `<header class="top"><div class="in">
+ return `<a class="skip" href="#main">Skip to main content</a><header class="top"><div class="in">
  <a class="brand" href="index.html" title="Showcall home">${LOGO}<span>Show<b>call</b></span></a>
  <div class="clock"><label class="muted persona"><span class="vlab">Viewing as</span> <select id="me" aria-label="Viewing as">${PEOPLE.map(p=>`<option value="${p.n}"${S.me===p.n?' selected':''}>${p.n} · ${p.r}</option>`).join('')}</select></label>
   <div class="seg" role="group" aria-label="Layout"><button data-lay="floor" aria-pressed="${S.lay==='floor'}">Crew</button><button data-lay="planner" aria-pressed="${S.lay==='planner'}">Planner</button><button data-lay="manager" aria-pressed="${S.lay==='manager'}">Manager</button></div><a class="ownerlink" href="beo.html">BEO Studio</a><a class="ownerlink" href="owner.html">Owner portal →</a></div>
@@ -370,6 +385,7 @@ function nowCard(){
  <div class="big">${p?'SERVICE STOPS':esc(cb?cb.label:'Before call time')}</div>
  ${p?`<div>No food service, no clearing. Resumes ${fmt(beat('doc').t+beat('doc').dur)}.</div>`:''}
  ${nb?`<div>Next: <b>${esc(nb.label)}</b> at ${fmt(nb.t)} · <span class="cd">in ${Math.ceil(nb.t-S.clock)} min</span></div>`:''}
+ ${nb&&manage()?(()=>{const l=(S.ready&&S.ready[nb.id])||[],R=readyRoster();return `<div class="muted">Crew ready for next beat: <b>${R.filter(p=>l.includes(p.n)).length} of ${R.length}</b></div>`})():''}
  <div><button class="sm" data-act="live-on">Open Live Mode</button></div></div>`;
 }
 /* ---------- Live Mode: big targets, current beat, countdown, specials checklist ---------- */
@@ -380,25 +396,38 @@ function liveView(){
  const recent=c&&S.clock-c.at<15?c:null,cls=p?'stop':(recent&&recent.sev==='go'?'go':'');
  const L=[...S.late].reverse().find(x=>S.fired.includes(x.id)),needAck=L&&!(S.acks[L.id]||[]).includes(S.me);
  const can=manage(),sp=S.specials,done=sp.filter(x=>x.status>=3).length;
- return `<main class="live" aria-label="Live Mode">
+ return `<main class="live" id="main" aria-label="Live Mode"><h1 class="sr">Live Mode</h1>
  <div class="lbar"><span class="time" aria-live="off">${fmt(S.clock)}</span>
   <span class="chips"><button data-act="play" aria-pressed="${S.play}" aria-label="${S.play?'Pause demo clock':'Play demo clock'}">${S.play?'❚❚':'▶'}</button><button class="pri" data-act="live-off">Exit Live Mode</button></span></div>
- <section class="lnow ${cls}" aria-live="polite"><span class="muted">${p?'Right now':'Now'} · ${esc(S.me)}</span>
+ <div class="lcol"><section class="lnow ${cls}" aria-live="polite"><span class="muted">${p?'Right now':'Now'} · ${esc(S.me)}</span>
   <div class="big">${p?'SERVICE STOPS':esc(cb?cb.label:'Before call time')}</div>
   ${p?'<div class="lnext">No food service, no clearing. Stay still and out of sightlines.</div>':''}
   ${tg?`<div class="lcd" id="lcd" role="timer" aria-label="Time until ${esc(tg.label)}">${mmss(tg.t-S.clock)}</div><div class="lnext">until <b>${esc(tg.label)}</b> at ${fmt(tg.t)}</div>`:'<div class="lnext">No more beats tonight.</div>'}</section>
  ${recent?`<section class="lcue ${recent.sev==='stop'?'stop':recent.sev==='go'?'go':''}"><b>${esc(recent.title)}</b><span>${esc(recent.body)}</span></section>`:''}
  ${needAck?`<section class="lcue"><b>${L.undo?'Schedule restored':`Running ${L.mins} min late`}</b><span>${L.changes.slice(0,3).map(x=>`${esc(x.short)} → ${fmt(x.to)}`).join(' · ')}</span><button class="pri" data-ack="${L.id}">Got it</button></section>`:''}
- <section class="card"><div class="ph"><h2>Specials checklist</h2><span class="st ${done===sp.length?'work':'stop'}">${done} of ${sp.length} served</span></div>
+ ${readyCard()}</div>
+ <section class="card lspc" aria-labelledby="lsph"><div class="ph"><h2 id="lsph">Specials checklist</h2><span class="st ${done===sp.length?'work':'stop'}">${done} of ${sp.length} served</span></div>
   <div class="lsp">${sp.map(s=>`<div class="it ${s.status>=3?'done':''}"><div><small class="muted">${esc(s.course)} · ${SSTAT[s.status]}</small><div class="verb">${esc(s.text)}</div>${s.flag?`<small style="color:var(--warn)">${esc(s.flag)}</small>`:''}</div>
    ${can&&s.status<4?`<button data-spec="${s.id}" aria-label="Mark ${esc(s.course)} special ${SSTAT[s.status+1]}">→ ${SSTAT[s.status+1]}</button>`:`<span class="st ${s.status===4?'work':''}">${s.status===4?'✓ confirmed':SSTAT[s.status]}</span>`}</div>`).join('')}</div>
   <p class="note">Restriction text is word for word from the BEO. ${can?'Tap to move each plate along: fired, carried, served, confirmed.':'Your point or expeditor updates these.'}</p></section>
  </main>`;
 }
+/* Crew "Ready" tap: each person taps once when they're set for the next beat; managers see who is and isn't.
+   It's a status only — it sends nothing and accepts nothing on anyone's behalf. */
+function readyRoster(){return PEOPLE.filter(p=>p.r!=='Event manager')}
+function readyCard(){const nb=nextBeat();if(!nb)return '';
+ const list=(S.ready&&S.ready[nb.id])||[],mine=list.includes(S.me),R=readyRoster(),n=R.filter(p=>list.includes(p.n)).length,short=nb.label.split(/ — | · /)[0];
+ const crewTap=S.me!=='Avery'?`<button class="${mine?'':'pri'}" data-act="ready" aria-pressed="${mine}">${mine?'✓ Ready — tap to undo':`I'm ready for ${esc(short)}`}</button>`:'';
+ const mgr=manage()?`<div class="bar" role="progressbar" aria-label="Crew ready for ${esc(short)}" aria-valuemin="0" aria-valuemax="${R.length}" aria-valuenow="${n}"><i style="width:${R.length?Math.round(n/R.length*100):0}%"></i></div>
+  <div class="names">${n===R.length?'Everyone is ready.':`Not ready yet: ${R.filter(p=>!list.includes(p.n)).map(p=>esc(p.n)).join(', ')}`}</div>
+  <div class="chips"><button class="sm ghost" data-act="simready">Demo: fill in crew taps</button></div>`:'';
+ return `<section class="lrdy ${mine?'yes':''}" aria-labelledby="lrdyh"><div class="ph"><h2 id="lrdyh" style="font-size:19px">Ready for ${esc(short)}?</h2>${manage()?`<span class="st ${n===R.length?'work':''}">${n} of ${R.length} ready</span>`:''}</div>
+ ${crewTap}${mgr}<small class="muted">${manage()?'Crew tap Ready on their own phone. Nothing is sent for anyone.':'Tap once when you are set. Your point and manager see it.'}</small></section>`}
 let wakeLock=null;
 async function keepAwake(on){try{if(on&&'wakeLock' in navigator&&!wakeLock){wakeLock=await navigator.wakeLock.request('screen');wakeLock.addEventListener('release',()=>{wakeLock=null})}else if(!on&&wakeLock){await wakeLock.release();wakeLock=null}}catch(e){wakeLock=null}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&S.live)keepAwake(true)});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.live){S.live=false;keepAwake(false);save();render()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&S.live){S.live=false;keepAwake(false);save();render();const x=document.querySelector('[data-act=live-on]');if(x)x.focus();return}
+ const pin=e.target.closest&&e.target.closest('.pin');if(pin&&(e.key==='Enter'||e.key===' ')){e.preventDefault();pin.dispatchEvent(new MouseEvent('click',{bubbles:true}))}});
 /* ---------- Event codes: managers create one, crew join with it (this device today; every phone once cloud sync is on) ---------- */
 function eventCodeCard(){
  const code=S.eventCode,st=ST.status();
@@ -553,7 +582,7 @@ function mapSvg(){
  for(const [z,ps] of Object.entries(byZ)){const Z=ZONES[z];ps.forEach((p,k)=>{const cols=Math.max(1,Math.floor((Z.w-10)/30)),cx=Z.x+18+(k%cols)*30,cy=Z.y+(Z.h>60?40:30)+Math.floor(k/cols)*28;
   const fill=p.team==='Mgmt'?'#f1efe8':p.team==='B'?'#d9b45f':'#86b6ff',ring=p.n===S.me?'#5fd394':'#0d0e11';
   dots+=`<g class="pin" data-who="${p.n}" tabindex="0" role="button" aria-label="${p.n}, ${ZNAME(z)}"><circle cx="${cx}" cy="${cy}" r="12" fill="${fill}" stroke="${ring}" stroke-width="3"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="10" font-weight="600" fill="#111">${p.n.slice(0,2)}</text></g>`})}
- return `<svg viewBox="0 0 600 396" class="map" role="img" aria-label="Grand Hall map with crew locations">
+ return `<svg viewBox="0 0 600 396" class="map" role="group" aria-label="Grand Hall map with crew locations. Tab to a teammate and press Enter to call.">
  ${Object.entries(ZONES).map(([k,Z])=>`<rect x="${Z.x}" y="${Z.y}" width="${Z.w}" height="${Z.h}" rx="8" fill="${k==='stage'?'#2a2312':k==='pass'?'#1d2230':'#17191e'}" stroke="#2c313a"/><text x="${Z.x+8}" y="${Z.y+16}" font-size="11" fill="#8d939d">${Z.l}</text>`).join('')}
  ${dots}</svg>`;
 }
@@ -578,7 +607,7 @@ function secTeam(){
   const canSee=on&&mine&&visible(p);
   return `<div class="row"><div><h3>${p.n} <small class="muted">${esc(p.r)}${p.team!=='Mgmt'?' · Team '+p.team:''}</small></h3><small>${on?(canSee?'📍 '+state+' · updated just now':(visible(p)?'Share your area to see theirs':state)):'Clock in to see'}</small></div>
   <span class="chips">${on&&S.onClock[p.n]?`<button class="sm" data-call="${p.n}">Call</button><button class="sm" data-ping="${p.n}">Ping</button>`:''}</span></div>`};
- return clockCard()+(S.call?callSheet():'')+(S.toast?`<div class="toast">${esc(S.toast)}</div>`:'')+
+ return clockCard()+(S.call?callSheet():'')+(S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'')+
  `<div class="card"><div class="ph"><h2>Crew locator</h2><span class="st proto">Only while clocked in</span></div>
  ${on&&mine?mapSvg()+`<p class="legend"><span><i style="background:#d9b45f"></i>Team B</span><span><i style="background:#86b6ff"></i>Team A</span><span><i style="background:#f1efe8"></i>Manager</span><span><i style="background:#0d0e11;border:3px solid #5fd394"></i>You</span></p>`
   :`<div class="maplock">${on?'Share your area to see the map.':'Clock in to see the map.'}</div>`}
@@ -732,7 +761,7 @@ function secShifts(){
   <span class="chips" style="flex:none;align-items:center"><select data-assign="${x.id}" aria-label="Assign ${esc(x.role)}" style="width:auto;min-height:36px;padding:4px 8px"><option value="">— Open —</option>${names.map(n=>`<option${x.who===n?' selected':''}>${esc(n)}</option>`).join('')}</select>
   <span class="st ${x.status==='open'?'plan':x.status==='called_off'?'stop':x.status==='confirmed'?'work':'proto'}">${x.status.replace('_',' ')}</span>
   ${x.who&&x.status!=='called_off'?`<button class="sm" data-calloff="${x.id}">Call-off</button>`:''}</span></div>`).join('')}</details>`).join('')}
- <form id="sform2" class="two" style="margin-top:6px"><select id="nsEv">${EVENTS.map(e=>`<option${S.newShift.ev===e[0]?' selected':''}>${esc(e[0])}</option>`).join('')}</select><select id="nsRole">${Object.keys(RATES).map(r=>`<option${S.newShift.role===r?' selected':''}>${r}</option>`).join('')}</select>
+ <form id="sform2" class="two" style="margin-top:6px"><select id="nsEv" aria-label="Event">${EVENTS.map(e=>`<option${S.newShift.ev===e[0]?' selected':''}>${esc(e[0])}</option>`).join('')}</select><select id="nsRole" aria-label="Role">${Object.keys(RATES).map(r=>`<option${S.newShift.role===r?' selected':''}>${r}</option>`).join('')}</select>
   <input id="nsStart" type="time" value="${S.newShift.start}" aria-label="Start"><input id="nsEnd" type="time" value="${S.newShift.end}" aria-label="End"><input id="nsN" type="number" min="1" max="20" value="${S.newShift.n}" aria-label="How many"><button class="pri" type="submit">Add open shifts</button></form>
  <div class="chips"><button class="pri sm" data-act="post-open" ${open?'':'disabled'}>Post ${open} open shift${open===1?'':'s'} to crew chat</button><button class="sm" data-act="publish">Publish schedule</button></div>
  <h3 style="margin-top:6px">Swap requests</h3>
@@ -779,22 +808,27 @@ ${eventCodeCard()}${pushCard()}
  </div></div>`;
 }
 const TABS=[['shift','Shift',secShift],['team','Crew',secTeam],['chat','Chat',secChat],['tasks','Tasks',secTasks],['games','Games',secGames],['watch','Watch',secWatch]];
-function render(){
+/* Re-rendering replaces the page, so remember which control had focus and put it back (keyboard and screen-reader users keep their place). */
+function focusKey(el){if(!el||el===document.body||!el.tagName)return null;if(el.id)return '#'+CSS.escape(el.id);
+ const a=[...el.attributes].filter(x=>x.name.startsWith('data-')).map(x=>`[${x.name}="${CSS.escape(x.value)}"]`).join('');return a?el.tagName.toLowerCase()+a:null}
+function render(){const fk=focusKey(document.activeElement);render0();
+ if(fk){let n=null;try{n=document.querySelector(fk)}catch(e){}if(n&&n!==document.activeElement)n.focus({preventScroll:true})}}
+function render0(){
  const fl=S.lay==='floor';document.body.classList.toggle('tabs-on',fl);
  const app=$('#app');app.className='lay-'+S.lay;
- const toastHtml=S.toast?`<div class="toast">${esc(S.toast)}</div>`:'';if(S.toast)setTimeout(()=>{S.toast=null},4500);
+ const toastHtml=S.toast?`<div class="toast" role="status">${esc(S.toast)}</div>`:'';if(S.toast)setTimeout(()=>{S.toast=null},4500);
  const banner=toastHtml+`<details class="about"><summary>About this demo</summary><p>A live walk-through of Showcall on a real 510-guest gala timeline (Sample Anniversary Gala, Downtown Venue). Crew names are samples, and no codes or phone numbers are in this page. Everything runs in your browser — press ▶ Play or jump to a cue to see the run of show call itself on phones and wrists. Switch to Planner to move a beat and watch every cue re-time.</p></details>`;
  const unread=S.msgs.filter(m=>m.cue&&m.t>S.clock-3).length;
- if(!S.started){app.className='lay-start';app.innerHTML=`<div class="start"><div class="sin">${LOGO}<h1 style="font-size:clamp(30px,5vw,46px)">Try Showcall as…</h1>
+ if(!S.started){app.className='lay-start';app.innerHTML=`<main class="start" id="main"><div class="sin">${LOGO}<h1 style="font-size:clamp(30px,5vw,46px)">Try Showcall as…</h1>
   <p class="muted" style="font-size:17px;max-width:34em">A live demo on a real 510-guest gala timeline. Pick a seat — you can switch any time from the top bar.</p>
   <div class="pick">${[['crew','Crew member','Dana · runner, Team B','Your shift, cues, chat, find crew, watch & voice'],['planner','Event planner','Avery · event manager','Run of show, running late, flags, specials, stations'],['manager','Manager','Avery · event manager','Tonight at a glance, approvals, close-out, report'],['owner','Owner','Company owner','Every department, profit, integrations, pilots']].map(r=>`<button class="pc" data-start="${r[0]}"><b>${r[1]}</b><small>${r[2]}</small><span>${r[3]}</span></button>`).join('')}</div>
-  <a href="index.html" class="muted">← Back to the website</a></div></div>`;return}
+  <a href="index.html" class="muted">← Back to the website</a></div></main>`;return}
  const tip={floor:{shift:'Tip: tap "7:20 pause" in the bar above, then open the Watch tab.',team:'Tip: clock in to unlock the crew map, then tap a teammate to call.',watch:'Tip: tap a question under Voice — the answer lands on the watch face.'},planner:'Tip: try "Running late?" +10 min, then switch to Crew to see what everyone got.',manager:'Tip: enter 44 aprons returned to unlock "Close event".'};
  const tp=S.lay==='floor'?(tip.floor[S.tab]||''):tip[S.lay]||'';
  if(S.live){document.body.classList.remove('tabs-on');app.className='lay-live';app.innerHTML=toastHtml?`<div style="max-width:900px;margin:12px auto 0;padding:0 max(16px,3vw)">${toastHtml}</div>`+liveView():liveView();return}
  if(fl){const t=TABS.find(x=>x[0]===S.tab)||TABS[0];
-  app.innerHTML=topbar()+`<div class="wrap">${tp?`<p class="tip">${tp}</p>`:''}${banner}${t[2]()}</div><nav class="tabs"><div class="in">${TABS.map(x=>`<button data-tab="${x[0]}"${S.tab===x[0]?' aria-current="page"':''}>${x[1]}${x[0]==='watch'&&paused()&&S.tab!=='watch'?'<span class="pip"></span>':''}${x[0]==='chat'&&unread&&S.tab!=='chat'?'<span class="pip"></span>':''}</button>`).join('')}</div></nav>`;}
- else app.innerHTML=topbar()+`<div class="wrap">${tp?`<p class="tip">${tp}</p>`:''}${banner}${S.lay==='manager'?manager():planner()}</div>`;
+  app.innerHTML=topbar()+`<main class="wrap" id="main" tabindex="-1"><h1 class="sr">Showcall crew app · ${t[1]}</h1>${tp?`<p class="tip">${tp}</p>`:''}${banner}${t[2]()}</main><nav class="tabs" aria-label="Crew sections"><div class="in">${TABS.map(x=>`<button data-tab="${x[0]}"${S.tab===x[0]?' aria-current="page"':''}>${x[1]}${x[0]==='watch'&&paused()&&S.tab!=='watch'?'<span class="pip"></span>':''}${x[0]==='chat'&&unread&&S.tab!=='chat'?'<span class="pip"></span>':''}</button>`).join('')}</div></nav>`;}
+ else app.innerHTML=topbar()+`<main class="wrap" id="main" tabindex="-1"><h1 class="sr">Showcall · ${S.lay==='manager'?'Manager':'Planner'} view</h1>${tp?`<p class="tip">${tp}</p>`:''}${banner}${S.lay==='manager'?manager():planner()}</main>`;
  const m=$('#msgs');if(m)m.scrollTop=m.scrollHeight;
 }
 /* ---------- events ---------- */
@@ -810,7 +844,9 @@ document.addEventListener('click',e=>{
  if(d.act==='push-test'){if(!S.push.on){S.toast='Turn push on first.';render();return}pushOut('cues','Showcall test','If you see this on your phone and watch, push works.','go').then(ok=>{S.toast=ok?'Test sent. Check a subscribed phone.':'Could not reach the push server.';render()});return}
  if(d.act==='push-share'){const t=pushTopic(),srv=S.push.server.replace(/\/$/,'');shareText('Join Showcall alerts',`Get tonight's Showcall cues on your phone and watch:\n1. Install the free ntfy app.\n2. Subscribe to: ${t}${srv!=='https://ntfy.sh'?' (server '+srv+')':''}\nWeb: ${srv}/${t}`).then(()=>render());return}
  if(d.act==='live-on'){S.live=true;keepAwake(true);save();render();scrollTo(0,0);const x=document.querySelector('.live [data-act=live-off]');if(x)x.focus();return}
- if(d.act==='live-off'){S.live=false;keepAwake(false);save();render();scrollTo(0,0);return}
+ if(d.act==='live-off'){S.live=false;keepAwake(false);save();render();scrollTo(0,0);const x=document.querySelector('[data-act=live-on]');if(x)x.focus();return}
+ if(d.act==='ready'){const nb=nextBeat();if(!nb)return;S.ready=S.ready||{};const v=S.ready[nb.id]=S.ready[nb.id]||[],i=v.indexOf(S.me);if(i>=0)v.splice(i,1);else v.push(S.me);save();render();return}
+ if(d.act==='simready'){const nb=nextBeat();if(!nb||!manage())return;S.ready=S.ready||{};S.ready[nb.id]=[...new Set([...(S.ready[nb.id]||[]),...readyRoster().filter((p,i)=>i%3!==2).map(p=>p.n)])];save();render();return}
  if(d.act==='code-new'){if(!isMgr()){S.toast='Only the event manager can create an event code.';render();return}
   if(!ST.events){S.toast='Event codes need store.js. Reload the app.';render();return}
   if(S.eventCode)ST.events.close(S.eventCode);const ev=ST.events.create({name:'Sample Anniversary Gala',by:S.me});S.eventCode=ev.code;S.toast=`Event code ${ev.code} created.`;save();render();return}

@@ -55,7 +55,8 @@ td.r,th.r{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .note{margin:0;padding:9px 12px;border:1px dashed var(--line);border-radius:9px;color:var(--dim);font-size:13.5px}
 button{font:500 14.5px var(--fb);min-height:40px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
 button.pri{background:var(--gold);color:var(--on);border-color:var(--gold)}
-button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+button:focus-visible,input:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--gold);color:#1a1408;padding:10px 16px;border-radius:10px;font-weight:600;text-decoration:none}.skip:focus{top:12px}#main:focus{outline:none}
 button[disabled]{opacity:.5;cursor:not-allowed}
 .chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{min-height:34px;border-radius:99px;font-size:13.5px}
 .chips button[aria-pressed=true]{background:var(--gold);color:var(--on);border-color:var(--gold)}
@@ -112,6 +113,7 @@ a.btn{display:inline-block;padding:8px 14px;border-radius:10px;border:1px solid 
 <link rel="icon" href="icon-192.png">
 </head>
 <body>
+<a class="skip" href="#main">Skip to main content</a>
 <header class="top"><div class="in">
  <a class="brand" href="index.html"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f3f1ea" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg><span>Show<b>call</b></span></a>
  <span class="role">Owner portal</span>
@@ -124,7 +126,7 @@ a.btn{display:inline-block;padding:8px 14px;border-radius:10px;border:1px solid 
   <a href="#integrations">Integrations</a><a href="#pilots">Pilots</a><a href="#ai">AI tool scout</a><a href="#approvals">Approvals</a><a href="#governance">Governance</a>
   <div class="meter"><b id="mtr">1 of 50</b>data sources connected<div class="bar"><i id="mtrbar" style="width:2%"></i></div><span style="display:block;margin-top:8px">Everything else is labeled <span class="src sample" style="margin:0">Sample</span> or <span class="src need" style="margin:0">Needs integration</span>.</span></div>
  </nav>
- <main>
+ <main id="main" tabindex="-1">
 
  <!-- OVERVIEW -->
  <section id="s-overview">

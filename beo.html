@@ -32,6 +32,7 @@ textarea{min-height:60px;resize:vertical}
 button{font:500 14.5px var(--fb);min-height:40px;padding:0 13px;border-radius:10px;border:1px solid var(--line);background:var(--soft);color:var(--ink);cursor:pointer}
 button.pri{background:var(--gold);color:var(--on);border-color:var(--gold)}button.sm{min-height:32px;font-size:13px;padding:0 9px}
 button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.skip{position:absolute;left:12px;top:-60px;z-index:100;background:var(--gold);color:#1a1408;padding:10px 16px;border-radius:10px;font-weight:600;text-decoration:none}.skip:focus{top:12px}#main:focus{outline:none}a:focus-visible,summary:focus-visible,.paper:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .line{display:grid;grid-template-columns:5.5em minmax(0,1fr) auto;gap:6px;align-items:center}
 .mline{display:grid;grid-template-columns:minmax(0,1.6fr) 5em minmax(0,1fr) auto;gap:6px;align-items:center}
@@ -42,7 +43,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .ck.s{border-color:#7a2c23;background:var(--stopbg)}.ck.c{border-color:#5b4516;background:var(--warnbg)}.ck.ok{border-color:#22603f;background:var(--gobg)}
 .ck b{font:600 11px var(--fb);letter-spacing:.05em;margin-right:6px}.ck.s b{color:var(--stop)}.ck.c b{color:var(--warn)}.ck.ok b{color:var(--go)}
 .paper{position:sticky;top:76px;align-self:start;background:#fbfaf6;color:#1c1c1c;border-radius:6px;padding:28px 30px;font:13.5px/1.5 Georgia,"Times New Roman",serif;box-shadow:0 20px 50px #0008;max-height:calc(100vh - 100px);overflow:auto}
-.paper h2{font:700 20px Georgia,serif;margin:0}.paper h4{font:700 12.5px var(--fb);letter-spacing:.06em;text-transform:uppercase;margin:16px 0 6px;border-bottom:1.5px solid #1c1c1c;padding-bottom:3px}
+.paper h2{font:700 20px Georgia,serif;margin:0}.paper .h4{font:700 12.5px var(--fb);letter-spacing:.06em;text-transform:uppercase;margin:16px 0 6px;border-bottom:1.5px solid #1c1c1c;padding-bottom:3px}
 .paper table{width:100%;border-collapse:collapse}.paper td{padding:3px 4px;vertical-align:top;border-bottom:1px solid #e4e0d6}.paper td.q{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
 .paper .tg{font:600 10.5px var(--fb);color:#6b5a2a}.paper .sp{background:#fff1c9;padding:1px 4px}.paper .vault{background:#e8e8e8;padding:0 5px;border-radius:3px;font-family:var(--fb);font-size:11.5px}
 .paper .hd{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -57,12 +58,13 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 <link rel="icon" href="icon-192.png">
 </head>
 <body>
+<a class="skip" href="#main">Skip to main content</a>
 <header class="top"><div class="in">
  <a class="brand" href="index.html"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="17" fill="none" stroke="#d9b45f" stroke-width="3"/><path d="M20 9v11l7 5" fill="none" stroke="#f3f1ea" stroke-width="3" stroke-linecap="round"/><circle cx="31" cy="9" r="5" fill="#ff5d4d"/></svg><span>Show<b>call</b></span></a>
  <span class="role">BEO Studio</span>
  <div class="toplinks"><a href="app.html">Crew &amp; planner app</a><a href="owner.html">Owner portal</a><a href="index.html">Website</a></div>
 </div></header>
-<div class="shell">
+<main class="shell" id="main" tabindex="-1">
  <div class="form">
   <h1>Write the BEO. Showcall checks it as you go.</h1>
   <p class="muted" style="color:var(--dim);margin:6px 0 14px">Start blank, from a sales inquiry, or from a template. Every check that caught problems on the proof-night gala runs live here.</p>
@@ -89,9 +91,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
  <div>
   <div class="card"><div class="ph"><h2>Live checks</h2><span id="ckcount" class="muted" style="color:var(--dim)"></span></div><div class="checks" id="checks"></div>
    <div class="chips"><button class="pri" id="finalize">Finalize BEO</button><button id="print">Print / PDF</button><button id="copy">Copy text</button><button id="json">Download for intake</button></div><div id="msg"></div></div>
-  <div class="paper" id="paper" aria-label="BEO preview"></div>
+  <div class="paper" id="paper" role="region" tabindex="0" aria-label="BEO preview"></div>
  </div>
-</div>
+</main>
 <script src="store.js"></script>
 <script>
 {
@@ -116,7 +118,7 @@ const save=()=>ST.set(KEY,B);
 const fmt=t=>{if(!t)return '';const [h,m]=t.split(':').map(Number);return `${(h+11)%12+1}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`};
 function acceptedQuotes(){try{const o=ST.get('showcall-owner',{});const seen={};return (o.quotes||[]).filter(q=>q.status==='Accepted').reverse().filter(q=>seen[q.no]?0:(seen[q.no]=1))}catch(e){return []}}
 function leads(){try{const o=ST.get('showcall-owner',{});return o.leads||[]}catch(e){return []}}
-function startButtons(){const L=leads();$('#starts').innerHTML=`<button data-tpl="blank">Blank</button><button data-tpl="gala">Gala template</button><button data-tpl="wedding">Wedding</button><button data-tpl="corporate">Corporate</button>`+(L.length?`<select id="fromlead" style="width:auto"><option value="">From a sales inquiry…</option>${L.map(l=>`<option value="${l.id}">#${l.id} · ${esc(l.text.slice(0,48))}…</option>`).join('')}</select>`:'<span class="note" style="padding:4px 10px">Open the AI sales desk once to pull inquiries in here.</span>')+(acceptedQuotes().length?`<select id="fromquote" style="width:auto"><option value="">From an accepted quote…</option>${acceptedQuotes().map(q=>`<option value="${q.no}">Q-${q.no} · ${esc(q.name||'Event')} · ${q.guests} guests</option>`).join('')}</select>`:'')}
+function startButtons(){const L=leads();$('#starts').innerHTML=`<button data-tpl="blank">Blank</button><button data-tpl="gala">Gala template</button><button data-tpl="wedding">Wedding</button><button data-tpl="corporate">Corporate</button>`+(L.length?`<select id="fromlead" style="width:auto" aria-label="Start from a sales inquiry"><option value="">From a sales inquiry…</option>${L.map(l=>`<option value="${l.id}">#${l.id} · ${esc(l.text.slice(0,48))}…</option>`).join('')}</select>`:'<span class="note" style="padding:4px 10px">Open the AI sales desk once to pull inquiries in here.</span>')+(acceptedQuotes().length?`<select id="fromquote" style="width:auto" aria-label="Start from an accepted quote"><option value="">From an accepted quote…</option>${acceptedQuotes().map(q=>`<option value="${q.no}">Q-${q.no} · ${esc(q.name||'Event')} · ${q.guests} guests</option>`).join('')}</select>`:'')}
 function fillForm(){document.querySelectorAll('[data-k]').forEach(el=>{el.value=B[el.dataset.k]??''});drawBeats();drawMenu();drawSpecs();update()}
 function drawBeats(){$('#beats').innerHTML=B.beats.map((b,i)=>`<div class="line"><input type="time" value="${b[0]}" data-beat="${i}|0" aria-label="Time"><input value="${esc(b[1])}" data-beat="${i}|1" aria-label="What happens"><span class="chips"><label style="display:inline-flex;gap:4px;align-items:center;color:var(--ink)"><input type="checkbox" ${b[2]?'checked':''} data-beat="${i}|2" style="width:auto">pause</label><button class="sm" data-delbeat="${i}" aria-label="Remove">✕</button></span></div>`).join('')}
 function drawMenu(){$('#menu').innerHTML=B.menu.map((m,i)=>`<div class="card" style="background:var(--soft);margin:0;padding:10px;gap:6px"><div class="mline"><input value="${esc(m[0])}" data-menu="${i}|0" aria-label="Item"><input type="number" step="0.5" value="${m[2]}" data-menu="${i}|2" aria-label="Quantity"><select data-menu="${i}|1" aria-label="Course">${['Appetizer','Salad','Entree','Station','Dessert','Beverage'].map(c=>`<option${m[1]===c?' selected':''}>${c}</option>`).join('')}</select><button class="sm" data-delitem="${i}" aria-label="Remove">✕</button></div>
@@ -149,12 +151,12 @@ function paper(){
  const est=g?Math.round(g*(PRICE[B.style]||60)):0;
  return `<div class="hd"><div><div class="tg">EVENT ORDER${B.final?' · FINAL':' · DRAFT'}</div><h2>${esc(B.name||'Untitled event')}</h2></div><div style="text-align:right">${esc(B.date||'Date TBD')}<br>${g} guests · ${esc(B.style)}</div></div>
  <table style="margin-top:8px"><tr><td>Client</td><td>${esc(B.client)||'—'}</td><td>Venue</td><td>${esc(B.venue)||'—'}</td></tr><tr><td>Crew arrival</td><td>${fmt(B.arrive)||'—'}</td><td>Uniform</td><td>${esc(B.uniform)||'—'}</td></tr></table>
- <h4>Timeline</h4><table>${beats.map(b=>`<tr><td class="q" style="width:5.5em">${fmt(b[0])}</td><td>${esc(b[1])}${b[2]?' — <b>ALL FOOD SERVICE AND CLEARING PAUSE</b>':''}</td></tr>`).join('')}</table>
- <h4>Menu</h4>${courses.map(c=>{const it=B.menu.filter(m=>m[1]===c);return it.length?`<div class="tg" style="margin-top:6px">${c.toUpperCase()}</div><table>${it.map(m=>`<tr><td>${esc(m[0])} <span class="tg">${m[3].join(' | ')}</span>${m[4]?`<br><span class="sp">Special: ${esc(m[4])}</span>`:''}</td><td class="q">${m[2]}</td></tr>`).join('')}</table>`:''}).join('')}
- <h4>Dietary notes</h4>${B.specs.length?B.specs.map(s=>`<div>${esc(s)}</div>`).join(''):'<div>None</div>'}
+ <h3 class="h4">Timeline</h3><table>${beats.map(b=>`<tr><td class="q" style="width:5.5em">${fmt(b[0])}</td><td>${esc(b[1])}${b[2]?' — <b>ALL FOOD SERVICE AND CLEARING PAUSE</b>':''}</td></tr>`).join('')}</table>
+ <h3 class="h4">Menu</h3>${courses.map(c=>{const it=B.menu.filter(m=>m[1]===c);return it.length?`<div class="tg" style="margin-top:6px">${c.toUpperCase()}</div><table>${it.map(m=>`<tr><td>${esc(m[0])} <span class="tg">${m[3].join(' | ')}</span>${m[4]?`<br><span class="sp">Special: ${esc(m[4])}</span>`:''}</td><td class="q">${m[2]}</td></tr>`).join('')}</table>`:''}).join('')}
+ <h3 class="h4">Dietary notes</h3>${B.specs.length?B.specs.map(s=>`<div>${esc(s)}</div>`).join(''):'<div>None</div>'}
  <div style="margin-top:6px;font-size:11.5px">Dietary key: V Vegetarian | VG Vegan | GF Gluten Free | DF Dairy Free | CN Contains Nuts | CE Contains Egg | CSY Contains Soy | CS Contains Sesame</div>
- <h4>Staffing &amp; logistics</h4><table><tr><td>Staffing</td><td>${B.managers||0} event manager · ${B.servers||0} servers · ${B.chefs||0} chefs</td></tr><tr><td>Team entrance</td><td>${esc(B.entrance)||'—'}</td></tr><tr><td>Parking</td><td>${esc(B.parking)||'—'} <span class="vault">codes in vault</span></td></tr><tr><td>Meal markers</td><td>${esc(B.markers)||'—'}</td></tr>${B.notes?`<tr><td>Notes</td><td>${esc(B.notes)}</td></tr>`:''}</table>
- ${est?`<h4>Estimate</h4><div>About $${est.toLocaleString('en-US')} food at the sample ${esc(B.style.toLowerCase())} price — set real prices in the owner portal.</div>`:''}`;
+ <h3 class="h4">Staffing &amp; logistics</h3><table><tr><td>Staffing</td><td>${B.managers||0} event manager · ${B.servers||0} servers · ${B.chefs||0} chefs</td></tr><tr><td>Team entrance</td><td>${esc(B.entrance)||'—'}</td></tr><tr><td>Parking</td><td>${esc(B.parking)||'—'} <span class="vault">codes in vault</span></td></tr><tr><td>Meal markers</td><td>${esc(B.markers)||'—'}</td></tr>${B.notes?`<tr><td>Notes</td><td>${esc(B.notes)}</td></tr>`:''}</table>
+ ${est?`<h3 class="h4">Estimate</h3><div>About $${est.toLocaleString('en-US')} food at the sample ${esc(B.style.toLowerCase())} price — set real prices in the owner portal.</div>`:''}`;
 }
 function update(){const c=checks();$('#ckcount').textContent=c.length?`${c.length} to look at`:'All clear';
  $('#checks').innerHTML=c.length?c.map(x=>`<div class="ck ${x[0]}"><b>${x[0]==='s'?'SAFETY':'CHECK'}</b>${esc(x[1])}</div>`).join(''):'<div class="ck ok"><b>OK</b>No problems found by the checks.</div>';
